@@ -82,6 +82,8 @@ void sdl_init(SDL_Renderer ** render,SDL_Window ** window, void (*screen_compose
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
 
 	mutex_init();
+
+	screen_compose = screen_compose_cb;
 }
 
 static void get_virtual(SDL_Renderer * render,int * vx, int * vy)
