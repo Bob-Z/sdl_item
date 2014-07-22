@@ -17,21 +17,13 @@
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
 
-#ifndef ANIM_H
-#define ANIM_H
+#ifndef MUTEX_C
+#define MUTEX_C
 
 #include <SDL2/SDL.h>
 
-typedef struct {
-	int num_frame;
-	SDL_Texture ** tex;
-	int current_frame;
-	int w; // width
-	int h; // height
-	Uint32 * delay; //delay between each frame in millisecond
-	Uint32 prev_time; //time to show the current_frame
-} anim_t;
+extern SDL_mutex* file_mutex;
 
-anim_t * anim_load(SDL_Renderer * render, const char * filename);
-void anim_reset_anim(anim_t * anim);
+void mutex_init();
+
 #endif

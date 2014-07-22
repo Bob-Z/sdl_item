@@ -18,6 +18,7 @@
 */
 
 #include "sdl.h"
+#include "mutex.h"
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
 #include <libswscale/swscale.h>
@@ -33,9 +34,8 @@
 
 #define DEFAULT_DELAY 40
 
-static anim_t * giflib_load(const char * filename)
+static anim_t * giflib_load(SDL_Renderer * render, const char * filename)
 {
-	context_t * ctx = context_get_list_first(); //Player's context
 	GifFileType * gif;
 	int i;
 	int j;
@@ -51,7 +51,7 @@ static anim_t * giflib_load(const char * filename)
 	int col;
 	int pix_index;
 	anim_t * anim;
-	unsigned char bg_color;
+	//unsigned char bg_color;
 	int left;
 	int top;
 	int width;
@@ -63,13 +63,13 @@ static anim_t * giflib_load(const char * filename)
 		SDL_UnlockMutex(file_mutex);
 		return NULL;
 	}
-	wlog(LOGDEBUG,"Using giflib to decode %s",filename);
+	//Using giflib to decode
 	DGifSlurp(gif);
 	SDL_UnlockMutex(file_mutex);
 
-	bg_color = gif->SBackGroundColor;
+	//bg_color = gif->SBackGroundColor;
 
-	wlog(LOGDEBUG,"%d frames %d x %d bg_color=%d",gif->ImageCount, gif->SWidth, gif->SHeight,bg_color);
+	//wlog(LOGDEBUG,"%d frames %d x %d bg_color=%d",gif->ImageCount, gif->SWidth, gif->SHeight,bg_color);
 
 	anim = malloc(sizeof(anim_t));
 	memset(anim,0,sizeof(anim_t));
@@ -90,7 +90,7 @@ static anim_t * giflib_load(const char * filename)
 		width = gif->SavedImages[i].ImageDesc.Width;
 		height = gif->SavedImages[i].ImageDesc.Height;
 
-		wlog(LOGDEBUG,"Image %d : %d x %d; %d x %d",i,left,top,width,height);
+		//wlog(LOGDEBUG,"Image %d : %d x %d; %d x %d",i,left,top,width,height);
 		/* select palette */
 		pal = global_pal;
 		if( gif->SavedImages[i].ImageDesc.ColorMap ) {
@@ -100,17 +100,17 @@ static anim_t * giflib_load(const char * filename)
 		for(j=0;j<gif->SavedImages[i].ExtensionBlockCount;j++) {
 			if(gif->SavedImages[i].ExtensionBlocks[j].Function == GIF_GCE) {
 				transparent = gif->SavedImages[i].ExtensionBlocks[j].Bytes[0] & 0x01;
-				wlog(LOGDEBUG,"transparent : %d",transparent);
+				//wlog(LOGDEBUG,"transparent : %d",transparent);
 				disposal = (gif->SavedImages[i].ExtensionBlocks[j].Bytes[0] & 28)>>2;
-				wlog(LOGDEBUG,"disposal : %d",disposal);
+				//wlog(LOGDEBUG,"disposal : %d",disposal);
 				delay = (gif->SavedImages[i].ExtensionBlocks[j].Bytes[1] + gif->SavedImages[i].ExtensionBlocks[j].Bytes[2] * 256)*10;
 				if(delay==0) {
 					delay = DEFAULT_DELAY;
 				}
-				wlog(LOGDEBUG,"delay : %d ms",delay);
+				//wlog(LOGDEBUG,"delay : %d ms",delay);
 				if(transparent) {
 					transparent_color = gif->SavedImages[i].ExtensionBlocks[j].Bytes[3];
-					wlog(LOGDEBUG,"transparent color : %d",transparent_color);
+					//wlog(LOGDEBUG,"transparent color : %d",transparent_color);
 				}
 			}
 		}
@@ -140,7 +140,7 @@ static anim_t * giflib_load(const char * filename)
 		}
 
 		anim->delay[i] = delay;
-		anim->tex[i] = SDL_CreateTextureFromSurface(ctx->render,surf);
+		anim->tex[i] = SDL_CreateTextureFromSurface(render,surf);
 	}
 	SDL_FreeSurface(surf);
 
@@ -149,9 +149,8 @@ static anim_t * giflib_load(const char * filename)
 	return anim;
 }
 
-static anim_t * libpng_load(const char * filename)
+static anim_t * libpng_load(SDL_Renderer * render, const char * filename)
 {
-	context_t * ctx = context_get_list_first(); //Player's context
 	FILE *fp;
 	png_structp png_ptr;
 	png_infop info_ptr;
@@ -198,7 +197,7 @@ static anim_t * libpng_load(const char * filename)
 		return NULL;
 	}
 
-	wlog(LOGDEBUG,"Using libpng to decode %s",filename);
+	//wlog(LOGDEBUG,"Using libpng to decode %s",filename);
 
 	SDL_LockMutex(file_mutex);
 
@@ -259,7 +258,7 @@ static anim_t * libpng_load(const char * filename)
 			&bit_depth, &color_type,
 			NULL, NULL, NULL);
 
-	wlog(LOGDEBUG,"size: %dx%d bit_depth: %d, type: %d",width,height,bit_depth,color_type);
+	//wlog(LOGDEBUG,"size: %dx%d bit_depth: %d, type: %d",width,height,bit_depth,color_type);
 	/* allocate the memory to hold the image using the fields
 	   of png_info. */
 	anim = malloc(sizeof(anim_t));
@@ -298,15 +297,14 @@ static anim_t * libpng_load(const char * filename)
 	fclose(fp);
 	SDL_UnlockMutex(file_mutex);
 
-	anim->tex[0] = SDL_CreateTextureFromSurface(ctx->render,surf);
+	anim->tex[0] = SDL_CreateTextureFromSurface(render,surf);
 	SDL_FreeSurface(surf);
 
 	return anim;
 }
 
-static anim_t * libav_load(const char * filename)
+static anim_t * libav_load(SDL_Renderer * render, const char * filename)
 {
-	context_t * ctx = context_get_list_first(); //Player's context
 	anim_t * anim = NULL;
 	anim_t * ret = NULL;
 	AVFormatContext *pFormatCtx = NULL;
@@ -333,17 +331,17 @@ static anim_t * libav_load(const char * filename)
 
         // Open video file
         if (avformat_open_input(&pFormatCtx, filename, NULL, NULL) != 0) {
-		werr(LOGDEV,"Cannot open file %s",filename);
+		//Cannot open file
                 goto error;
 	}
 
         // Retrieve stream information
         if (avformat_find_stream_info(pFormatCtx, NULL) < 0) {
-		werr(LOGDEV,"Cannot find stream information for file %s",filename);
+		//Cannot find stream information
                 goto error;
 	}
 
-	wlog(LOGDEBUG,"Loading %d streams in %s",pFormatCtx->nb_streams,filename);
+	//wlog(LOGDEBUG,"Loading %d streams in %s",pFormatCtx->nb_streams,filename);
         // Find the first video stream
         videoStream = -1;
         for (i = 0; i < pFormatCtx->nb_streams; i++)
@@ -361,7 +359,7 @@ static anim_t * libav_load(const char * filename)
                 }
 
         if (videoStream == -1) {
-		werr(LOGDEV,"Didn't find a video stream in %s",filename);
+		//Didn't find a video stream
                 goto error;
 	}
 
@@ -371,26 +369,26 @@ static anim_t * libav_load(const char * filename)
         // Find the decoder for the video stream
         pCodec = avcodec_find_decoder(pCodecCtx->codec_id);
         if (pCodec == NULL) {
-		werr(LOGDEV,"Unsupported codec for %s",filename);
+		//Unsupported codec
                 goto error;
 	}
 
         // Open codec
         if (avcodec_open2(pCodecCtx, pCodec, NULL) < 0) {
-		werr(LOGDEV,"Could not open codec for %s",filename);
+		//Could not open codec
                 goto error;
 	}
 
         // Allocate video frame
         pFrame = avcodec_alloc_frame();
         if (pFrame == NULL) {
-		werr(LOGDEV,"Could not allocate video frame for %s",filename);
+		//Could not allocate video frame
                 goto error;
 	}
         // Allocate an AVFrame structure
         pFrameRGB = avcodec_alloc_frame();
         if (pFrameRGB == NULL) {
-		werr(LOGDEV,"Could not allocate AVFrame structure for %s",filename);
+		//Could not allocate AVFrame structure
                 goto error;
 	}
 
@@ -414,7 +412,7 @@ static anim_t * libav_load(const char * filename)
 	anim->h = pCodecCtx->height;
 
         if (pSwsCtx == NULL) {
-		werr(LOGDEV,"Cannot initialize sws context for %s",filename);
+		//Cannot initialize sws context
                 goto error;
 	}
 
@@ -435,13 +433,13 @@ static anim_t * libav_load(const char * filename)
                                         pFrameRGB->linesize);
 
 				anim->delay[i] = delay;
-				anim->tex[i] = SDL_CreateTexture(ctx->render, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STATIC, pCodecCtx->width,pCodecCtx->height);
+				anim->tex[i] = SDL_CreateTexture(render, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STATIC, pCodecCtx->width,pCodecCtx->height);
 				if( anim->tex[i] == NULL ) {
-					werr(LOGDEV,"SDL_CreateTexture error: %s",SDL_GetError());
+					//SDL_CreateTexture error
 				}
                                 /* Copy decoded bits to render texture */
                                 if (SDL_UpdateTexture(anim->tex[i],NULL,pFrameRGB->data[0],pFrameRGB->linesize[0]) < 0) {
-					werr(LOGDEV,"SDL_UpdateTexture error: %s",SDL_GetError());
+					//SDL_UpdateTexture error
 				}
 				i++;
                         }
@@ -498,21 +496,21 @@ void anim_reset_anim(anim_t * anim)
 	anim->current_frame=0;
 }
 
-anim_t * anim_load(const char * filename)
+anim_t * anim_load(SDL_Renderer * render, const char * filename)
 {
 	anim_t * ret;
 
-	ret = giflib_load(filename);
+	ret = giflib_load(render, filename);
 	if(ret != NULL) {
 		return ret;
 	}
 
-	ret = libpng_load(filename);
+	ret = libpng_load(render, filename);
 	if(ret != NULL) {
 		return ret;
 	}
 
-	ret = libav_load(filename);
+	ret = libav_load(render, filename);
 
 	return ret;
 }

@@ -18,7 +18,7 @@
 */
 
 #include "sdl.h"
-#include "screen.h"
+#include "mutex.h"
 
 static int fullscreen = 0;
 
@@ -37,6 +37,8 @@ static Uint32 virtual_tick = 0;
 
 static keycb_t * key_callback = NULL;
 
+static void (*screen_compose)(void) = NULL;
+
 //You must SDL_LockSurface(surface); then SDL_UnlockSurface(surface); before calling this function
 void sdl_set_pixel(SDL_Surface *surface, int x, int y, Uint32 R, Uint32 G, Uint32 B, Uint32 A)
 {
@@ -50,51 +52,49 @@ void sdl_cleanup()
 	SDL_Quit();
 }
 
-void sdl_init(context_t * context)
+void sdl_init(SDL_Renderer ** render,SDL_Window ** window, void (*screen_compose_cb)(void))
 {
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_AUDIO) < 0) {
-		werr(LOGUSER,"SDL init failed: %s.\n",SDL_GetError());
 		exit(EXIT_FAILURE);
 	}
 
 	if (TTF_Init() == -1){
-		werr(LOGUSER,"TTF init failed: %s.\n",SDL_GetError());
 		exit(EXIT_FAILURE);
 	}
 
 	atexit(sdl_cleanup);
 
-	context->window = SDL_CreateWindow("World of Gnome",
+	*window = SDL_CreateWindow("World of Gnome",
 								 SDL_WINDOWPOS_UNDEFINED,
 								 SDL_WINDOWPOS_UNDEFINED,
 								 DEFAULT_SCREEN_W, DEFAULT_SCREEN_H,
 								 SDL_WINDOW_RESIZABLE);
-	if( context->window == NULL) {
-		werr(LOGUSER,"SDL window init failed: %s.\n",SDL_GetError());
+	if( *window == NULL) {
 		exit(EXIT_FAILURE);
 	}
 
-	context->render = SDL_CreateRenderer(context->window, -1, SDL_RENDERER_PRESENTVSYNC);
-	if( context->render == NULL) {
-		werr(LOGUSER,"SDL renderer init failed: %s\n",SDL_GetError());
+	*render = SDL_CreateRenderer(*window, -1, SDL_RENDERER_PRESENTVSYNC);
+	if( *render == NULL) {
 		exit(EXIT_FAILURE);
 	}
 
-	SDL_RenderSetLogicalSize(context->render,DEFAULT_SCREEN_W,DEFAULT_SCREEN_H);
+	SDL_RenderSetLogicalSize(*render,DEFAULT_SCREEN_W,DEFAULT_SCREEN_H);
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
+
+	mutex_init();
 }
 
-static void get_virtual(context_t * ctx,int * vx, int * vy)
+static void get_virtual(SDL_Renderer * render,int * vx, int * vy)
 {
 	int sx;
 	int sy;
 
-	SDL_GetRendererOutputSize(ctx->render,&sx,&sy);
+	SDL_GetRendererOutputSize(render,&sx,&sy);
 	*vx = (sx/2)-current_vx;
 	*vy = (sy/2)-current_vy;
 }
 
-void sdl_mouse_manager(context_t * ctx, SDL_Event * event, item_t * item_list)
+void sdl_mouse_manager(SDL_Renderer * render, SDL_Event * event, item_t * item_list)
 {
 	SDL_Rect rect;
 	int vx;
@@ -131,7 +131,7 @@ void sdl_mouse_manager(context_t * ctx, SDL_Event * event, item_t * item_list)
 					I = I->next;
 					continue;
 				}
-				get_virtual(ctx,&vx,&vy);
+				get_virtual(render,&vx,&vy);
 				rect.x = event->motion.x - vx;
 				rect.y = event->motion.y - vy;
 			}
@@ -209,7 +209,7 @@ void sdl_mouse_manager(context_t * ctx, SDL_Event * event, item_t * item_list)
 }
 
 /* Take care of system's windowing event */
-void sdl_screen_manager(context_t * ctx,SDL_Event * event)
+void sdl_screen_manager(SDL_Window * window,SDL_Renderer * render,SDL_Event * event)
 {
 	const Uint8 *keystate;
 
@@ -217,7 +217,7 @@ void sdl_screen_manager(context_t * ctx,SDL_Event * event)
         case SDL_WINDOWEVENT:
 		switch(event->window.event) {
 		case SDL_WINDOWEVENT_RESIZED:
-			SDL_RenderSetLogicalSize(ctx->render,event->window.data1,event->window.data2);
+			SDL_RenderSetLogicalSize(render,event->window.data1,event->window.data2);
 			break;
 		}
 	break;
@@ -232,7 +232,7 @@ void sdl_screen_manager(context_t * ctx,SDL_Event * event)
 				} else {
 					fullscreen = 0;
 				}
-				SDL_SetWindowFullscreen(ctx->window,fullscreen);
+				SDL_SetWindowFullscreen(window,fullscreen);
 				break;
 			}
 			break;
@@ -277,7 +277,7 @@ void sdl_loop_manager()
 	}
 }
 
-void sdl_blit_tex(context_t * ctx,SDL_Texture * tex, SDL_Rect * rect,int overlay)
+void sdl_blit_tex(SDL_Renderer * render,SDL_Texture * tex, SDL_Rect * rect,int overlay)
 {
 	SDL_Rect r;
         int vx;
@@ -288,7 +288,7 @@ void sdl_blit_tex(context_t * ctx,SDL_Texture * tex, SDL_Rect * rect,int overlay
 		r.y = rect->y;
 	}
 	else {
-		get_virtual(ctx,&vx,&vy);
+		get_virtual(render,&vx,&vy);
 
 		r.x = rect->x + vx;
 		r.y = rect->y + vy;
@@ -298,17 +298,17 @@ void sdl_blit_tex(context_t * ctx,SDL_Texture * tex, SDL_Rect * rect,int overlay
 	r.h = rect->h;
 
 	if( tex ) {
-		if( SDL_RenderCopy(ctx->render,tex,NULL,&r) < 0) {
-			werr(LOGDEV,"SDL_RenderCopy error\n");
+		if( SDL_RenderCopy(render,tex,NULL,&r) < 0) {
+			//SDL_RenderCopy error
 		}
 	}
 }
 
-int sdl_blit_anim(context_t * ctx,anim_t * anim, SDL_Rect * rect, int start, int end,int overlay)
+int sdl_blit_anim(SDL_Renderer * render,anim_t * anim, SDL_Rect * rect, int start, int end,int overlay)
 {
 	Uint32 time = SDL_GetTicks();
 
-	sdl_blit_tex(ctx,anim->tex[anim->current_frame],rect,overlay);
+	sdl_blit_tex(render,anim->tex[anim->current_frame],rect,overlay);
 
 	if( anim->prev_time == 0 ) {
 		anim->prev_time = time;
@@ -340,7 +340,7 @@ void sdl_get_string_size(TTF_Font * font,const char * string,int * w,int *h)
 	*w = r.w;
 	*h = r.h;
 }
-void sdl_print_item(context_t * ctx,item_t * item)
+void sdl_print_item(SDL_Renderer * render,item_t * item)
 {
 	SDL_Surface * surf;
 //	SDL_Color bg={0,0,0};
@@ -358,14 +358,14 @@ void sdl_print_item(context_t * ctx,item_t * item)
 
 	if(item->str_tex == NULL ) {
 		surf = TTF_RenderText_Blended(item->font, item->string, fg);
-		item->str_tex=SDL_CreateTextureFromSurface(ctx->render,surf);
+		item->str_tex=SDL_CreateTextureFromSurface(render,surf);
 		SDL_FreeSurface(surf);
 	}
 
-	sdl_blit_tex(ctx,item->str_tex,&r,item->overlay);
+	sdl_blit_tex(render,item->str_tex,&r,item->overlay);
 }
 
-int sdl_blit_item(context_t * ctx,item_t * item)
+int sdl_blit_item(SDL_Renderer * render,item_t * item)
 {
 	Uint32 timer = SDL_GetTicks();
 
@@ -383,26 +383,26 @@ int sdl_blit_item(context_t * ctx,item_t * item)
 		}
 
 		if( item->frame_normal == -1 ) {
-			sdl_blit_anim(ctx,item->anim,&item->rect,item->anim_start,item->anim_end,item->overlay);
+			sdl_blit_anim(render,item->anim,&item->rect,item->anim_start,item->anim_end,item->overlay);
 		} else {
-			sdl_blit_tex(ctx,item->anim->tex[item->frame_normal],&item->rect,item->overlay);
+			sdl_blit_tex(render,item->anim->tex[item->frame_normal],&item->rect,item->overlay);
 		}
 	}
 
 	if( item->font != NULL && item->string != NULL ) {
-                sdl_print_item(ctx,item);
+                sdl_print_item(render,item);
         }
 
 	return 0;
 }
 
-void sdl_blit_item_list(context_t * ctx,item_t * list)
+void sdl_blit_item_list(SDL_Renderer * render,item_t * list)
 {
 	item_t * item;
 
 	item = list;
 	while(item)  {
-		sdl_blit_item(ctx,item);
+		sdl_blit_item(render,item);
 		item = item->next;
 	}
 }
@@ -494,9 +494,9 @@ void sdl_keyboard_manager(SDL_Event * event)
 	}
 }
 
-void sdl_blit_to_screen(context_t * ctx)
+void sdl_blit_to_screen(SDL_Renderer * render)
 {
-	SDL_RenderPresent(ctx->render);
+	SDL_RenderPresent(render);
 }
 
 void sdl_set_virtual_x(int x)

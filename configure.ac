@@ -68,20 +68,11 @@ ADD_LIB+="$LIBPNG_LIBS"
 ADD_LIB+="-lgif"
 
 AC_SUBST(SET_MAKE)
-AC_SUBST(ADD_LIB)
 
 dnl expand ${datadir} and write it out
 conftemp="${datadir}"
 eval conftemp=\"${conftemp}\"
 eval conftemp=\"${conftemp}\"
 AC_DEFINE_UNQUOTED(DATADIR, "${conftemp}",[Default path for data files])
-
-AC_SUBST(CFLAGS)
-AC_SUBST(LDFLAGS)
-AC_SUBST(DATADIR)
-AC_SUBST(LIBCONFIG_CFLAGS)
-AC_SUBST(LIBCONFIG_LIBS)
-AC_SUBST(LIBSDL2_CFLAGS)
-AC_SUBST(LIBSDL2_LIBS)
 
 AC_OUTPUT(Makefile)

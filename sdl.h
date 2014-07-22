@@ -18,7 +18,6 @@
 */
 
 #include <SDL2/SDL.h>
-#include "../common/common.h"
 #include "item.h"
 
 #define SDL_OPAQUE 0xff
@@ -45,23 +44,23 @@ typedef struct keycb {
         struct keycb * next;
 } keycb_t;
 
-void sdl_init(context_t * context);
+void sdl_init(SDL_Renderer ** render,SDL_Window ** window, void (*screen_compose_cb)(void));
 void sdl_cleanup(void);
 void sdl_set_pixel(SDL_Surface *surface, int x, int y, Uint32 R, Uint32 G, Uint32 B, Uint32 A);
-void sdl_mouse_manager(context_t * ctx,SDL_Event * event, item_t * item_list);
-void sdl_screen_manager(context_t * ctx,SDL_Event * event);
+void sdl_mouse_manager(SDL_Renderer *,SDL_Event * event, item_t * item_list);
+void sdl_screen_manager(SDL_Window * window,SDL_Renderer * render,SDL_Event * event);
 void sdl_loop_manager();
-void sdl_blit_tex(context_t * ctx,SDL_Texture * tex, SDL_Rect * rect,int overlay);
-int sdl_blit_anim(context_t * ctx,anim_t * anim, SDL_Rect * rect, int start, int end,int overlay);
+void sdl_blit_tex(SDL_Renderer *,SDL_Texture * tex, SDL_Rect * rect,int overlay);
+int sdl_blit_anim(SDL_Renderer *,anim_t * anim, SDL_Rect * rect, int start, int end,int overlay);
 void sdl_get_string_size(TTF_Font * font,const char * string,int * w,int *h);
-void sdl_print_item(context_t * ctx,item_t * item);
-int sdl_blit_item(context_t * ctx,item_t * item);
-void sdl_blit_item_list(context_t * ctx,item_t * item_list);
+void sdl_print_item(SDL_Renderer *,item_t * item);
+int sdl_blit_item(SDL_Renderer *,item_t * item);
+void sdl_blit_item_list(SDL_Renderer *,item_t * item_list);
 void sdl_keyboard_text_init(char * buf, void (*cb)(void*arg));
 void sdl_keyboard_text_reset();
 char * sdl_keyboard_text_get_buf();
 void sdl_keyboard_manager(SDL_Event * event);
-void sdl_blit_to_screen(context_t * ctx);
+void sdl_blit_to_screen(SDL_Renderer *);
 void sdl_set_virtual_x(int x);
 void sdl_set_virtual_y(int y);
 int sdl_get_virtual_x();
