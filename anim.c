@@ -18,7 +18,6 @@
 */
 
 #include "sdl.h"
-#include "mutex.h"
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
 #include <libswscale/swscale.h>
@@ -57,15 +56,12 @@ static anim_t * giflib_load(SDL_Renderer * render, const char * filename)
 	int width;
 	int height;
 
-	SDL_LockMutex(file_mutex);
 	gif = DGifOpenFileName(filename);
 	if(gif == NULL) {
-		SDL_UnlockMutex(file_mutex);
 		return NULL;
 	}
 	//Using giflib to decode
 	DGifSlurp(gif);
-	SDL_UnlockMutex(file_mutex);
 
 	//bg_color = gif->SBackGroundColor;
 
@@ -199,14 +195,11 @@ static anim_t * libpng_load(SDL_Renderer * render, const char * filename)
 
 	//wlog(LOGDEBUG,"Using libpng to decode %s",filename);
 
-	SDL_LockMutex(file_mutex);
-
 	/* set error handling */
 	if (setjmp(png_ptr->jmpbuf))
 	{
 		png_read_destroy(png_ptr, info_ptr, (png_info *)0);
 		fclose(fp);
-		SDL_UnlockMutex(file_mutex);
 		free(png_ptr);
 		free(info_ptr);
 		/* If we get here, we had a problem reading the file */
@@ -295,7 +288,6 @@ static anim_t * libpng_load(SDL_Renderer * render, const char * filename)
 
 	/* close the file */
 	fclose(fp);
-	SDL_UnlockMutex(file_mutex);
 
 	anim->tex[0] = SDL_CreateTextureFromSurface(render,surf);
 	SDL_FreeSurface(surf);
@@ -326,8 +318,6 @@ static anim_t * libav_load(SDL_Renderer * render, const char * filename)
 
         // Register all formats and codecs
         av_register_all();
-
-	SDL_LockMutex(file_mutex);
 
         // Open video file
         if (avformat_open_input(&pFormatCtx, filename, NULL, NULL) != 0) {
@@ -484,8 +474,6 @@ error:
 	if(pFormatCtx) {
 		avformat_close_input(&pFormatCtx);
 	}
-
-	SDL_UnlockMutex(file_mutex);
 
 	return ret;
 }

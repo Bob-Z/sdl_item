@@ -18,7 +18,6 @@
 */
 
 #include "sdl.h"
-#include "mutex.h"
 
 static int fullscreen = 0;
 
@@ -80,8 +79,6 @@ void sdl_init(SDL_Renderer ** render,SDL_Window ** window, void (*screen_compose
 
 	SDL_RenderSetLogicalSize(*render,DEFAULT_SCREEN_W,DEFAULT_SCREEN_H);
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
-
-	mutex_init();
 
 	screen_compose = screen_compose_cb;
 }
