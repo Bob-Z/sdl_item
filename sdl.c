@@ -303,9 +303,17 @@ void sdl_blit_tex(SDL_Renderer * render,SDL_Texture * tex, SDL_Rect * rect,int o
 	}
 }
 
+/*******************************
+return 0 if blit OK
+return -1 if blit NOK
+*******************************/
 int sdl_blit_anim(SDL_Renderer * render,anim_t * anim, SDL_Rect * rect, int start, int end,int overlay)
 {
 	Uint32 time = SDL_GetTicks();
+
+	if(anim->tex==NULL) {
+		return -1;
+	}
 
 	sdl_blit_tex(render,anim->tex[anim->current_frame],rect,overlay);
 
@@ -318,12 +326,12 @@ int sdl_blit_anim(SDL_Renderer * render,anim_t * anim, SDL_Rect * rect, int star
 		if( end != -1 ) {
 			if(anim->current_frame >= end) {
 				anim->current_frame = start;
-				return 1;
+				return 0;
 			}
 		} else {
 			if(anim->current_frame >= anim->num_frame) {
 				anim->current_frame = 0;
-				return 1;
+				return 0;
 			}
 		}
 	}
