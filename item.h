@@ -80,6 +80,7 @@ void item_set_tile(item_t * item, int x, int y);
 void item_set_angle(item_t * item, double a);
 void item_set_zoom_x(item_t * item, double a);
 void item_set_zoom_y(item_t * item, double a);
+void item_set_flip(item_t * item, int a);
 void item_set_overlay(item_t * item, int overlay);
 void item_set_frame_normal(item_t * item, int num_frame);
 void item_set_frame_over(item_t * item, int num_frame);
