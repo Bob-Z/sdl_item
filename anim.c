@@ -33,6 +33,9 @@
 
 #define DEFAULT_DELAY 40
 
+/************************************************************************
+return NULL if error
+************************************************************************/
 static anim_t * giflib_load(SDL_Renderer * render, const char * filename)
 {
 	GifFileType * gif;
@@ -145,6 +148,9 @@ static anim_t * giflib_load(SDL_Renderer * render, const char * filename)
 	return anim;
 }
 
+/************************************************************************
+return NULL if error
+************************************************************************/
 static anim_t * libpng_load(SDL_Renderer * render, const char * filename)
 {
 	FILE *fp;
@@ -295,6 +301,9 @@ static anim_t * libpng_load(SDL_Renderer * render, const char * filename)
 	return anim;
 }
 
+/************************************************************************
+return NULL if error
+************************************************************************/
 static anim_t * libav_load(SDL_Renderer * render, const char * filename)
 {
 	anim_t * anim = NULL;
@@ -478,12 +487,16 @@ error:
 	return ret;
 }
 
+/************************************************************************
+************************************************************************/
 void anim_reset_anim(anim_t * anim)
 {
 	anim->prev_time=0;
 	anim->current_frame=0;
 }
 
+/************************************************************************
+************************************************************************/
 anim_t * anim_load(SDL_Renderer * render, const char * filename)
 {
 	anim_t * ret;
@@ -501,4 +514,32 @@ anim_t * anim_load(SDL_Renderer * render, const char * filename)
 	ret = libav_load(render, filename);
 
 	return ret;
+}
+
+/************************************************************************
+color is RGBA
+************************************************************************/
+anim_t * anim_create_color(SDL_Renderer * render, Uint32 width, Uint32 height, Uint32 color)
+{
+	anim_t * anim;
+	SDL_Surface* surf;
+
+	anim = malloc(sizeof(anim_t));
+	memset(anim,0,sizeof(anim_t));
+
+	anim->num_frame = 1;
+	anim->tex = malloc(sizeof(SDL_Texture *) * anim->num_frame);
+	anim->w = width;
+	anim->h = height;
+	anim->delay = malloc(sizeof(Uint32) * anim->num_frame);
+	anim->delay[0] = 0;
+
+	surf = SDL_CreateRGBSurface(0,width,height,32,0xff000000,0x00ff0000,0x0000ff00,0x000000ff);
+
+	memset(surf->pixels,color,width*height*sizeof(Uint32));
+
+	anim->tex[0] = SDL_CreateTextureFromSurface(render,surf);
+	SDL_FreeSurface(surf);
+
+	return anim;
 }

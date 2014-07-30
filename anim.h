@@ -34,4 +34,6 @@ typedef struct {
 
 anim_t * anim_load(SDL_Renderer * render, const char * filename);
 void anim_reset_anim(anim_t * anim);
+anim_t * anim_create_color(SDL_Renderer * render, Uint32 width, Uint32 height, Uint32 color);
 #endif
+

@@ -28,16 +28,21 @@ static void (*keyboard_text_cb)(void * arg) = NULL;
 
 static int virtual_x = 0;
 static int virtual_y = 0;
+static double virtual_z = 1.0;
 static int old_vx = 0;
 static int old_vy = 0;
+static double old_vz = 1.0;
 static int current_vx = 0;
 static int current_vy = 0;
+static double current_vz = 1.0;
 static Uint32 virtual_tick = 0;
 
 static keycb_t * key_callback = NULL;
 
 static void (*screen_compose)(void) = NULL;
 
+/************************************************************************
+************************************************************************/
 //You must SDL_LockSurface(surface); then SDL_UnlockSurface(surface); before calling this function
 void sdl_set_pixel(SDL_Surface *surface, int x, int y, Uint32 R, Uint32 G, Uint32 B, Uint32 A)
 {
@@ -46,14 +51,18 @@ void sdl_set_pixel(SDL_Surface *surface, int x, int y, Uint32 R, Uint32 G, Uint3
 	*(Uint32 *)target_pixel = color;
 }
 
+/************************************************************************
+************************************************************************/
 void sdl_cleanup()
 {
 	SDL_Quit();
 }
 
+/************************************************************************
+************************************************************************/
 void sdl_init(SDL_Renderer ** render,SDL_Window ** window, void (*screen_compose_cb)(void))
 {
-	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_AUDIO) < 0) {
+	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK) < 0) {
 		exit(EXIT_FAILURE);
 	}
 
@@ -83,16 +92,24 @@ void sdl_init(SDL_Renderer ** render,SDL_Window ** window, void (*screen_compose
 	screen_compose = screen_compose_cb;
 }
 
+/************************************************************************
+************************************************************************/
 static void get_virtual(SDL_Renderer * render,int * vx, int * vy)
 {
 	int sx;
 	int sy;
 
 	SDL_GetRendererOutputSize(render,&sx,&sy);
+
+	sx /= current_vz;
+	sy /= current_vz;
+
 	*vx = (sx/2)-current_vx;
 	*vy = (sy/2)-current_vy;
 }
 
+/************************************************************************
+************************************************************************/
 void sdl_mouse_manager(SDL_Renderer * render, SDL_Event * event, item_t * item_list)
 {
 	SDL_Rect rect;
@@ -207,6 +224,8 @@ void sdl_mouse_manager(SDL_Renderer * render, SDL_Event * event, item_t * item_l
 	}
 }
 
+/************************************************************************
+************************************************************************/
 /* Take care of system's windowing event */
 void sdl_screen_manager(SDL_Window * window,SDL_Renderer * render,SDL_Event * event)
 {
@@ -247,6 +266,8 @@ void sdl_screen_manager(SDL_Window * window,SDL_Renderer * render,SDL_Event * ev
 	}
 }
 
+/************************************************************************
+************************************************************************/
 void sdl_loop_manager()
 {
 	static Uint32 old_timer = 0;
@@ -264,8 +285,9 @@ void sdl_loop_manager()
 
 	timer = SDL_GetTicks();
 	if( virtual_tick + VIRTUAL_ANIM_DURATION > timer ) {
-		current_vx = (int)((float)old_vx + (float)( virtual_x - old_vx ) * (float)(timer - virtual_tick) / (float)VIRTUAL_ANIM_DURATION);
-		current_vy = (int)((float)old_vy + (float)( virtual_y - old_vy ) * (float)(timer - virtual_tick) / (float)VIRTUAL_ANIM_DURATION);
+		current_vx = (int)((double)old_vx + (double)( virtual_x - old_vx ) * (double)(timer - virtual_tick) / (double)VIRTUAL_ANIM_DURATION);
+		current_vy = (int)((double)old_vy + (double)( virtual_y - old_vy ) * (double)(timer - virtual_tick) / (double)VIRTUAL_ANIM_DURATION);
+		current_vz = (double)old_vz + (double)( virtual_z - old_vz ) * (double)(timer - virtual_tick) / (double)VIRTUAL_ANIM_DURATION;
 	}
 	else {
 		old_vx = virtual_x;
@@ -273,10 +295,16 @@ void sdl_loop_manager()
 
 		old_vy = virtual_y;
 		current_vy = virtual_y;
+
+		old_vz = virtual_z;
+		current_vz = virtual_z;
 	}
 }
 
-void sdl_blit_tex(SDL_Renderer * render,SDL_Texture * tex, SDL_Rect * rect,int overlay)
+/************************************************************************
+flip is one of SDL_FLIP_NONE, SDL_FLIP_HORIZONTAL, SDL_FLIP_VERTICAL
+************************************************************************/
+void sdl_blit_tex(SDL_Renderer * render,SDL_Texture * tex, SDL_Rect * rect, double angle, double zoom_x, double zoom_y, int flip, int overlay)
 {
 	SDL_Rect r;
         int vx;
@@ -296,9 +324,20 @@ void sdl_blit_tex(SDL_Renderer * render,SDL_Texture * tex, SDL_Rect * rect,int o
 	r.w = rect->w;
 	r.h = rect->h;
 
+	/* Sprite zoom */
+	r.w *= zoom_x;
+	r.h *= zoom_y;
+
+	/* Virtual zoom */
+	r.x *= current_vz;
+	r.y *= current_vz;
+	r.w *= current_vz;
+	r.h *= current_vz;
+
 	if( tex ) {
-		if( SDL_RenderCopy(render,tex,NULL,&r) < 0) {
-			//SDL_RenderCopy error
+//		if( SDL_RenderCopy(render,tex,NULL,&r) < 0) {
+		if( SDL_RenderCopyEx(render,tex,NULL,&r,angle,NULL,flip) < 0) {
+			//Error
 		}
 	}
 }
@@ -307,7 +346,7 @@ void sdl_blit_tex(SDL_Renderer * render,SDL_Texture * tex, SDL_Rect * rect,int o
 return 0 if blit OK
 return -1 if blit NOK
 *******************************/
-int sdl_blit_anim(SDL_Renderer * render,anim_t * anim, SDL_Rect * rect, int start, int end,int overlay)
+int sdl_blit_anim(SDL_Renderer * render,anim_t * anim, SDL_Rect * rect, double angle, double zoom_x, double zoom_y, int flip, int start, int end,int overlay)
 {
 	Uint32 time = SDL_GetTicks();
 
@@ -315,7 +354,7 @@ int sdl_blit_anim(SDL_Renderer * render,anim_t * anim, SDL_Rect * rect, int star
 		return -1;
 	}
 
-	sdl_blit_tex(render,anim->tex[anim->current_frame],rect,overlay);
+	sdl_blit_tex(render,anim->tex[anim->current_frame],rect,angle,zoom_x,zoom_y,flip,overlay);
 
 	if( anim->prev_time == 0 ) {
 		anim->prev_time = time;
@@ -339,6 +378,8 @@ int sdl_blit_anim(SDL_Renderer * render,anim_t * anim, SDL_Rect * rect, int star
 	return 0;
 }
 
+/************************************************************************
+************************************************************************/
 void sdl_get_string_size(TTF_Font * font,const char * string,int * w,int *h)
 {
 	SDL_Rect r;
@@ -347,6 +388,9 @@ void sdl_get_string_size(TTF_Font * font,const char * string,int * w,int *h)
 	*w = r.w;
 	*h = r.h;
 }
+
+/************************************************************************
+************************************************************************/
 void sdl_print_item(SDL_Renderer * render,item_t * item)
 {
 	SDL_Surface * surf;
@@ -369,9 +413,11 @@ void sdl_print_item(SDL_Renderer * render,item_t * item)
 		SDL_FreeSurface(surf);
 	}
 
-	sdl_blit_tex(render,item->str_tex,&r,item->overlay);
+	sdl_blit_tex(render,item->str_tex,&r,item->angle,item->zoom_x,item->zoom_y,item->flip,item->overlay);
 }
 
+/************************************************************************
+************************************************************************/
 int sdl_blit_item(SDL_Renderer * render,item_t * item)
 {
 	Uint32 timer = SDL_GetTicks();
@@ -379,8 +425,8 @@ int sdl_blit_item(SDL_Renderer * render,item_t * item)
 	if(item->anim) {
 		if( item->timer ) {
 			if( item->timer + VIRTUAL_ANIM_DURATION > timer) {
-				item->rect.x = (int)((float)item->old_x + (float)(item->x - item->old_x) * (float)(timer - item->timer) / (float)VIRTUAL_ANIM_DURATION);
-				item->rect.y = (int)((float)item->old_y + (float)(item->y - item->old_y) * (float)(timer - item->timer) / (float)VIRTUAL_ANIM_DURATION);
+				item->rect.x = (int)((double)item->old_x + (double)(item->x - item->old_x) * (double)(timer - item->timer) / (double)VIRTUAL_ANIM_DURATION);
+				item->rect.y = (int)((double)item->old_y + (double)(item->y - item->old_y) * (double)(timer - item->timer) / (double)VIRTUAL_ANIM_DURATION);
 			}
 			else {
 				item->rect.x =item->x;
@@ -390,9 +436,9 @@ int sdl_blit_item(SDL_Renderer * render,item_t * item)
 		}
 
 		if( item->frame_normal == -1 ) {
-			sdl_blit_anim(render,item->anim,&item->rect,item->anim_start,item->anim_end,item->overlay);
+			sdl_blit_anim(render,item->anim,&item->rect,item->angle,item->zoom_x,item->zoom_y,item->flip,item->anim_start,item->anim_end,item->overlay);
 		} else {
-			sdl_blit_tex(render,item->anim->tex[item->frame_normal],&item->rect,item->overlay);
+			sdl_blit_tex(render,item->anim->tex[item->frame_normal],&item->rect,item->angle,item->zoom_x,item->zoom_y, item->flip,item->overlay);
 		}
 	}
 
@@ -403,6 +449,8 @@ int sdl_blit_item(SDL_Renderer * render,item_t * item)
 	return 0;
 }
 
+/************************************************************************
+************************************************************************/
 void sdl_blit_item_list(SDL_Renderer * render,item_t * list)
 {
 	item_t * item;
@@ -414,6 +462,8 @@ void sdl_blit_item_list(SDL_Renderer * render,item_t * list)
 	}
 }
 
+/************************************************************************
+************************************************************************/
 void sdl_keyboard_text_init(char * buf, void (*cb)(void*arg))
 {
 	if ( buf == NULL ) {
@@ -425,6 +475,8 @@ void sdl_keyboard_text_init(char * buf, void (*cb)(void*arg))
 	keyboard_text_cb = cb;
 }
 
+/************************************************************************
+************************************************************************/
 void sdl_keyboard_text_reset()
 {
 	keyboard_text_index=0;
@@ -432,17 +484,34 @@ void sdl_keyboard_text_reset()
 	keyboard_text_cb = NULL;
 }
 
+/************************************************************************
+************************************************************************/
 char * sdl_keyboard_text_get_buf()
 {
 	return keyboard_text_buf;
 }
 
+/************************************************************************
+************************************************************************/
 void sdl_keyboard_manager(SDL_Event * event)
 {
 	const Uint8 *keystate;
 	keycb_t * key;
 
 	switch (event->type) {
+	case SDL_KEYUP:
+		key = key_callback;
+		if(key) {
+			do {
+				if( event->key.keysym.scancode == key->code) {
+					if(key->cb_up) {
+						key->cb_up(key->arg);
+					}
+				}
+				key=key->next;
+			} while(key);
+		}
+		break;
 	case SDL_KEYDOWN:
 		/* If no keyboard_text ready, key are used for UI */
 		if( keyboard_text_buf == NULL ) {
@@ -501,11 +570,15 @@ void sdl_keyboard_manager(SDL_Event * event)
 	}
 }
 
+/************************************************************************
+************************************************************************/
 void sdl_blit_to_screen(SDL_Renderer * render)
 {
 	SDL_RenderPresent(render);
 }
 
+/************************************************************************
+************************************************************************/
 void sdl_set_virtual_x(int x)
 {
 	if( x != virtual_x ) {
@@ -514,6 +587,9 @@ void sdl_set_virtual_x(int x)
 		virtual_tick = SDL_GetTicks();
 	}
 }
+
+/************************************************************************
+************************************************************************/
 void sdl_set_virtual_y(int y)
 {
 	if( y != virtual_y ) {
@@ -523,30 +599,68 @@ void sdl_set_virtual_y(int y)
 	}
 }
 
+/************************************************************************
+************************************************************************/
+void sdl_set_virtual_z(double z)
+{
+	if( z != virtual_z ) {
+		old_vz = current_vz;
+		virtual_z = z;
+		virtual_tick = SDL_GetTicks();
+	}
+}
+
+/************************************************************************
+************************************************************************/
 int sdl_get_virtual_x()
 {
 	return virtual_x;
 }
 
+/************************************************************************
+************************************************************************/
 int sdl_get_virtual_y()
 {
 	return virtual_y;
 }
 
+/************************************************************************
+************************************************************************/
+int sdl_get_virtual_z()
+{
+	return virtual_z;
+}
+
+/************************************************************************
+************************************************************************/
 void sdl_force_virtual_x(int x)
 {
 	virtual_x = x;
 	current_vx = x;
 	old_vx =x;
 }
+
+/************************************************************************
+************************************************************************/
 void sdl_force_virtual_y(int y)
 {
 	virtual_y = y;
 	current_vy = y;
-	old_vx =y;
+	old_vy =y;
 }
 
-keycb_t * sdl_add_keycb(SDL_Scancode code,void (*cb)(void*))
+/************************************************************************
+************************************************************************/
+void sdl_force_virtual_z(double z)
+{
+	virtual_z = z;
+	current_vz = z;
+	old_vz =z;
+}
+
+/************************************************************************
+************************************************************************/
+keycb_t * sdl_add_keycb(SDL_Scancode code,void (*cb)(void*),void (*cb_up)(void*), void * arg)
 {
 	keycb_t * key;
 
@@ -555,6 +669,8 @@ keycb_t * sdl_add_keycb(SDL_Scancode code,void (*cb)(void*))
 		key_callback = key;
 		key->code = code;
 		key->cb = cb;
+		key->cb_up = cb_up;
+		key->arg = arg;
 		key->next = NULL;
 		return key;
 	}
@@ -567,11 +683,15 @@ keycb_t * sdl_add_keycb(SDL_Scancode code,void (*cb)(void*))
 		key = key->next;
 		key->code = code;
 		key->cb = cb;
+		key->cb_up = cb_up;
+		key->arg = arg;
 		key->next = NULL;
 		return key;
 	}
 }
 
+/************************************************************************
+************************************************************************/
 static void rec_free_keycb(keycb_t * key) {
 	if(key == NULL) {
                 return;
@@ -583,9 +703,13 @@ static void rec_free_keycb(keycb_t * key) {
 
 	free(key);
 }
+
+/************************************************************************
+************************************************************************/
 void sdl_free_keycb(keycb_t ** key)
 {
 	rec_free_keycb(key_callback);
 
 	key_callback = NULL;
 }
+

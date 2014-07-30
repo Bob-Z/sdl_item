@@ -41,6 +41,8 @@
 typedef struct keycb {
         SDL_Scancode code;
         void (*cb)(void*);
+        void (*cb_up)(void*);
+		void * arg;
         struct keycb * next;
 } keycb_t;
 
@@ -50,8 +52,8 @@ void sdl_set_pixel(SDL_Surface *surface, int x, int y, Uint32 R, Uint32 G, Uint3
 void sdl_mouse_manager(SDL_Renderer *,SDL_Event * event, item_t * item_list);
 void sdl_screen_manager(SDL_Window * window,SDL_Renderer * render,SDL_Event * event);
 void sdl_loop_manager();
-void sdl_blit_tex(SDL_Renderer *,SDL_Texture * tex, SDL_Rect * rect,int overlay);
-int sdl_blit_anim(SDL_Renderer *,anim_t * anim, SDL_Rect * rect, int start, int end,int overlay);
+void sdl_blit_tex(SDL_Renderer *,SDL_Texture * tex, SDL_Rect * rect, double angle, double zoom_x,double zoom_y, int flip, int overlay);
+int sdl_blit_anim(SDL_Renderer *,anim_t * anim, SDL_Rect * rect, double angle, double zoom_x, double zoom_y, int flip, int start, int end,int overlay);
 void sdl_get_string_size(TTF_Font * font,const char * string,int * w,int *h);
 void sdl_print_item(SDL_Renderer *,item_t * item);
 int sdl_blit_item(SDL_Renderer *,item_t * item);
@@ -63,9 +65,13 @@ void sdl_keyboard_manager(SDL_Event * event);
 void sdl_blit_to_screen(SDL_Renderer *);
 void sdl_set_virtual_x(int x);
 void sdl_set_virtual_y(int y);
+void sdl_set_virtual_z(double z);
 int sdl_get_virtual_x();
 int sdl_get_virtual_y();
+int sdl_get_virtual_z();
 void sdl_force_virtual_x(int x);
 void sdl_force_virtual_y(int y);
-keycb_t * sdl_add_keycb(SDL_Scancode code,void (*cb)(void*));
+void sdl_force_virtual_z(double z);
+keycb_t * sdl_add_keycb(SDL_Scancode code,void (*cb)(void*),void (*cb_up)(void*),void * arg);
 void sdl_free_keycb(keycb_t ** key);
+

@@ -28,6 +28,10 @@ typedef struct item {
 	SDL_Rect rect;
 	int x;	// For smooth animation
 	int y;	// For smooth animation
+	double angle;
+	double zoom_x;
+	double zoom_y;
+	int flip;
 	int old_x;	// For smooth animation
 	int old_y;	// For smooth animation
 	Uint32 timer;	// For smooth animation
@@ -67,11 +71,15 @@ typedef struct item {
 item_t * item_list_add(item_t * item_list);
 void item_list_free(item_t * item_list);
 void item_init(item_t * item);
+void item_set_pos(item_t * item, int x, int y);
 void item_set_frame(item_t * item, int x, int y,anim_t * anim);
 void item_set_frame_shape(item_t * item, int x, int y,int w, int h);
 void item_set_anim(item_t * item, int x, int y,anim_t * anim);
 void item_set_smooth_anim(item_t * item, int x, int y,int old_x, int old_y, Uint32 timer, anim_t * anim);
 void item_set_tile(item_t * item, int x, int y);
+void item_set_angle(item_t * item, double a);
+void item_set_zoom_x(item_t * item, double a);
+void item_set_zoom_y(item_t * item, double a);
 void item_set_overlay(item_t * item, int overlay);
 void item_set_frame_normal(item_t * item, int num_frame);
 void item_set_frame_over(item_t * item, int num_frame);
@@ -92,3 +100,4 @@ void item_set_anim_end(item_t * item, int end_frame);
 void item_set_font(item_t * item, TTF_Font * font);
 
 #endif
+
