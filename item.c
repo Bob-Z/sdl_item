@@ -22,26 +22,33 @@
 #include "sdl.h"
 
 /************************************************************************
+Return a pointer to the newly creates item_t
 ************************************************************************/
-item_t * item_list_add(item_t * item_list)
+item_t * item_list_add(item_t ** item_list)
 {
 	item_t * item;
+	item_t * last_item;
 
 	item = malloc(sizeof(item_t));
 	item_init(item);
 
 	/* add to item list */
-	if(item_list != NULL) {
-		while(item_list->next) {
-			item_list = item_list->next;
+	if(*item_list != NULL) {
+		last_item = *item_list;
+		while(last_item->next) {
+			last_item = last_item->next;
 		}
-		item_list->next = item;
+		last_item->next = item;
+	}
+	else {
+		*item_list = item;
 	}
 
 	return item;
 }
 
 /************************************************************************
+Note that item->anim is not freed here !
 ************************************************************************/
 static void item_free(item_t * item)
 {

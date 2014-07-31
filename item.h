@@ -68,7 +68,7 @@ typedef struct item {
 	struct item * next;	// next element in a list of item
 } item_t;
 
-item_t * item_list_add(item_t * item_list);
+item_t * item_list_add(item_t ** item_list);
 void item_list_free(item_t * item_list);
 void item_init(item_t * item);
 void item_set_pos(item_t * item, int x, int y);
