@@ -55,6 +55,27 @@ static void item_free(item_t * item)
 	if ( item->string ) {
 		free(item->string);
 	}
+	if ( item->click_left_free ) {
+		item->click_left_free(item->click_left_arg);
+	}
+	if ( item->click_right_free ) {
+		item->click_right_free(item->click_right_arg);
+	}
+	if ( item->double_click_left_free ) {
+		item->double_click_left_free(item->double_click_left_arg);
+	}
+	if ( item->double_click_right_free ) {
+		item->double_click_right_free(item->double_click_right_arg);
+	}
+	if ( item->wheel_up_free ) {
+		item->wheel_up_free(item->wheel_up_arg);
+	}
+	if ( item->wheel_down_free ) {
+		item->wheel_down_free(item->wheel_down_arg);
+	}
+	if ( item->over_free ) {
+		item->over_free(item->over_arg);
+	}
 
 	free(item);
 }
@@ -100,18 +121,25 @@ void item_init(item_t * item)
 	item->clicked=0;
 	item->click_left=NULL;
 	item->click_left_arg=NULL;
+	item->click_left_free=NULL;
 	item->click_right=NULL;
 	item->click_right_arg=NULL;
+	item->click_right_free=NULL;
 	item->double_click_left=NULL;
 	item->double_click_left_arg=NULL;
+	item->double_click_left_free=NULL;
 	item->double_click_right=NULL;
 	item->double_click_right_arg=NULL;
+	item->double_click_right_free=NULL;
 	item->wheel_up=NULL;
 	item->wheel_up_arg=NULL;
+	item->wheel_up_free=NULL;
 	item->wheel_down=NULL;
 	item->wheel_down_arg=NULL;
+	item->wheel_down_free=NULL;
 	item->over=NULL;
 	item->over_arg=NULL;
+	item->over_free=NULL;
 	item->string=NULL;
 	item->font=NULL;
 	item->str_tex=NULL;
@@ -270,58 +298,65 @@ void item_set_frame_click(item_t * item, int num_frame)
 
 /************************************************************************
 ************************************************************************/
-void item_set_click_left(item_t * item,void (*click_left)(void * arg),void * click_left_arg)
+void item_set_click_left(item_t * item,void (*click_left)(void * arg),void * click_left_arg, void (*free_func)(void *ptr))
 {
 	item->click_left=click_left;
 	item->click_left_arg=click_left_arg;
+	item->click_left_free=free_func;
 }
 
 /************************************************************************
 ************************************************************************/
-void item_set_click_right(item_t * item,void (*click_right)(void * arg),void * click_right_arg)
+void item_set_click_right(item_t * item,void (*click_right)(void * arg),void * click_right_arg, void (*free_func)(void *ptr))
 {
 	item->click_right=click_right;
 	item->click_right_arg=click_right_arg;
+	item->click_right_free=free_func;
 }
 
 /************************************************************************
 ************************************************************************/
-void item_set_double_click_left(item_t * item,void (*double_click_left)(void * arg),void * double_click_left_arg)
+void item_set_double_click_left(item_t * item,void (*double_click_left)(void * arg),void * double_click_left_arg, void (*free_func)(void *ptr))
 {
 	item->double_click_left=double_click_left;
 	item->double_click_left_arg=double_click_left_arg;
+	item->double_click_left_free=free_func;
 }
 
 /************************************************************************
 ************************************************************************/
-void item_set_double_click_right(item_t * item,void (*double_click_right)(void * arg),void * double_click_right_arg)
+void item_set_double_click_right(item_t * item,void (*double_click_right)(void * arg),void * double_click_right_arg, void (*free_func)(void *ptr))
 {
 	item->double_click_right=double_click_right;
 	item->double_click_right_arg=double_click_right_arg;
+	item->double_click_right_free=free_func;
 }
 
 /************************************************************************
 ************************************************************************/
-void item_set_wheel_up(item_t * item,void (*wheel_up)(void * arg),void * wheel_up_arg)
+void item_set_wheel_up(item_t * item,void (*wheel_up)(void * arg),void * wheel_up_arg, void (*free_func)(void *ptr))
 {
 	item->wheel_up=wheel_up;
 	item->wheel_up_arg=wheel_up_arg;
+	item->wheel_up_free=free_func;
 }
 
 /************************************************************************
 ************************************************************************/
-void item_set_wheel_down(item_t * item,void (*wheel_down)(void * arg),void * wheel_down_arg)
+void item_set_wheel_down(item_t * item,void (*wheel_down)(void * arg),void * wheel_down_arg, void (*free_func)(void *ptr))
 {
 	item->wheel_down=wheel_down;
 	item->wheel_down_arg=wheel_down_arg;
+	item->wheel_down_free=free_func;
 }
 
 /************************************************************************
 ************************************************************************/
-void item_set_over(item_t * item,void (*over)(void * arg),void * over_arg)
+void item_set_over(item_t * item,void (*over)(void * arg),void * over_arg, void (*free_func)(void *ptr))
 {
 	item->over=over;
 	item->over_arg=over_arg;
+	item->over_free=free_func;
 }
 
 /************************************************************************
