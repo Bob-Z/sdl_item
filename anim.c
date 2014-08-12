@@ -38,26 +38,26 @@ return NULL if error
 ************************************************************************/
 static anim_t * giflib_load(SDL_Renderer * render, const char * filename)
 {
-	GifFileType * gif;
-	int i;
-	int j;
-	int transparent;
-	unsigned char transparent_color;
-	int disposal;
-	int delay;
-	ColorMapObject * global_pal;
-	ColorMapObject * pal;
-	SDL_Surface* surf;
-	int x;
-	int y;
-	int col;
-	int pix_index;
-	anim_t * anim;
+	GifFileType * gif = NULL;
+	int i = 0;
+	int j = 0;
+	int transparent = 0;
+	unsigned char transparent_color = 0;
+	int disposal = 0;
+	int delay = 0;
+	ColorMapObject * global_pal = NULL;
+	ColorMapObject * pal = NULL;
+	SDL_Surface* surf = NULL;
+	int x = 0;
+	int y = 0;
+	int col = 0;
+	int pix_index = 0;
+	anim_t * anim = NULL;
 	//unsigned char bg_color;
-	int left;
-	int top;
-	int width;
-	int height;
+	int left = 0;
+	int top = 0;
+	int width = 0;
+	int height = 0;
 
 	gif = DGifOpenFileName(filename);
 	if(gif == NULL) {
@@ -153,17 +153,17 @@ return NULL if error
 ************************************************************************/
 static anim_t * libpng_load(SDL_Renderer * render, const char * filename)
 {
-	FILE *fp;
-	png_structp png_ptr;
-	png_infop info_ptr;
-	SDL_Surface* surf;
-	anim_t * anim;
-	png_bytep *row_pointers;
-	png_uint_32 width;
-	png_uint_32 height;
-	int bit_depth;
-	int color_type;
-	int i;
+	FILE *fp = NULL;
+	png_structp png_ptr = NULL;
+	png_infop info_ptr = NULL;
+	SDL_Surface* surf = NULL;
+	anim_t * anim = NULL;
+	png_bytep *row_pointers = NULL;
+	png_uint_32 width = 0;
+	png_uint_32 height = 0;
+	int bit_depth = 0;
+	int color_type = 0;
+	int i = 0;
 	png_byte magic[8];
 
 	/* open image file */
@@ -309,18 +309,18 @@ static anim_t * libav_load(SDL_Renderer * render, const char * filename)
 	anim_t * anim = NULL;
 	anim_t * ret = NULL;
 	AVFormatContext *pFormatCtx = NULL;
-	int i;
-	int videoStream;
+	int i = 0;
+	int videoStream = 0;
 	AVCodecContext *pCodecCtx = NULL;
 	AVCodec *pCodec = NULL;
 	AVFrame *pFrame = NULL;
 	AVFrame *pFrameRGB = NULL;
 	struct SwsContext * pSwsCtx = NULL;
 	AVPacket packet;
-	int frameFinished;
-	int numBytes;
+	int frameFinished = 0;
+	int numBytes = 0;
 	uint8_t *buffer = NULL;
-	int delay;
+	int delay = 0;
 
 	anim = malloc(sizeof(anim_t));
 	memset(anim,0,sizeof(anim_t));

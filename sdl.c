@@ -113,9 +113,9 @@ static void get_virtual(SDL_Renderer * render,int * vx, int * vy)
 void sdl_mouse_manager(SDL_Renderer * render, SDL_Event * event, item_t * item_list)
 {
 	SDL_Rect rect;
-	int vx;
-	int vy;
-	item_t * I;
+	int vx = 0;
+	int vy = 0;
+	item_t * I = NULL;
 	int overlay_first = 1;
 	int skip_non_overlay = 0;
 
