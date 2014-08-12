@@ -245,45 +245,48 @@ void sdl_mouse_manager(SDL_Renderer * render, SDL_Event * event, item_t * item_l
 }
 
 /************************************************************************
+Take care of system's windowing event
+return 1 if caller need to redraw it's screen
 ************************************************************************/
-/* Take care of system's windowing event */
-void sdl_screen_manager(SDL_Window * window,SDL_Renderer * render,SDL_Event * event)
+int sdl_screen_manager(SDL_Window * window,SDL_Renderer * render,SDL_Event * event)
 {
 	const Uint8 *keystate;
 
 	switch (event->type) {
-        case SDL_WINDOWEVENT:
-		switch(event->window.event) {
-		case SDL_WINDOWEVENT_RESIZED:
-			SDL_RenderSetLogicalSize(render,event->window.data1,event->window.data2);
-			break;
-		}
-	break;
-	case SDL_KEYDOWN:
-		switch (event->key.keysym.sym) {
-		case SDLK_RETURN:
-			keystate = SDL_GetKeyboardState(NULL);
-
-			if( keystate[SDL_SCANCODE_RALT] || keystate[SDL_SCANCODE_LALT] ) {
-				if(!fullscreen) {
-					fullscreen = SDL_WINDOW_FULLSCREEN_DESKTOP;
-				} else {
-					fullscreen = 0;
-				}
-				SDL_SetWindowFullscreen(window,fullscreen);
-				break;
+		case SDL_WINDOWEVENT:
+			switch(event->window.event) {
+				case SDL_WINDOWEVENT_RESIZED:
+					SDL_RenderSetLogicalSize(render,event->window.data1,event->window.data2);
+					return 1;
 			}
+			break;
+		case SDL_KEYDOWN:
+			switch (event->key.keysym.sym) {
+				case SDLK_RETURN:
+					keystate = SDL_GetKeyboardState(NULL);
+
+					if( keystate[SDL_SCANCODE_RALT] || keystate[SDL_SCANCODE_LALT] ) {
+						if(!fullscreen) {
+							fullscreen = SDL_WINDOW_FULLSCREEN_DESKTOP;
+						} else {
+							fullscreen = 0;
+						}
+						SDL_SetWindowFullscreen(window,fullscreen);
+						break;
+					}
+					break;
+				default:
+					break;
+			}
+			break;
+		case SDL_QUIT:
+			exit(EXIT_SUCCESS);
 			break;
 		default:
 			break;
-		}
-		break;
-	case SDL_QUIT:
-		exit(EXIT_SUCCESS);
-		break;
-	default:
-		break;
 	}
+
+	return 0;
 }
 
 /************************************************************************

@@ -50,7 +50,7 @@ void sdl_init(SDL_Renderer ** render,SDL_Window ** window, void (*screen_compose
 void sdl_cleanup(void);
 void sdl_set_pixel(SDL_Surface *surface, int x, int y, Uint32 R, Uint32 G, Uint32 B, Uint32 A);
 void sdl_mouse_manager(SDL_Renderer *,SDL_Event * event, item_t * item_list);
-void sdl_screen_manager(SDL_Window * window,SDL_Renderer * render,SDL_Event * event);
+int sdl_screen_manager(SDL_Window * window,SDL_Renderer * render,SDL_Event * event);
 void sdl_loop_manager();
 void sdl_blit_tex(SDL_Renderer *,SDL_Texture * tex, SDL_Rect * rect, double angle, double zoom_x,double zoom_y, int flip, int overlay);
 int sdl_blit_anim(SDL_Renderer *,anim_t * anim, SDL_Rect * rect, double angle, double zoom_x, double zoom_y, int flip, int start, int end,int overlay);
