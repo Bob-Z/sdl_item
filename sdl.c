@@ -62,7 +62,7 @@ void sdl_cleanup()
 ************************************************************************/
 void sdl_init(SDL_Renderer ** render,SDL_Window ** window, void (*screen_compose_cb)(void))
 {
-	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK) < 0) {
+	if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
 		exit(EXIT_FAILURE);
 	}
 
@@ -112,12 +112,32 @@ static void get_virtual(SDL_Renderer * render,int * vx, int * vy)
 ************************************************************************/
 void sdl_mouse_manager(SDL_Renderer * render, SDL_Event * event, item_t * item_list)
 {
+	static int mouse_in = 1;
 	SDL_Rect rect;
 	int vx = 0;
 	int vy = 0;
 	item_t * I = NULL;
 	int overlay_first = 1;
 	int skip_non_overlay = 0;
+
+	if (event->type == SDL_WINDOWEVENT) {
+		switch (event->window.event) {
+			case SDL_WINDOWEVENT_ENTER:
+				mouse_in = 1;
+//				printf("Mouse in\n");
+				break;
+			case SDL_WINDOWEVENT_LEAVE:
+				mouse_in = 0;
+//				printf("Mouse out\n");
+				break;
+			default:
+				break;
+		}
+	}
+
+	if( ! mouse_in ) {
+		return;
+	}
 
 	if(item_list == NULL) {
 		return;
