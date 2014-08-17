@@ -68,7 +68,7 @@ void sdl_set_virtual_y(int y);
 void sdl_set_virtual_z(double z);
 int sdl_get_virtual_x();
 int sdl_get_virtual_y();
-int sdl_get_virtual_z();
+double sdl_get_virtual_z();
 void sdl_force_virtual_x(int x);
 void sdl_force_virtual_y(int y);
 void sdl_force_virtual_z(double z);
