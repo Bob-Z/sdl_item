@@ -46,7 +46,7 @@ typedef struct keycb {
         struct keycb * next;
 } keycb_t;
 
-void sdl_init(SDL_Renderer ** render,SDL_Window ** window, void (*screen_compose_cb)(void));
+void sdl_init(const char * title, SDL_Renderer ** render,SDL_Window ** window, void (*screen_compose_cb)(void));
 void sdl_cleanup(void);
 void sdl_set_pixel(SDL_Surface *surface, int x, int y, Uint32 R, Uint32 G, Uint32 B, Uint32 A);
 void sdl_mouse_manager(SDL_Renderer *,SDL_Event * event, item_t * item_list);

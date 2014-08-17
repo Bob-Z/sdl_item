@@ -60,7 +60,7 @@ void sdl_cleanup()
 
 /************************************************************************
 ************************************************************************/
-void sdl_init(SDL_Renderer ** render,SDL_Window ** window, void (*screen_compose_cb)(void))
+void sdl_init(const char * title, SDL_Renderer ** render,SDL_Window ** window, void (*screen_compose_cb)(void))
 {
 	if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
 		exit(EXIT_FAILURE);
@@ -72,7 +72,7 @@ void sdl_init(SDL_Renderer ** render,SDL_Window ** window, void (*screen_compose
 
 	atexit(sdl_cleanup);
 
-	*window = SDL_CreateWindow("World of Gnome",
+	*window = SDL_CreateWindow(title,
 								 SDL_WINDOWPOS_UNDEFINED,
 								 SDL_WINDOWPOS_UNDEFINED,
 								 DEFAULT_SCREEN_W, DEFAULT_SCREEN_H,
