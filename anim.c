@@ -543,3 +543,21 @@ anim_t * anim_create_color(SDL_Renderer * render, Uint32 width, Uint32 height, U
 
 	return anim;
 }
+
+/************************************************************************
+Free memory used by an anim
+************************************************************************/
+void si_anim_free(anim_t * anim)
+{
+	int i;
+
+	if(anim->tex) {
+		for(i=0; i<anim->num_frame; i++) {
+			SDL_DestroyTexture(anim->tex[i]);
+		}
+		free(anim->tex);
+	}
+
+	free(anim);
+}
+
