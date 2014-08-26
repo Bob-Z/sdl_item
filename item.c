@@ -34,14 +34,13 @@ item_t * item_list_add(item_t ** item_list)
 
 	/* add to item list */
 	if(*item_list != NULL) {
-		last_item = *item_list;
-		while(last_item->next) {
-			last_item = last_item->next;
-		}
+		last_item = (*item_list)->last;
 		last_item->next = item;
+		(*item_list)->last = item;
 	}
 	else {
 		*item_list = item;
+		item->last = item;
 	}
 
 	return item;
@@ -146,6 +145,7 @@ void item_init(item_t * item)
 	item->editable=0;
 	item->edit_cb=NULL;
 	item->next=NULL;
+	item->last=NULL;
 }
 
 /************************************************************************

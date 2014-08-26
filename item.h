@@ -73,6 +73,7 @@ typedef struct item {
 	int editable;
 	void (*edit_cb)(void * arg);
 	struct item * next;	// next element in a list of item
+	struct item * last;	// last element in a list of item
 } item_t;
 
 item_t * item_list_add(item_t ** item_list);
