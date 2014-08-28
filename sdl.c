@@ -542,7 +542,7 @@ void sdl_keyboard_manager(SDL_Event * event)
 			if(key) {
 				do {
 					if( event->key.keysym.scancode == key->code) {
-						key->cb(NULL);
+						key->cb(key->arg);
 					}
 					key = key->next;
 				} while(key);
