@@ -119,6 +119,9 @@ void sdl_mouse_manager(SDL_Renderer * render, SDL_Event * event, item_t * item_l
 	item_t * I = NULL;
 	int overlay_first = 1;
 	int skip_non_overlay = 0;
+	static int timestamp = 0;
+	static int mouse_x = 0;
+	static int mouse_y = 0;
 
 	if (event->type == SDL_WINDOWEVENT) {
 		switch (event->window.event) {
@@ -143,12 +146,10 @@ void sdl_mouse_manager(SDL_Renderer * render, SDL_Event * event, item_t * item_l
 		return;
 	}
 
-#if 0
-	printf("Mouse moved by %d,%d to (%d,%d)\n",
-			event->motion.xrel, event->motion.yrel,
-			event->motion.x, event->motion.y);
-	printf("orig coord = %d,%d \n",rect.x,rect.y);
-#endif
+	if ( event->type == SDL_MOUSEMOTION) {
+		mouse_x = event->motion.x;
+		mouse_y = event->motion.y;
+	}
 
 	/* First test overlay (UI) before background */
 	while(overlay_first!=-1) {
@@ -159,8 +160,8 @@ void sdl_mouse_manager(SDL_Renderer * render, SDL_Event * event, item_t * item_l
 					I = I->next;
 					continue;
 				}
-				rect.x = event->motion.x;
-				rect.y = event->motion.y;
+				rect.x = mouse_x;
+				rect.y = mouse_y;
 			}
 			else {
 				if(overlay_first) {
@@ -168,11 +169,17 @@ void sdl_mouse_manager(SDL_Renderer * render, SDL_Event * event, item_t * item_l
 					continue;
 				}
 				get_virtual(render,&vx,&vy);
-				rect.x = event->motion.x - vx;
-				rect.y = event->motion.y - vy;
+				rect.x = mouse_x - vx;
+				rect.y = mouse_y - vy;
 			}
 
 			I->current_frame = I->frame_normal;
+
+			/* Manage event not related to mouse position */
+			switch (event->type) {
+			}
+
+			/* Manage event related to mouse position */
 			if( (I->rect.x < rect.x) &&
 					((I->rect.x+I->rect.w) > rect.x) &&
 					(I->rect.y < rect.y) &&
@@ -224,14 +231,17 @@ void sdl_mouse_manager(SDL_Renderer * render, SDL_Event * event, item_t * item_l
 						screen_compose();
 						break;
 					case SDL_MOUSEWHEEL:
-						if( event->wheel.y > 0 && I->wheel_up ) {
-							I->wheel_up(I->wheel_up_arg);
+						if( event->wheel.timestamp != timestamp ) {
+							timestamp = event->wheel.timestamp;
+							if( event->wheel.y > 0 && I->wheel_up ) {
+								I->wheel_up(I->wheel_up_arg);
+							}
+							if( event->wheel.y < 0 && I->wheel_down ) {
+								I->wheel_down(I->wheel_down_arg);
+							}
+							screen_compose();
+							break;
 						}
-						if( event->wheel.y < 0 && I->wheel_down ) {
-							I->wheel_down(I->wheel_down_arg);
-						}
-						screen_compose();
-						break;
 				}
 			}
 			if(I->clicked) {
