@@ -361,11 +361,14 @@ void sdl_blit_tex(SDL_Renderer * render,SDL_Texture * tex, SDL_Rect * rect, doub
 	r.w *= zoom_x;
 	r.h *= zoom_y;
 
-	/* Virtual zoom */
-	r.x *= current_vz;
-	r.y *= current_vz;
-	r.w *= current_vz;
-	r.h *= current_vz;
+	/* Do not globaly zoom overlay */
+	if( !overlay) {
+		/* Virtual zoom */
+		r.x *= current_vz;
+		r.y *= current_vz;
+		r.w *= current_vz;
+		r.h *= current_vz;
+	}
 
 	if( tex ) {
 //		if( SDL_RenderCopy(render,tex,NULL,&r) < 0) {
