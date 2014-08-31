@@ -18,6 +18,7 @@
 */
 
 #include "sdl.h"
+#include <math.h>
 
 static int fullscreen = 0;
 
@@ -364,10 +365,10 @@ void sdl_blit_tex(SDL_Renderer * render,SDL_Texture * tex, SDL_Rect * rect, doub
 	/* Do not globaly zoom overlay */
 	if( !overlay) {
 		/* Virtual zoom */
-		r.x *= current_vz;
-		r.y *= current_vz;
-		r.w *= current_vz;
-		r.h *= current_vz;
+		r.x = ceil( (double)r.x * current_vz);
+		r.y = ceil( (double)r.y * current_vz);
+		r.w = ceil( (double)r.w * current_vz);
+		r.h = ceil( (double)r.h * current_vz);
 	}
 
 	if( tex ) {
