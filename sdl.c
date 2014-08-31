@@ -19,6 +19,7 @@
 
 #include "sdl.h"
 #include <math.h>
+#include <assert.h>
 
 static int fullscreen = 0;
 
@@ -37,6 +38,9 @@ static int current_vx = 0;
 static int current_vy = 0;
 static double current_vz = 1.0;
 static Uint32 virtual_tick = 0;
+static int mouse_x = 0;
+static int mouse_y = 0;
+static int mouse_in = 1;
 
 static keycb_t * key_callback = NULL;
 
@@ -111,18 +115,54 @@ static void get_virtual(SDL_Renderer * render,int * vx, int * vy)
 
 /************************************************************************
 ************************************************************************/
+void sdl_mouse_position_manager(SDL_Renderer * render, item_t * item_list)
+{
+	item_t * I = NULL;
+	int mx;
+	int my;
+	int vx = 0;
+	int vy = 0;
+
+	if( ! mouse_in ) {
+		return;
+	}
+
+	I = item_list;
+	while(I) {
+		if(I->overlay) {
+			mx = mouse_x;
+			my = mouse_y;
+		}
+		else {
+			get_virtual(render,&vx,&vy);
+			mx = mouse_x - (vx * current_vz);
+			my = mouse_y - (vy * current_vz);
+		}
+
+		I->anim_over = NULL;
+		if( (I->rect.x <= mx) &&
+				((I->rect.x+I->rect.w) > mx) &&
+				(I->rect.y <= my) &&
+				((I->rect.y+I->rect.h) > my) ) {
+			I->anim_over = I->default_anim_over;
+		}
+
+		I = I->next;
+	}
+}
+
+/************************************************************************
+************************************************************************/
 void sdl_mouse_manager(SDL_Renderer * render, SDL_Event * event, item_t * item_list)
 {
-	static int mouse_in = 1;
-	SDL_Rect rect;
+	int mx;
+	int my;
 	int vx = 0;
 	int vy = 0;
 	item_t * I = NULL;
 	int overlay_first = 1;
 	int skip_non_overlay = 0;
 	static int timestamp = 0;
-	static int mouse_x = 0;
-	static int mouse_y = 0;
 
 	if (event->type == SDL_WINDOWEVENT) {
 		switch (event->window.event) {
@@ -161,8 +201,8 @@ void sdl_mouse_manager(SDL_Renderer * render, SDL_Event * event, item_t * item_l
 					I = I->next;
 					continue;
 				}
-				rect.x = mouse_x;
-				rect.y = mouse_y;
+				mx = mouse_x;
+				my = mouse_y;
 			}
 			else {
 				if(overlay_first) {
@@ -170,25 +210,22 @@ void sdl_mouse_manager(SDL_Renderer * render, SDL_Event * event, item_t * item_l
 					continue;
 				}
 				get_virtual(render,&vx,&vy);
-				rect.x = mouse_x - vx;
-				rect.y = mouse_y - vy;
+				mx = mouse_x - (vx * current_vz) ;
+				my = mouse_y - (vy * current_vz) ;
 			}
 
 			I->current_frame = I->frame_normal;
 
-			/* Manage event not related to mouse position */
-			switch (event->type) {
-			}
-
 			/* Manage event related to mouse position */
-			if( (I->rect.x < rect.x) &&
-					((I->rect.x+I->rect.w) > rect.x) &&
-					(I->rect.y < rect.y) &&
-					((I->rect.y+I->rect.h) > rect.y) ) {
+			if( (I->rect.x <= mx) &&
+					((I->rect.x+I->rect.w) > mx) &&
+					(I->rect.y <= my) &&
+					((I->rect.y+I->rect.h) > my) ) {
 				/* We are on overlay item: skip, non-overlay item */
 				if(overlay_first) {
 					skip_non_overlay=1;
 				}
+
 				switch (event->type) {
 					case SDL_MOUSEMOTION:
 						I->current_frame = I->frame_over;
@@ -233,18 +270,21 @@ void sdl_mouse_manager(SDL_Renderer * render, SDL_Event * event, item_t * item_l
 						break;
 					case SDL_MOUSEWHEEL:
 						if( event->wheel.timestamp != timestamp ) {
-							timestamp = event->wheel.timestamp;
 							if( event->wheel.y > 0 && I->wheel_up ) {
+								timestamp = event->wheel.timestamp;
 								I->wheel_up(I->wheel_up_arg);
+								screen_compose();
 							}
 							if( event->wheel.y < 0 && I->wheel_down ) {
+								timestamp = event->wheel.timestamp;
 								I->wheel_down(I->wheel_down_arg);
+								screen_compose();
 							}
-							screen_compose();
 							break;
 						}
 				}
 			}
+
 			if(I->clicked) {
 				I->current_frame = I->frame_click;
 			}
@@ -387,6 +427,10 @@ int sdl_blit_anim(SDL_Renderer * render,anim_t * anim, SDL_Rect * rect, double a
 {
 	Uint32 time = SDL_GetTicks();
 
+	if(anim == NULL) {
+		assert(0);
+	}
+
 	if(anim->tex==NULL) {
 		return -1;
 	}
@@ -459,24 +503,27 @@ int sdl_blit_item(SDL_Renderer * render,item_t * item)
 {
 	Uint32 timer = SDL_GetTicks();
 
-	if(item->anim) {
-		if( item->timer ) {
-			if( item->timer + VIRTUAL_ANIM_DURATION > timer) {
-				item->rect.x = (int)((double)item->old_x + (double)(item->x - item->old_x) * (double)(timer - item->timer) / (double)VIRTUAL_ANIM_DURATION);
-				item->rect.y = (int)((double)item->old_y + (double)(item->y - item->old_y) * (double)(timer - item->timer) / (double)VIRTUAL_ANIM_DURATION);
-			}
-			else {
-				item->rect.x =item->x;
-				item->rect.y =item->y;
-//printf("+++ anim reset : %d x %d\n", item->rect.x,item->rect.y);
-			}
+	if( item->timer ) {
+		if( item->timer + VIRTUAL_ANIM_DURATION > timer) {
+			item->rect.x = (int)((double)item->old_x + (double)(item->x - item->old_x) * (double)(timer - item->timer) / (double)VIRTUAL_ANIM_DURATION);
+			item->rect.y = (int)((double)item->old_y + (double)(item->y - item->old_y) * (double)(timer - item->timer) / (double)VIRTUAL_ANIM_DURATION);
 		}
+		else {
+			item->rect.x =item->x;
+			item->rect.y =item->y;
+		}
+	}
 
+	if(item->anim) {
 		if( item->frame_normal == -1 ) {
 			sdl_blit_anim(render,item->anim,&item->rect,item->angle,item->zoom_x,item->zoom_y,item->flip,item->anim_start,item->anim_end,item->overlay);
 		} else {
 			sdl_blit_tex(render,item->anim->tex[item->frame_normal],&item->rect,item->angle,item->zoom_x,item->zoom_y, item->flip,item->overlay);
 		}
+	}
+
+	if(item->anim_over) {
+		sdl_blit_anim(render,item->anim_over,&item->rect,item->angle,item->zoom_x,item->zoom_y,item->flip,item->anim_start,item->anim_end,item->overlay);
 	}
 
 	if( item->font != NULL && item->string != NULL ) {

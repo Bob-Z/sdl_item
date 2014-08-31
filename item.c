@@ -116,6 +116,8 @@ void item_init(item_t * item)
 	item->current_frame=0;
 	item->frame_normal=0;
 	item->frame_over=0;
+	item->anim_over=NULL;
+	item->default_anim_over=NULL;
 	item->frame_click=0;
 	item->clicked=0;
 	item->click_left=NULL;
@@ -190,8 +192,7 @@ void item_set_frame(item_t * item, int x, int y,anim_t * anim)
 ************************************************************************/
 void item_set_frame_shape(item_t * item, int x, int y,int w, int h)
 {
-	item->rect.x = x;
-	item->rect.y = y;
+	item_set_pos(item,x,y);
 	item->rect.w = w;
 	item->rect.h = h;
 }
@@ -287,6 +288,13 @@ void item_set_anim_end(item_t * item, int end_frame)
 void item_set_frame_over(item_t * item, int num_frame)
 {
 	item->frame_over = num_frame;
+}
+
+/************************************************************************
+************************************************************************/
+void item_set_anim_over(item_t * item, anim_t * anim)
+{
+	item->default_anim_over = anim;
 }
 
 /************************************************************************
