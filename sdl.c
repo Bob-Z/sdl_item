@@ -122,6 +122,10 @@ void sdl_mouse_position_manager(SDL_Renderer * render, item_t * item_list)
 	int my;
 	int vx = 0;
 	int vy = 0;
+	int zoomed_x;
+	int zoomed_y;
+	int zoomed_w;
+	int zoomed_h;
 
 	if( ! mouse_in ) {
 		return;
@@ -132,18 +136,26 @@ void sdl_mouse_position_manager(SDL_Renderer * render, item_t * item_list)
 		if(I->overlay) {
 			mx = mouse_x;
 			my = mouse_y;
+			zoomed_x = I->rect.x;
+			zoomed_y = I->rect.y;
+			zoomed_w = I->rect.w;
+			zoomed_h = I->rect.h;
 		}
 		else {
 			get_virtual(render,&vx,&vy);
 			mx = mouse_x - (vx * current_vz);
 			my = mouse_y - (vy * current_vz);
+			zoomed_x = I->rect.x * current_vz;
+			zoomed_y = I->rect.y * current_vz;
+			zoomed_w = I->rect.w * current_vz;
+			zoomed_h = I->rect.h * current_vz;
 		}
 
 		I->anim_over = NULL;
-		if( (I->rect.x <= mx) &&
-				((I->rect.x+I->rect.w) > mx) &&
-				(I->rect.y <= my) &&
-				((I->rect.y+I->rect.h) > my) ) {
+		if( (zoomed_x <= mx) &&
+				((zoomed_x+zoomed_w) > mx) &&
+				(zoomed_y <= my) &&
+				((zoomed_y+zoomed_h) > my) ) {
 			I->anim_over = I->default_anim_over;
 		}
 
@@ -159,6 +171,10 @@ void sdl_mouse_manager(SDL_Renderer * render, SDL_Event * event, item_t * item_l
 	int my;
 	int vx = 0;
 	int vy = 0;
+	int zoomed_x;
+	int zoomed_y;
+	int zoomed_w;
+	int zoomed_h;
 	item_t * I = NULL;
 	int overlay_first = 1;
 	int skip_non_overlay = 0;
@@ -168,11 +184,9 @@ void sdl_mouse_manager(SDL_Renderer * render, SDL_Event * event, item_t * item_l
 		switch (event->window.event) {
 			case SDL_WINDOWEVENT_ENTER:
 				mouse_in = 1;
-//				printf("Mouse in\n");
 				break;
 			case SDL_WINDOWEVENT_LEAVE:
 				mouse_in = 0;
-//				printf("Mouse out\n");
 				break;
 			default:
 				break;
@@ -203,6 +217,10 @@ void sdl_mouse_manager(SDL_Renderer * render, SDL_Event * event, item_t * item_l
 				}
 				mx = mouse_x;
 				my = mouse_y;
+				zoomed_x = I->rect.x;
+				zoomed_y = I->rect.y;
+				zoomed_w = I->rect.w;
+				zoomed_h = I->rect.h;
 			}
 			else {
 				if(overlay_first) {
@@ -212,15 +230,19 @@ void sdl_mouse_manager(SDL_Renderer * render, SDL_Event * event, item_t * item_l
 				get_virtual(render,&vx,&vy);
 				mx = mouse_x - (vx * current_vz) ;
 				my = mouse_y - (vy * current_vz) ;
+				zoomed_x = I->rect.x * current_vz;
+				zoomed_y = I->rect.y * current_vz;
+				zoomed_w = I->rect.w * current_vz;
+				zoomed_h = I->rect.h * current_vz;
 			}
 
 			I->current_frame = I->frame_normal;
 
 			/* Manage event related to mouse position */
-			if( (I->rect.x <= mx) &&
-					((I->rect.x+I->rect.w) > mx) &&
-					(I->rect.y <= my) &&
-					((I->rect.y+I->rect.h) > my) ) {
+			if( (zoomed_x <= mx) &&
+					((zoomed_x+zoomed_w) > mx) &&
+					(zoomed_y <= my) &&
+					((zoomed_y+zoomed_h) > my) ) {
 				/* We are on overlay item: skip, non-overlay item */
 				if(overlay_first) {
 					skip_non_overlay=1;
