@@ -523,6 +523,8 @@ anim_t * anim_create_color(SDL_Renderer * render, Uint32 width, Uint32 height, U
 {
 	anim_t * anim;
 	SDL_Surface* surf;
+	int i;
+	Uint32 * to_fill;
 
 	anim = malloc(sizeof(anim_t));
 	memset(anim,0,sizeof(anim_t));
@@ -536,7 +538,10 @@ anim_t * anim_create_color(SDL_Renderer * render, Uint32 width, Uint32 height, U
 
 	surf = SDL_CreateRGBSurface(0,width,height,32,0xff000000,0x00ff0000,0x0000ff00,0x000000ff);
 
-	memset(surf->pixels,color,width*height*sizeof(Uint32));
+	to_fill = surf->pixels;
+	for(i=0;i<width*height;i++) {
+		to_fill[i] = color;
+	}
 
 	anim->tex[0] = SDL_CreateTextureFromSurface(render,surf);
 	SDL_FreeSurface(surf);
