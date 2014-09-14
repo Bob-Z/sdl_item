@@ -70,6 +70,7 @@ typedef struct item {
 	void * over_arg;
 	void (*over_free)(void * arg); //if not NULL, used to free memory pointed by arf
 	char * string;		// string centered on item
+	Uint32 string_bg;	// Background color RGBA
 	TTF_Font * font;
 	SDL_Texture * str_tex;
 	int editable;
@@ -104,6 +105,7 @@ void item_set_wheel_up(item_t * item,void (*cb_wheel_up)(void * arg),void * whee
 void item_set_wheel_down(item_t * item,void (*cb_wheel_down)(void * arg),void * wheel_down_arg, void (*free_func)(void *ptr));
 void item_set_over(item_t * item,void (*over)(void * arg),void * over_arg, void (*free_func)(void *ptr));
 void item_set_string(item_t * item,char * string);
+void item_set_string_bg(item_t * item,Uint32 color);
 void item_set_editable(item_t * item,int is_editable);
 void item_set_edit_cb(item_t * item,void (*cb_edit)(void * arg));
 void item_set_geometry(item_t * item,int x, int y, int w, int h);

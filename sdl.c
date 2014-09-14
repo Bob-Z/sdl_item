@@ -497,18 +497,24 @@ void sdl_get_string_size(TTF_Font * font,const char * string,int * w,int *h)
 void sdl_print_item(SDL_Renderer * render,item_t * item)
 {
 	SDL_Surface * surf;
-//	SDL_Color bg={0,0,0};
 	SDL_Color fg={0xff,0xff,0xff};
-	SDL_Rect r;
+	SDL_Rect rect;
+	anim_t * bg_anim;
 
 	/* Get center of item */
-        r.x = item->rect.x + (item->rect.w/2);
-        r.y = item->rect.y + (item->rect.h/2);
+        rect.x = item->rect.x + (item->rect.w/2);
+        rect.y = item->rect.y + (item->rect.h/2);
 
 	/* Get top/left of text */
-	TTF_SizeText(item->font, item->string, &r.w, &r.h);
-	r.x = r.x-(r.w/2);
-	r.y = r.y-(r.h/2);
+	TTF_SizeText(item->font, item->string, &rect.w, &rect.h);
+	rect.x = rect.x-(rect.w/2);
+	rect.y = rect.y-(rect.h/2);
+
+	if( item->string_bg != 0 ) {
+		bg_anim = anim_create_color(render,rect.w,rect.h,item->string_bg);
+		sdl_blit_anim(render,bg_anim,&rect,item->angle,item->zoom_x,item->zoom_y,item->flip,0,0,item->overlay);
+		si_anim_free(bg_anim);
+	}
 
 	if(item->str_tex == NULL ) {
 		surf = TTF_RenderText_Blended(item->font, item->string, fg);
@@ -516,7 +522,7 @@ void sdl_print_item(SDL_Renderer * render,item_t * item)
 		SDL_FreeSurface(surf);
 	}
 
-	sdl_blit_tex(render,item->str_tex,&r,item->angle,item->zoom_x,item->zoom_y,item->flip,item->overlay);
+	sdl_blit_tex(render,item->str_tex,&rect,item->angle,item->zoom_x,item->zoom_y,item->flip,item->overlay);
 }
 
 /************************************************************************

@@ -142,6 +142,7 @@ void item_init(item_t * item)
 	item->over_arg=NULL;
 	item->over_free=NULL;
 	item->string=NULL;
+	item->string_bg=0; // Transparent black
 	item->font=NULL;
 	item->str_tex=NULL;
 	item->editable=0;
@@ -377,6 +378,13 @@ void item_set_string(item_t * item,char * buf)
 		SDL_DestroyTexture(item->str_tex);
 		item->str_tex = NULL;
 	}
+}
+
+/************************************************************************
+************************************************************************/
+void item_set_string_bg(item_t * item,Uint32 color)
+{
+	item->string_bg = color;
 }
 
 /************************************************************************
