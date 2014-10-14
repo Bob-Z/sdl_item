@@ -51,28 +51,31 @@ Note that item->anim is not freed here !
 ************************************************************************/
 static void item_free(item_t * item)
 {
-	if ( item->string ) {
+	if( item->string ) {
 		free(item->string);
 	}
-	if ( item->click_left_free ) {
+	if( item->str_tex ) {
+		SDL_DestroyTexture(item->str_tex);
+	}
+	if( item->click_left_free ) {
 		item->click_left_free(item->click_left_arg);
 	}
-	if ( item->click_right_free ) {
+	if( item->click_right_free ) {
 		item->click_right_free(item->click_right_arg);
 	}
-	if ( item->double_click_left_free ) {
+	if( item->double_click_left_free ) {
 		item->double_click_left_free(item->double_click_left_arg);
 	}
-	if ( item->double_click_right_free ) {
+	if( item->double_click_right_free ) {
 		item->double_click_right_free(item->double_click_right_arg);
 	}
-	if ( item->wheel_up_free ) {
+	if( item->wheel_up_free ) {
 		item->wheel_up_free(item->wheel_up_arg);
 	}
-	if ( item->wheel_down_free ) {
+	if( item->wheel_down_free ) {
 		item->wheel_down_free(item->wheel_down_arg);
 	}
-	if ( item->over_free ) {
+	if( item->over_free ) {
 		item->over_free(item->over_arg);
 	}
 
