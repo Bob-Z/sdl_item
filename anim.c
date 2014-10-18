@@ -83,7 +83,7 @@ static anim_t * giflib_load(SDL_Renderer * render, const char * filename)
 	memset(surf->pixels,0,gif->SWidth*gif->SHeight*sizeof(Uint32));
 
 	global_pal = gif->SColorMap;
-	for(i=0;i<gif->ImageCount;i++) {
+	for(i=0; i<gif->ImageCount; i++) {
 		left = gif->SavedImages[i].ImageDesc.Left;
 		top = gif->SavedImages[i].ImageDesc.Top;
 		width = gif->SavedImages[i].ImageDesc.Width;
@@ -96,7 +96,7 @@ static anim_t * giflib_load(SDL_Renderer * render, const char * filename)
 			pal = gif->SavedImages[i].ImageDesc.ColorMap;
 		}
 		/* GCE */
-		for(j=0;j<gif->SavedImages[i].ExtensionBlockCount;j++) {
+		for(j=0; j<gif->SavedImages[i].ExtensionBlockCount; j++) {
 			if(gif->SavedImages[i].ExtensionBlocks[j].Function == GIF_GCE) {
 				transparent = gif->SavedImages[i].ExtensionBlocks[j].Bytes[0] & 0x01;
 				//wlog(LOGDEBUG,"transparent : %d",transparent);
@@ -123,13 +123,12 @@ static anim_t * giflib_load(SDL_Renderer * render, const char * filename)
 		}
 
 		/* Fill surface buffer with raster bytes */
-		for(y=0;y<height;y++) {
-			for(x=0;x<width;x++) {
+		for(y=0; y<height; y++) {
+			for(x=0; x<width; x++) {
 				pix_index = ((x+left)+(y+top)*gif->SWidth)*4;
 				col = gif->SavedImages[i].RasterBits[(x)+(y)*gif->SavedImages[i].ImageDesc.Width];
 				if(col == transparent_color && transparent) {
-				}
-				else {
+				} else {
 					((char*)surf->pixels)[pix_index+3] = pal->Colors[col].Red;
 					((char*)surf->pixels)[pix_index+2] = pal->Colors[col].Green;
 					((char*)surf->pixels)[pix_index+1] = pal->Colors[col].Blue;
@@ -168,8 +167,7 @@ static anim_t * libpng_load(SDL_Renderer * render, const char * filename)
 
 	/* open image file */
 	fp = fopen (filename, "rb");
-	if (!fp)
-	{
+	if (!fp) {
 		fprintf (stderr, "error: couldn't open \"%s\"!\n", filename);
 		return NULL;
 	}
@@ -178,23 +176,20 @@ static anim_t * libpng_load(SDL_Renderer * render, const char * filename)
 	fread (magic, 1, sizeof (magic), fp);
 
 	/* check for valid magic number */
-	if (!png_check_sig (magic, sizeof (magic)))
-	{
+	if (!png_check_sig (magic, sizeof (magic))) {
 		return NULL;
 	}
 
 	/* create a png read struct */
 	png_ptr = png_create_read_struct
-		(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-	if (!png_ptr)
-	{
+			  (PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+	if (!png_ptr) {
 		return NULL;
 	}
 
 	/* create a png info struct */
 	info_ptr = png_create_info_struct (png_ptr);
-	if (!info_ptr)
-	{
+	if (!info_ptr) {
 		png_destroy_read_struct (&png_ptr, NULL, NULL);
 		return NULL;
 	}
@@ -202,8 +197,7 @@ static anim_t * libpng_load(SDL_Renderer * render, const char * filename)
 	//wlog(LOGDEBUG,"Using libpng to decode %s",filename);
 
 	/* set error handling */
-	if (setjmp(png_ptr->jmpbuf))
-	{
+	if (setjmp(png_ptr->jmpbuf)) {
 		png_read_destroy(png_ptr, info_ptr, (png_info *)0);
 		fclose(fp);
 		free(png_ptr);
@@ -243,8 +237,7 @@ static anim_t * libpng_load(SDL_Renderer * render, const char * filename)
 
 	if (bit_depth == 16) {
 		png_set_strip_16 (png_ptr);
-	}
-	else if (bit_depth < 8) {
+	} else if (bit_depth < 8) {
 		png_set_packing (png_ptr);
 	}
 
@@ -253,9 +246,9 @@ static anim_t * libpng_load(SDL_Renderer * render, const char * filename)
 
 	/* retrieve updated information */
 	png_get_IHDR (png_ptr, info_ptr,
-			&width,&height,
-			&bit_depth, &color_type,
-			NULL, NULL, NULL);
+				  &width,&height,
+				  &bit_depth, &color_type,
+				  NULL, NULL, NULL);
 
 	//wlog(LOGDEBUG,"size: %dx%d bit_depth: %d, type: %d",width,height,bit_depth,color_type);
 	/* allocate the memory to hold the image using the fields
@@ -274,10 +267,9 @@ static anim_t * libpng_load(SDL_Renderer * render, const char * filename)
 	memset(surf->pixels,0,width*height*sizeof(Uint32));
 	row_pointers = (png_bytep *)malloc (sizeof (png_bytep) * height);
 
-	for (i = 0; i < height; i++)
-	{
+	for (i = 0; i < height; i++) {
 		row_pointers[height-i-1] = (png_bytep)(surf->pixels +
-				((height - (i + 1)) * width * sizeof(Uint32)));
+											   ((height - (i + 1)) * width * sizeof(Uint32)));
 	}
 
 	/* the easiest way to read the image */
@@ -325,128 +317,128 @@ static anim_t * libav_load(SDL_Renderer * render, const char * filename)
 	anim = malloc(sizeof(anim_t));
 	memset(anim,0,sizeof(anim_t));
 
-        // Register all formats and codecs
-        av_register_all();
+	// Register all formats and codecs
+	av_register_all();
 
-        // Open video file
-        if (avformat_open_input(&pFormatCtx, filename, NULL, NULL) != 0) {
+	// Open video file
+	if (avformat_open_input(&pFormatCtx, filename, NULL, NULL) != 0) {
 		//Cannot open file
-                goto error;
+		goto error;
 	}
 
-        // Retrieve stream information
-        if (avformat_find_stream_info(pFormatCtx, NULL) < 0) {
+	// Retrieve stream information
+	if (avformat_find_stream_info(pFormatCtx, NULL) < 0) {
 		//Cannot find stream information
-                goto error;
+		goto error;
 	}
 
 	//wlog(LOGDEBUG,"Loading %d streams in %s",pFormatCtx->nb_streams,filename);
-        // Find the first video stream
-        videoStream = -1;
-        for (i = 0; i < pFormatCtx->nb_streams; i++)
-                if (pFormatCtx->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO) {
-                        videoStream = i;
-                        /* total stream duration (in nanosecond) / number of image in the stream / 1000 (to get milliseconds */
-                        delay = pFormatCtx->duration / pFormatCtx->streams[i]->duration / 1000;
-                        /* If the above doesn't work try with frame_rate : 
-                        pFormatCtx->streams[i]->r_frame_rate
-                        */
+	// Find the first video stream
+	videoStream = -1;
+	for (i = 0; i < pFormatCtx->nb_streams; i++)
+		if (pFormatCtx->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO) {
+			videoStream = i;
+			/* total stream duration (in nanosecond) / number of image in the stream / 1000 (to get milliseconds */
+			delay = pFormatCtx->duration / pFormatCtx->streams[i]->duration / 1000;
+			/* If the above doesn't work try with frame_rate :
+			pFormatCtx->streams[i]->r_frame_rate
+			*/
 			anim->num_frame = pFormatCtx->streams[i]->duration;
 			anim->tex = (SDL_Texture**)malloc(anim->num_frame * sizeof(SDL_Texture*));
 			anim->delay = (Uint32*)malloc(anim->num_frame * sizeof(Uint32));
-                        break;
-                }
+			break;
+		}
 
-        if (videoStream == -1) {
+	if (videoStream == -1) {
 		//Didn't find a video stream
-                goto error;
+		goto error;
 	}
 
-        // Get a pointer to the codec context for the video stream
-        pCodecCtx = pFormatCtx->streams[videoStream]->codec;
+	// Get a pointer to the codec context for the video stream
+	pCodecCtx = pFormatCtx->streams[videoStream]->codec;
 
-        // Find the decoder for the video stream
-        pCodec = avcodec_find_decoder(pCodecCtx->codec_id);
-        if (pCodec == NULL) {
+	// Find the decoder for the video stream
+	pCodec = avcodec_find_decoder(pCodecCtx->codec_id);
+	if (pCodec == NULL) {
 		//Unsupported codec
-                goto error;
+		goto error;
 	}
 
-        // Open codec
-        if (avcodec_open2(pCodecCtx, pCodec, NULL) < 0) {
+	// Open codec
+	if (avcodec_open2(pCodecCtx, pCodec, NULL) < 0) {
 		//Could not open codec
-                goto error;
+		goto error;
 	}
 
-        // Allocate video frame
-        pFrame = avcodec_alloc_frame();
-        if (pFrame == NULL) {
+	// Allocate video frame
+	pFrame = avcodec_alloc_frame();
+	if (pFrame == NULL) {
 		//Could not allocate video frame
-                goto error;
+		goto error;
 	}
-        // Allocate an AVFrame structure
-        pFrameRGB = avcodec_alloc_frame();
-        if (pFrameRGB == NULL) {
+	// Allocate an AVFrame structure
+	pFrameRGB = avcodec_alloc_frame();
+	if (pFrameRGB == NULL) {
 		//Could not allocate AVFrame structure
-                goto error;
+		goto error;
 	}
 
-        // Determine required buffer size and allocate buffer
-        numBytes = avpicture_get_size(PIX_FMT_RGBA, pCodecCtx->width,
-                        pCodecCtx->height);
-        buffer = (uint8_t *) av_malloc(numBytes * sizeof(uint8_t));
+	// Determine required buffer size and allocate buffer
+	numBytes = avpicture_get_size(PIX_FMT_RGBA, pCodecCtx->width,
+								  pCodecCtx->height);
+	buffer = (uint8_t *) av_malloc(numBytes * sizeof(uint8_t));
 
-        // Assign appropriate parts of buffer to image planes in pFrameRGB
-        // Note that pFrameRGB is an AVFrame, but AVFrame is a superset
-        // of AVPicture
-        avpicture_fill((AVPicture *) pFrameRGB, buffer, PIX_FMT_RGBA,
-                        pCodecCtx->width, pCodecCtx->height);
+	// Assign appropriate parts of buffer to image planes in pFrameRGB
+	// Note that pFrameRGB is an AVFrame, but AVFrame is a superset
+	// of AVPicture
+	avpicture_fill((AVPicture *) pFrameRGB, buffer, PIX_FMT_RGBA,
+				   pCodecCtx->width, pCodecCtx->height);
 
-        pSwsCtx = sws_getContext(pCodecCtx->width,
-                        pCodecCtx->height, pCodecCtx->pix_fmt,
-                        pCodecCtx->width, pCodecCtx->height,
-                        PIX_FMT_RGBA, SWS_BILINEAR, NULL, NULL, NULL);
+	pSwsCtx = sws_getContext(pCodecCtx->width,
+							 pCodecCtx->height, pCodecCtx->pix_fmt,
+							 pCodecCtx->width, pCodecCtx->height,
+							 PIX_FMT_RGBA, SWS_BILINEAR, NULL, NULL, NULL);
 
 	anim->w = pCodecCtx->width;
 	anim->h = pCodecCtx->height;
 
-        if (pSwsCtx == NULL) {
+	if (pSwsCtx == NULL) {
 		//Cannot initialize sws context
-                goto error;
+		goto error;
 	}
 
-        // Read frames
-        i = 0;
-        while (av_read_frame(pFormatCtx, &packet) >= 0) {
-                // Is this a packet from the video stream?
-                if (packet.stream_index == videoStream) {
-                        // Decode video frame
-                        avcodec_decode_video2(pCodecCtx, pFrame, &frameFinished, &packet);
-                        // Did we get a video frame?
-                        if (frameFinished) {
-                                // Convert the image from its native format to ABGR
-                                sws_scale(pSwsCtx,
-                                        (const uint8_t * const *) pFrame->data,
-                                        pFrame->linesize, 0, pCodecCtx->height,
-                                        pFrameRGB->data,
-                                        pFrameRGB->linesize);
+	// Read frames
+	i = 0;
+	while (av_read_frame(pFormatCtx, &packet) >= 0) {
+		// Is this a packet from the video stream?
+		if (packet.stream_index == videoStream) {
+			// Decode video frame
+			avcodec_decode_video2(pCodecCtx, pFrame, &frameFinished, &packet);
+			// Did we get a video frame?
+			if (frameFinished) {
+				// Convert the image from its native format to ABGR
+				sws_scale(pSwsCtx,
+						  (const uint8_t * const *) pFrame->data,
+						  pFrame->linesize, 0, pCodecCtx->height,
+						  pFrameRGB->data,
+						  pFrameRGB->linesize);
 
 				anim->delay[i] = delay;
 				anim->tex[i] = SDL_CreateTexture(render, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STATIC, pCodecCtx->width,pCodecCtx->height);
 				if( anim->tex[i] == NULL ) {
 					//SDL_CreateTexture error
 				}
-                                /* Copy decoded bits to render texture */
-                                if (SDL_UpdateTexture(anim->tex[i],NULL,pFrameRGB->data[0],pFrameRGB->linesize[0]) < 0) {
+				/* Copy decoded bits to render texture */
+				if (SDL_UpdateTexture(anim->tex[i],NULL,pFrameRGB->data[0],pFrameRGB->linesize[0]) < 0) {
 					//SDL_UpdateTexture error
 				}
 				i++;
-                        }
-                }
+			}
+		}
 
-                // Free the packet that was allocated by av_read_frame
-                av_free_packet(&packet);
-        }
+		// Free the packet that was allocated by av_read_frame
+		av_free_packet(&packet);
+	}
 
 	ret = anim;
 
@@ -460,7 +452,7 @@ error:
 		}
 	}
 
-        // Free the RGB image
+	// Free the RGB image
 	if(buffer) {
 		av_free(buffer);
 	}
@@ -469,17 +461,17 @@ error:
 		av_free(pFrameRGB);
 	}
 
-        // Free the YUV frame
+	// Free the YUV frame
 	if(pFrame) {
 		av_free(pFrame);
 	}
 
-        // Close the codec
+	// Close the codec
 	if(pCodecCtx) {
 		avcodec_close(pCodecCtx);
 	}
 
-        // Close the video file
+	// Close the video file
 	if(pFormatCtx) {
 		avformat_close_input(&pFormatCtx);
 	}
@@ -539,7 +531,7 @@ anim_t * anim_create_color(SDL_Renderer * render, Uint32 width, Uint32 height, U
 	surf = SDL_CreateRGBSurface(0,width,height,32,0xff000000,0x00ff0000,0x0000ff00,0x000000ff);
 
 	to_fill = surf->pixels;
-	for(i=0;i<width*height;i++) {
+	for(i=0; i<width*height; i++) {
 		to_fill[i] = color;
 	}
 

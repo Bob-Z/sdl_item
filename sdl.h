@@ -39,11 +39,11 @@
 #define PAL_TO_RGB(x) x.r,x.g,x.b,SDL_OPAQUE
 
 typedef struct keycb {
-        SDL_Scancode code;
-        void (*cb)(void*);
-        void (*cb_up)(void*);
-		void * arg;
-        struct keycb * next;
+	SDL_Scancode code;
+	void (*cb)(void*);
+	void (*cb_up)(void*);
+	void * arg;
+	struct keycb * next;
 } keycb_t;
 
 void sdl_init(const char * title, SDL_Renderer ** render,SDL_Window ** window, void (*screen_compose_cb)(void));

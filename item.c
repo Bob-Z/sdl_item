@@ -37,8 +37,7 @@ item_t * item_list_add(item_t ** item_list)
 		last_item = (*item_list)->last;
 		last_item->next = item;
 		(*item_list)->last = item;
-	}
-	else {
+	} else {
 		*item_list = item;
 		item->last = item;
 	}
@@ -89,7 +88,7 @@ void item_list_free(item_t * item_list)
 	if(item_list == NULL) {
 		return;
 	}
-	
+
 	item_list_free(item_list->next);
 
 	item_free(item_list);

@@ -71,17 +71,17 @@ void sdl_init(const char * title, SDL_Renderer ** render,SDL_Window ** window, v
 		exit(EXIT_FAILURE);
 	}
 
-	if (TTF_Init() == -1){
+	if (TTF_Init() == -1) {
 		exit(EXIT_FAILURE);
 	}
 
 	atexit(sdl_cleanup);
 
 	*window = SDL_CreateWindow(title,
-								 SDL_WINDOWPOS_UNDEFINED,
-								 SDL_WINDOWPOS_UNDEFINED,
-								 DEFAULT_SCREEN_W, DEFAULT_SCREEN_H,
-								 SDL_WINDOW_RESIZABLE);
+							   SDL_WINDOWPOS_UNDEFINED,
+							   SDL_WINDOWPOS_UNDEFINED,
+							   DEFAULT_SCREEN_W, DEFAULT_SCREEN_H,
+							   SDL_WINDOW_RESIZABLE);
 	if( *window == NULL) {
 		exit(EXIT_FAILURE);
 	}
@@ -140,8 +140,7 @@ void sdl_mouse_position_manager(SDL_Renderer * render, item_t * item_list)
 			zoomed_y = I->rect.y;
 			zoomed_w = I->rect.w;
 			zoomed_h = I->rect.h;
-		}
-		else {
+		} else {
 			get_virtual(render,&vx,&vy);
 			mx = mouse_x - (vx * current_vz);
 			my = mouse_y - (vy * current_vz);
@@ -182,14 +181,14 @@ void sdl_mouse_manager(SDL_Renderer * render, SDL_Event * event, item_t * item_l
 
 	if (event->type == SDL_WINDOWEVENT) {
 		switch (event->window.event) {
-			case SDL_WINDOWEVENT_ENTER:
-				mouse_in = 1;
-				break;
-			case SDL_WINDOWEVENT_LEAVE:
-				mouse_in = 0;
-				break;
-			default:
-				break;
+		case SDL_WINDOWEVENT_ENTER:
+			mouse_in = 1;
+			break;
+		case SDL_WINDOWEVENT_LEAVE:
+			mouse_in = 0;
+			break;
+		default:
+			break;
 		}
 	}
 
@@ -221,8 +220,7 @@ void sdl_mouse_manager(SDL_Renderer * render, SDL_Event * event, item_t * item_l
 				zoomed_y = I->rect.y;
 				zoomed_w = I->rect.w;
 				zoomed_h = I->rect.h;
-			}
-			else {
+			} else {
 				if(overlay_first) {
 					I = I->next;
 					continue;
@@ -249,61 +247,61 @@ void sdl_mouse_manager(SDL_Renderer * render, SDL_Event * event, item_t * item_l
 				}
 
 				switch (event->type) {
-					case SDL_MOUSEMOTION:
-						I->current_frame = I->frame_over;
-						if( I->over ) {
-							I->over(I->over_arg);
-						}
-						screen_compose();
-						break;
-					case SDL_MOUSEBUTTONDOWN:
-						sdl_keyboard_text_reset();
-						if( I->editable ) {
-							sdl_keyboard_text_init(I->string,I->edit_cb);
-						}
+				case SDL_MOUSEMOTION:
+					I->current_frame = I->frame_over;
+					if( I->over ) {
+						I->over(I->over_arg);
+					}
+					screen_compose();
+					break;
+				case SDL_MOUSEBUTTONDOWN:
+					sdl_keyboard_text_reset();
+					if( I->editable ) {
+						sdl_keyboard_text_init(I->string,I->edit_cb);
+					}
 
-						I->current_frame = I->frame_click;
-						if( I->click_left && event->button.button == SDL_BUTTON_LEFT) {
-							I->current_frame=I->frame_click;
-							I->clicked=1;
+					I->current_frame = I->frame_click;
+					if( I->click_left && event->button.button == SDL_BUTTON_LEFT) {
+						I->current_frame=I->frame_click;
+						I->clicked=1;
+					}
+					if( I->click_right && event->button.button == SDL_BUTTON_RIGHT) {
+						I->current_frame=I->frame_click;
+						I->clicked=1;
+					}
+					screen_compose();
+					break;
+				case SDL_MOUSEBUTTONUP:
+					I->clicked=0;
+					I->current_frame = I->frame_normal;
+					if( I->click_left && event->button.button == SDL_BUTTON_LEFT && event->button.clicks == 1) {
+						I->click_left(I->click_left_arg);
+					}
+					if( I->click_right && event->button.button == SDL_BUTTON_RIGHT && event->button.clicks == 1) {
+						I->click_right(I->click_right_arg);
+					}
+					if( I->double_click_left && event->button.button == SDL_BUTTON_LEFT && event->button.clicks == 2) {
+						I->double_click_left(I->double_click_left_arg);
+					}
+					if( I->double_click_right && event->button.button == SDL_BUTTON_RIGHT && event->button.clicks == 2) {
+						I->double_click_right(I->double_click_right_arg);
+					}
+					screen_compose();
+					break;
+				case SDL_MOUSEWHEEL:
+					if( event->wheel.timestamp != timestamp ) {
+						if( event->wheel.y > 0 && I->wheel_up ) {
+							timestamp = event->wheel.timestamp;
+							I->wheel_up(I->wheel_up_arg);
+							screen_compose();
 						}
-						if( I->click_right && event->button.button == SDL_BUTTON_RIGHT) {
-							I->current_frame=I->frame_click;
-							I->clicked=1;
+						if( event->wheel.y < 0 && I->wheel_down ) {
+							timestamp = event->wheel.timestamp;
+							I->wheel_down(I->wheel_down_arg);
+							screen_compose();
 						}
-						screen_compose();
 						break;
-					case SDL_MOUSEBUTTONUP:
-						I->clicked=0;
-						I->current_frame = I->frame_normal;
-						if( I->click_left && event->button.button == SDL_BUTTON_LEFT && event->button.clicks == 1) {
-							I->click_left(I->click_left_arg);
-						}
-						if( I->click_right && event->button.button == SDL_BUTTON_RIGHT && event->button.clicks == 1) {
-							I->click_right(I->click_right_arg);
-						}
-						if( I->double_click_left && event->button.button == SDL_BUTTON_LEFT && event->button.clicks == 2) {
-							I->double_click_left(I->double_click_left_arg);
-						}
-						if( I->double_click_right && event->button.button == SDL_BUTTON_RIGHT && event->button.clicks == 2) {
-							I->double_click_right(I->double_click_right_arg);
-						}
-						screen_compose();
-						break;
-					case SDL_MOUSEWHEEL:
-						if( event->wheel.timestamp != timestamp ) {
-							if( event->wheel.y > 0 && I->wheel_up ) {
-								timestamp = event->wheel.timestamp;
-								I->wheel_up(I->wheel_up_arg);
-								screen_compose();
-							}
-							if( event->wheel.y < 0 && I->wheel_down ) {
-								timestamp = event->wheel.timestamp;
-								I->wheel_down(I->wheel_down_arg);
-								screen_compose();
-							}
-							break;
-						}
+					}
 				}
 			}
 
@@ -313,7 +311,9 @@ void sdl_mouse_manager(SDL_Renderer * render, SDL_Event * event, item_t * item_l
 			I = I->next;
 		}
 		overlay_first--;
-		if(skip_non_overlay) break;
+		if(skip_non_overlay) {
+			break;
+		}
 	}
 }
 
@@ -326,37 +326,37 @@ int sdl_screen_manager(SDL_Window * window,SDL_Renderer * render,SDL_Event * eve
 	const Uint8 *keystate;
 
 	switch (event->type) {
-		case SDL_WINDOWEVENT:
-			switch(event->window.event) {
-				case SDL_WINDOWEVENT_RESIZED:
-					SDL_RenderSetLogicalSize(render,event->window.data1,event->window.data2);
-					return 1;
-			}
-			break;
-		case SDL_KEYDOWN:
-			switch (event->key.keysym.sym) {
-				case SDLK_RETURN:
-					keystate = SDL_GetKeyboardState(NULL);
+	case SDL_WINDOWEVENT:
+		switch(event->window.event) {
+		case SDL_WINDOWEVENT_RESIZED:
+			SDL_RenderSetLogicalSize(render,event->window.data1,event->window.data2);
+			return 1;
+		}
+		break;
+	case SDL_KEYDOWN:
+		switch (event->key.keysym.sym) {
+		case SDLK_RETURN:
+			keystate = SDL_GetKeyboardState(NULL);
 
-					if( keystate[SDL_SCANCODE_RALT] || keystate[SDL_SCANCODE_LALT] ) {
-						if(!fullscreen) {
-							fullscreen = SDL_WINDOW_FULLSCREEN_DESKTOP;
-						} else {
-							fullscreen = 0;
-						}
-						SDL_SetWindowFullscreen(window,fullscreen);
-						break;
-					}
-					break;
-				default:
-					break;
+			if( keystate[SDL_SCANCODE_RALT] || keystate[SDL_SCANCODE_LALT] ) {
+				if(!fullscreen) {
+					fullscreen = SDL_WINDOW_FULLSCREEN_DESKTOP;
+				} else {
+					fullscreen = 0;
+				}
+				SDL_SetWindowFullscreen(window,fullscreen);
+				break;
 			}
-			break;
-		case SDL_QUIT:
-			exit(EXIT_SUCCESS);
 			break;
 		default:
 			break;
+		}
+		break;
+	case SDL_QUIT:
+		exit(EXIT_SUCCESS);
+		break;
+	default:
+		break;
 	}
 
 	return 0;
@@ -384,8 +384,7 @@ void sdl_loop_manager()
 		current_vx = (int)((double)old_vx + (double)( virtual_x - old_vx ) * (double)(timer - virtual_tick) / (double)VIRTUAL_ANIM_DURATION);
 		current_vy = (int)((double)old_vy + (double)( virtual_y - old_vy ) * (double)(timer - virtual_tick) / (double)VIRTUAL_ANIM_DURATION);
 		current_vz = (double)old_vz + (double)( virtual_z - old_vz ) * (double)(timer - virtual_tick) / (double)VIRTUAL_ANIM_DURATION;
-	}
-	else {
+	} else {
 		old_vx = virtual_x;
 		current_vx = virtual_x;
 
@@ -403,14 +402,13 @@ flip is one of SDL_FLIP_NONE, SDL_FLIP_HORIZONTAL, SDL_FLIP_VERTICAL
 void sdl_blit_tex(SDL_Renderer * render,SDL_Texture * tex, SDL_Rect * rect, double angle, double zoom_x, double zoom_y, int flip, int overlay)
 {
 	SDL_Rect r;
-        int vx;
-        int vy;
+	int vx;
+	int vy;
 
 	if(overlay) {
 		r.x = rect->x;
 		r.y = rect->y;
-	}
-	else {
+	} else {
 		get_virtual(render,&vx,&vy);
 
 		r.x = rect->x + vx;
@@ -497,13 +495,13 @@ void sdl_get_string_size(TTF_Font * font,const char * string,int * w,int *h)
 void sdl_print_item(SDL_Renderer * render,item_t * item)
 {
 	SDL_Surface * surf;
-	SDL_Color fg={0xff,0xff,0xff};
+	SDL_Color fg= {0xff,0xff,0xff};
 	SDL_Rect rect;
 	anim_t * bg_anim;
 
 	/* Get center of item */
-        rect.x = item->rect.x + (item->rect.w/2);
-        rect.y = item->rect.y + (item->rect.h/2);
+	rect.x = item->rect.x + (item->rect.w/2);
+	rect.y = item->rect.y + (item->rect.h/2);
 
 	/* Get top/left of text */
 	TTF_SizeText(item->font, item->string, &rect.w, &rect.h);
@@ -535,8 +533,7 @@ int sdl_blit_item(SDL_Renderer * render,item_t * item)
 		if( item->timer + VIRTUAL_ANIM_DURATION > timer) {
 			item->rect.x = (int)((double)item->old_x + (double)(item->x - item->old_x) * (double)(timer - item->timer) / (double)VIRTUAL_ANIM_DURATION);
 			item->rect.y = (int)((double)item->old_y + (double)(item->y - item->old_y) * (double)(timer - item->timer) / (double)VIRTUAL_ANIM_DURATION);
-		}
-		else {
+		} else {
 			item->rect.x =item->x;
 			item->rect.y =item->y;
 		}
@@ -555,8 +552,8 @@ int sdl_blit_item(SDL_Renderer * render,item_t * item)
 	}
 
 	if( item->font != NULL && item->string != NULL ) {
-                sdl_print_item(render,item);
-        }
+		sdl_print_item(render,item);
+	}
 
 	return 0;
 }
@@ -666,7 +663,7 @@ void sdl_keyboard_manager(SDL_Event * event)
 				event->key.keysym.sym = (SDL_Scancode)(event->key.keysym.sym-32);
 			}
 			keyboard_text_buf[keyboard_text_index]=event->key.keysym.sym;
-/* TODO: check max buffer size */
+			/* TODO: check max buffer size */
 #if 0
 			if( keyboard_text_index < sizeof(keyboard_text_buf)) {
 				keyboard_text_index++;
@@ -785,8 +782,7 @@ keycb_t * sdl_add_keycb(SDL_Scancode code,void (*cb)(void*),void (*cb_up)(void*)
 		key->arg = arg;
 		key->next = NULL;
 		return key;
-	}
-	else {
+	} else {
 		key = key_callback;
 		while(key->next != NULL) {
 			key = key->next;
@@ -804,10 +800,11 @@ keycb_t * sdl_add_keycb(SDL_Scancode code,void (*cb)(void*),void (*cb_up)(void*)
 
 /************************************************************************
 ************************************************************************/
-static void rec_free_keycb(keycb_t * key) {
+static void rec_free_keycb(keycb_t * key)
+{
 	if(key == NULL) {
-                return;
-        }
+		return;
+	}
 
 	if (key->next) {
 		rec_free_keycb(key->next);
