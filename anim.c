@@ -35,6 +35,9 @@
 
 /************************************************************************
 return NULL if error
+http://www.imagemagick.org/Usage/anim_basics/#dispose 
+http://wwwcdf.pd.infn.it/libgif/gif89.txt
+http://wwwcdf.pd.infn.it/libgif/gif_lib.html 
 ************************************************************************/
 static anim_t * giflib_load(SDL_Renderer * render, const char * filename)
 {
@@ -48,16 +51,19 @@ static anim_t * giflib_load(SDL_Renderer * render, const char * filename)
 	ColorMapObject * global_pal = NULL;
 	ColorMapObject * pal = NULL;
 	SDL_Surface* surf = NULL;
+	SDL_Surface* prev_surf = NULL;
 	int x = 0;
 	int y = 0;
 	int col = 0;
 	int pix_index = 0;
 	anim_t * anim = NULL;
-	//unsigned char bg_color;
-	int left = 0;
-	int top = 0;
-	int width = 0;
-	int height = 0;
+	int render_width;
+	int render_height;
+	int frame_left = 0;
+	int frame_top = 0;
+	int frame_width = 0;
+	int frame_height = 0;
+	int allow_draw = 1;
 
 	gif = DGifOpenFileName(filename);
 	if(gif == NULL) {
@@ -65,10 +71,6 @@ static anim_t * giflib_load(SDL_Renderer * render, const char * filename)
 	}
 	//Using giflib to decode
 	DGifSlurp(gif);
-
-	//bg_color = gif->SBackGroundColor;
-
-	//wlog(LOGDEBUG,"%d frames %d x %d bg_color=%d",gif->ImageCount, gif->SWidth, gif->SHeight,bg_color);
 
 	anim = malloc(sizeof(anim_t));
 	memset(anim,0,sizeof(anim_t));
@@ -79,17 +81,25 @@ static anim_t * giflib_load(SDL_Renderer * render, const char * filename)
 	anim->h = gif->SHeight;
 	anim->delay = malloc(sizeof(Uint32) * anim->num_frame);
 
-	surf = SDL_CreateRGBSurface(0,gif->SWidth,gif->SHeight,32,0xff000000,0x00ff0000,0x0000ff00,0x000000ff);
-	memset(surf->pixels,0,gif->SWidth*gif->SHeight*sizeof(Uint32));
+	render_width = gif->SWidth;
+	render_height = gif->SHeight;
+	//bg_color = gif->SBackGroundColor;
+
+	surf = SDL_CreateRGBSurface(0,render_width,render_height,32,0xff000000,0x00ff0000,0x0000ff00,0x000000ff);
+	prev_surf = SDL_CreateRGBSurface(0,render_width,render_height,32,0xff000000,0x00ff0000,0x0000ff00,0x000000ff);
 
 	global_pal = gif->SColorMap;
-	for(i=0; i<gif->ImageCount; i++) {
-		left = gif->SavedImages[i].ImageDesc.Left;
-		top = gif->SavedImages[i].ImageDesc.Top;
-		width = gif->SavedImages[i].ImageDesc.Width;
-		height = gif->SavedImages[i].ImageDesc.Height;
+	pal = global_pal;
 
-		//wlog(LOGDEBUG,"Image %d : %d x %d; %d x %d",i,left,top,width,height);
+	/* Init with transparent background */
+	memset(surf->pixels,0, render_height * render_width * 4 );
+
+	for(i=0; i<gif->ImageCount; i++) {
+		frame_left = gif->SavedImages[i].ImageDesc.Left;
+		frame_top = gif->SavedImages[i].ImageDesc.Top;
+		frame_width = gif->SavedImages[i].ImageDesc.Width;
+		frame_height = gif->SavedImages[i].ImageDesc.Height;
+
 		/* select palette */
 		pal = global_pal;
 		if( gif->SavedImages[i].ImageDesc.ColorMap ) {
@@ -99,46 +109,70 @@ static anim_t * giflib_load(SDL_Renderer * render, const char * filename)
 		for(j=0; j<gif->SavedImages[i].ExtensionBlockCount; j++) {
 			if(gif->SavedImages[i].ExtensionBlocks[j].Function == GIF_GCE) {
 				transparent = gif->SavedImages[i].ExtensionBlocks[j].Bytes[0] & 0x01;
-				//wlog(LOGDEBUG,"transparent : %d",transparent);
 				disposal = (gif->SavedImages[i].ExtensionBlocks[j].Bytes[0] & 28)>>2;
-				//wlog(LOGDEBUG,"disposal : %d",disposal);
 				delay = (gif->SavedImages[i].ExtensionBlocks[j].Bytes[1] + gif->SavedImages[i].ExtensionBlocks[j].Bytes[2] * 256)*10;
 				if(delay==0) {
 					delay = DEFAULT_DELAY;
 				}
-				//wlog(LOGDEBUG,"delay : %d ms",delay);
 				if(transparent) {
 					transparent_color = gif->SavedImages[i].ExtensionBlocks[j].Bytes[3];
-					//wlog(LOGDEBUG,"transparent color : %d",transparent_color);
 				}
 			}
 		}
 
-		/* Prepare surface depending of disposal */
-		if(disposal==DISPOSE_BACKGROUND) {
-			memset(surf->pixels,0,gif->SWidth*gif->SHeight*sizeof(Uint32));
-		}
-		if(disposal==DISPOSE_PREVIOUS) { /* This is probably wrong */
-			memset(surf->pixels,0,gif->SWidth*gif->SHeight*sizeof(Uint32));
+		/* Save the current render if needed */
+		if( disposal == DISPOSE_PREVIOUS ) {
+			memcpy(prev_surf->pixels,surf->pixels, render_height * render_width * 4);
 		}
 
 		/* Fill surface buffer with raster bytes */
-		for(y=0; y<height; y++) {
-			for(x=0; x<width; x++) {
-				pix_index = ((x+left)+(y+top)*gif->SWidth)*4;
-				col = gif->SavedImages[i].RasterBits[(x)+(y)*gif->SavedImages[i].ImageDesc.Width];
-				if(col == transparent_color && transparent) {
-				} else {
-					((char*)surf->pixels)[pix_index+3] = pal->Colors[col].Red;
-					((char*)surf->pixels)[pix_index+2] = pal->Colors[col].Green;
-					((char*)surf->pixels)[pix_index+1] = pal->Colors[col].Blue;
-					((char*)surf->pixels)[pix_index+0] = 0xFF;
+		if( allow_draw ) { // See DISPOSE_DO_NOT
+			for(y=0; y<frame_height; y++) {
+				for(x=0; x<frame_width; x++) {
+					pix_index = ((x+frame_left) + ( (y+frame_top) *render_width))*4;
+					col = gif->SavedImages[i].RasterBits[(x)+(y)*frame_width];
+					if(y==0 && x==0) printf("col = %d\n",col);
+					if( col == transparent_color && transparent) {
+						/* Transparent color means do not touch the render */
+					} else {
+						((char*)surf->pixels)[pix_index+3] = pal->Colors[col].Red;
+						((char*)surf->pixels)[pix_index+2] = pal->Colors[col].Green;
+						((char*)surf->pixels)[pix_index+1] = pal->Colors[col].Blue;
+						((char*)surf->pixels)[pix_index+0] = 0xFF;
+					}
 				}
 			}
 		}
 
 		anim->delay[i] = delay;
 		anim->tex[i] = SDL_CreateTextureFromSurface(render,surf);
+
+		/* Prepare next rendering depending of disposal */
+		allow_draw = 1;
+		switch( disposal ) {
+			/* Do not touch render for next frame */
+			case DISPOSE_DO_NOT:
+				allow_draw = 0;
+				break;
+			case DISPOSE_BACKGROUND:
+				/* Draw transparent color in frame */
+				for(y=0; y<frame_height; y++) {
+					for(x=0; x<frame_width; x++) {
+						pix_index = ((x+frame_left)+((y+frame_top)*render_width))*4;
+						((char*)surf->pixels)[pix_index+3] = 0;
+						((char*)surf->pixels)[pix_index+2] = 0;
+						((char*)surf->pixels)[pix_index+1] = 0;
+						((char*)surf->pixels)[pix_index+0] = 0;
+					}
+				}
+				break;
+			case DISPOSE_PREVIOUS:
+				/* Restore previous render in frame*/
+				memcpy(surf->pixels,prev_surf->pixels, render_height * render_width * 4);
+				break;
+			default:
+				break;
+		}
 	}
 	SDL_FreeSurface(surf);
 
