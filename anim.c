@@ -131,9 +131,6 @@ static anim_t * giflib_load(SDL_Renderer * render, const char * filename)
 				for(x=0; x<frame_width; x++) {
 					pix_index = ((x+frame_left) + ( (y+frame_top) *render_width))*4;
 					col = gif->SavedImages[i].RasterBits[(x)+(y)*frame_width];
-					if(y==0 && x==0) {
-						printf("col = %d\n",col);
-					}
 					if( col == transparent_color && transparent) {
 						/* Transparent color means do not touch the render */
 					} else {
