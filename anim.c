@@ -35,9 +35,9 @@
 
 /************************************************************************
 return NULL if error
-http://www.imagemagick.org/Usage/anim_basics/#dispose 
+http://www.imagemagick.org/Usage/anim_basics/#dispose
 http://wwwcdf.pd.infn.it/libgif/gif89.txt
-http://wwwcdf.pd.infn.it/libgif/gif_lib.html 
+http://wwwcdf.pd.infn.it/libgif/gif_lib.html
 ************************************************************************/
 static anim_t * giflib_load(SDL_Renderer * render, const char * filename)
 {
@@ -131,7 +131,9 @@ static anim_t * giflib_load(SDL_Renderer * render, const char * filename)
 				for(x=0; x<frame_width; x++) {
 					pix_index = ((x+frame_left) + ( (y+frame_top) *render_width))*4;
 					col = gif->SavedImages[i].RasterBits[(x)+(y)*frame_width];
-					if(y==0 && x==0) printf("col = %d\n",col);
+					if(y==0 && x==0) {
+						printf("col = %d\n",col);
+					}
 					if( col == transparent_color && transparent) {
 						/* Transparent color means do not touch the render */
 					} else {
@@ -151,27 +153,27 @@ static anim_t * giflib_load(SDL_Renderer * render, const char * filename)
 		allow_draw = 1;
 		switch( disposal ) {
 			/* Do not touch render for next frame */
-			case DISPOSE_DO_NOT:
-				allow_draw = 0;
-				break;
-			case DISPOSE_BACKGROUND:
-				/* Draw transparent color in frame */
-				for(y=0; y<frame_height; y++) {
-					for(x=0; x<frame_width; x++) {
-						pix_index = ((x+frame_left)+((y+frame_top)*render_width))*4;
-						((char*)surf->pixels)[pix_index+3] = 0;
-						((char*)surf->pixels)[pix_index+2] = 0;
-						((char*)surf->pixels)[pix_index+1] = 0;
-						((char*)surf->pixels)[pix_index+0] = 0;
-					}
+		case DISPOSE_DO_NOT:
+			allow_draw = 0;
+			break;
+		case DISPOSE_BACKGROUND:
+			/* Draw transparent color in frame */
+			for(y=0; y<frame_height; y++) {
+				for(x=0; x<frame_width; x++) {
+					pix_index = ((x+frame_left)+((y+frame_top)*render_width))*4;
+					((char*)surf->pixels)[pix_index+3] = 0;
+					((char*)surf->pixels)[pix_index+2] = 0;
+					((char*)surf->pixels)[pix_index+1] = 0;
+					((char*)surf->pixels)[pix_index+0] = 0;
 				}
-				break;
-			case DISPOSE_PREVIOUS:
-				/* Restore previous render in frame*/
-				memcpy(surf->pixels,prev_surf->pixels, render_height * render_width * 4);
-				break;
-			default:
-				break;
+			}
+			break;
+		case DISPOSE_PREVIOUS:
+			/* Restore previous render in frame*/
+			memcpy(surf->pixels,prev_surf->pixels, render_height * render_width * 4);
+			break;
+		default:
+			break;
 		}
 	}
 	SDL_FreeSurface(surf);
