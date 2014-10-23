@@ -44,6 +44,7 @@ static int mouse_y = 0;
 static int mouse_in = 1;
 
 static keycb_t * key_callback = NULL;
+static mousecb_t * mouse_callback = NULL;
 
 static void (*screen_compose)(void) = NULL;
 
@@ -180,6 +181,7 @@ void sdl_mouse_manager(SDL_Renderer * render, SDL_Event * event, item_t * item_l
 	int skip_non_overlay = FALSE;
 	static int timestamp = 0;
 	int action_done = FALSE;
+	mousecb_t * mousecb = mouse_callback;
 
 	if (event->type == SDL_WINDOWEVENT) {
 		switch (event->window.event) {
@@ -295,12 +297,13 @@ void sdl_mouse_manager(SDL_Renderer * render, SDL_Event * event, item_t * item_l
 						if( event->wheel.y > 0 && I->wheel_up ) {
 							timestamp = event->wheel.timestamp;
 							I->wheel_up(I->wheel_up_arg);
+							action_done = TRUE;
 						}
 						if( event->wheel.y < 0 && I->wheel_down ) {
 							timestamp = event->wheel.timestamp;
 							I->wheel_down(I->wheel_down_arg);
+							action_done = TRUE;
 						}
-						action_done = TRUE;
 					}
 					break;
 				}
@@ -319,6 +322,48 @@ void sdl_mouse_manager(SDL_Renderer * render, SDL_Event * event, item_t * item_l
 
 	if ( action_done == TRUE ) {
 		screen_compose();
+		return;
+	}
+
+	while(mousecb) {
+		switch (event->type) {
+			case SDL_MOUSEMOTION:
+				if( mousecb->event_type != MOUSE_MOTION) {
+					mousecb = mousecb->next;
+					continue;
+				}
+				mousecb->cb(mouse_x,mouse_y);
+				break;
+			case SDL_MOUSEBUTTONDOWN:
+				if( mousecb->event_type != MOUSE_BUTTON_DOWN) {
+					mousecb = mousecb->next;
+					continue;
+				}
+				mousecb->cb(event->button.button,0);
+				break;
+			case SDL_MOUSEBUTTONUP:
+				if( mousecb->event_type != MOUSE_BUTTON_UP) {
+					mousecb = mousecb->next;
+					continue;
+				}
+				mousecb->cb(event->button.button,0);
+				break;
+			case SDL_MOUSEWHEEL:
+				if( mousecb->event_type != MOUSE_WHEEL_UP && mousecb->event_type != MOUSE_WHEEL_DOWN ) {
+					mousecb = mousecb->next;
+					continue;
+				}
+				if( event->wheel.timestamp != timestamp ) {
+					if( event->wheel.y > 0 && mousecb->event_type == MOUSE_WHEEL_UP ) {
+						mousecb->cb(event->wheel.y,0);
+					}
+					if( event->wheel.y < 0 && mousecb->event_type == MOUSE_WHEEL_DOWN ) {
+						mousecb->cb(event->wheel.y,0);
+					}
+				}
+				break;
+		}
+		mousecb = mousecb->next;
 	}
 }
 
@@ -774,7 +819,7 @@ void sdl_force_virtual_z(double z)
 
 /************************************************************************
 ************************************************************************/
-keycb_t * sdl_add_keycb(SDL_Scancode code,void (*cb)(void*),void (*cb_up)(void*), void * arg)
+void sdl_add_keycb(SDL_Scancode code,void (*cb)(void*),void (*cb_up)(void*), void * arg)
 {
 	keycb_t * key;
 
@@ -786,7 +831,7 @@ keycb_t * sdl_add_keycb(SDL_Scancode code,void (*cb)(void*),void (*cb_up)(void*)
 		key->cb_up = cb_up;
 		key->arg = arg;
 		key->next = NULL;
-		return key;
+		return;
 	} else {
 		key = key_callback;
 		while(key->next != NULL) {
@@ -799,7 +844,7 @@ keycb_t * sdl_add_keycb(SDL_Scancode code,void (*cb)(void*),void (*cb_up)(void*)
 		key->cb_up = cb_up;
 		key->arg = arg;
 		key->next = NULL;
-		return key;
+		return;
 	}
 }
 
@@ -820,10 +865,60 @@ static void rec_free_keycb(keycb_t * key)
 
 /************************************************************************
 ************************************************************************/
-void sdl_free_keycb(keycb_t ** key)
+void sdl_free_keycb()
 {
 	rec_free_keycb(key_callback);
 
 	key_callback = NULL;
 }
 
+/************************************************************************
+************************************************************************/
+void sdl_add_mousecb(Uint32 event_type,void (*cb)(Uint32,Uint32))
+{
+	mousecb_t * mouse;
+
+	if(mouse_callback==NULL) {
+		mouse = malloc(sizeof(mousecb_t));
+		mouse_callback = mouse;
+		mouse->event_type = event_type;
+		mouse->cb = cb;
+		mouse->next = NULL;
+		return;
+	} else {
+		mouse = mouse_callback;
+		while(mouse->next != NULL) {
+			mouse = mouse->next;
+		}
+		mouse->next = malloc(sizeof(mousecb_t));
+		mouse = mouse->next;
+		mouse->event_type = event_type;
+		mouse->cb = cb;
+		mouse->next = NULL;
+		return;
+	}
+}
+
+/************************************************************************
+************************************************************************/
+static void rec_free_mousecb(mousecb_t * mouse)
+{
+	if(mouse == NULL) {
+		return;
+	}
+
+	if (mouse->next) {
+		rec_free_mousecb(mouse->next);
+	}
+
+	free(mouse);
+}
+
+/************************************************************************
+************************************************************************/
+void sdl_free_mousecb()
+{
+	rec_free_mousecb(mouse_callback);
+
+	mouse_callback = NULL;
+}

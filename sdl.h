@@ -46,6 +46,18 @@ typedef struct keycb {
 	struct keycb * next;
 } keycb_t;
 
+#define MOUSE_MOTION		0
+#define MOUSE_BUTTON_UP		1
+#define MOUSE_BUTTON_DOWN	2
+#define MOUSE_WHEEL_UP		3
+#define MOUSE_WHEEL_DOWN	4
+
+typedef struct mousecb {
+	Uint32 event_type;
+	void (*cb)(Uint32 arg1, Uint32 arg2);
+	struct mousecb * next;
+} mousecb_t;
+
 void sdl_init(const char * title, SDL_Renderer ** render,SDL_Window ** window, void (*screen_compose_cb)(void));
 void sdl_cleanup(void);
 void sdl_set_pixel(SDL_Surface *surface, int x, int y, Uint32 R, Uint32 G, Uint32 B, Uint32 A);
@@ -73,6 +85,8 @@ double sdl_get_virtual_z();
 void sdl_force_virtual_x(int x);
 void sdl_force_virtual_y(int y);
 void sdl_force_virtual_z(double z);
-keycb_t * sdl_add_keycb(SDL_Scancode code,void (*cb)(void*),void (*cb_up)(void*),void * arg);
-void sdl_free_keycb(keycb_t ** key);
+void sdl_add_keycb(SDL_Scancode code,void (*cb)(void*),void (*cb_up)(void*),void * arg);
+void sdl_free_keycb();
+void sdl_add_mousecb(Uint32 event_type,void (*cb)(Uint32,Uint32));
+void sdl_free_mousecb();
 
