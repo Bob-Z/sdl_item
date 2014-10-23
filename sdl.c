@@ -20,6 +20,7 @@
 #include "sdl.h"
 #include <math.h>
 #include <assert.h>
+#include "const.h"
 
 static int fullscreen = 0;
 
@@ -176,8 +177,9 @@ void sdl_mouse_manager(SDL_Renderer * render, SDL_Event * event, item_t * item_l
 	int zoomed_h;
 	item_t * I = NULL;
 	int overlay_first = 1;
-	int skip_non_overlay = 0;
+	int skip_non_overlay = FALSE;
 	static int timestamp = 0;
+	int action_done = FALSE;
 
 	if (event->type == SDL_WINDOWEVENT) {
 		switch (event->window.event) {
@@ -243,7 +245,7 @@ void sdl_mouse_manager(SDL_Renderer * render, SDL_Event * event, item_t * item_l
 					((zoomed_y+zoomed_h) > my) ) {
 				/* We are on overlay item: skip, non-overlay item */
 				if(overlay_first) {
-					skip_non_overlay=1;
+					skip_non_overlay=TRUE;
 				}
 
 				switch (event->type) {
@@ -252,7 +254,7 @@ void sdl_mouse_manager(SDL_Renderer * render, SDL_Event * event, item_t * item_l
 					if( I->over ) {
 						I->over(I->over_arg);
 					}
-					screen_compose();
+					action_done = TRUE;
 					break;
 				case SDL_MOUSEBUTTONDOWN:
 					sdl_keyboard_text_reset();
@@ -269,7 +271,7 @@ void sdl_mouse_manager(SDL_Renderer * render, SDL_Event * event, item_t * item_l
 						I->current_frame=I->frame_click;
 						I->clicked=1;
 					}
-					screen_compose();
+					action_done = TRUE;
 					break;
 				case SDL_MOUSEBUTTONUP:
 					I->clicked=0;
@@ -286,22 +288,21 @@ void sdl_mouse_manager(SDL_Renderer * render, SDL_Event * event, item_t * item_l
 					if( I->double_click_right && event->button.button == SDL_BUTTON_RIGHT && event->button.clicks == 2) {
 						I->double_click_right(I->double_click_right_arg);
 					}
-					screen_compose();
+					action_done = TRUE;
 					break;
 				case SDL_MOUSEWHEEL:
 					if( event->wheel.timestamp != timestamp ) {
 						if( event->wheel.y > 0 && I->wheel_up ) {
 							timestamp = event->wheel.timestamp;
 							I->wheel_up(I->wheel_up_arg);
-							screen_compose();
 						}
 						if( event->wheel.y < 0 && I->wheel_down ) {
 							timestamp = event->wheel.timestamp;
 							I->wheel_down(I->wheel_down_arg);
-							screen_compose();
 						}
-						break;
+						action_done = TRUE;
 					}
+					break;
 				}
 			}
 
@@ -311,9 +312,13 @@ void sdl_mouse_manager(SDL_Renderer * render, SDL_Event * event, item_t * item_l
 			I = I->next;
 		}
 		overlay_first--;
-		if(skip_non_overlay) {
+		if(skip_non_overlay == TRUE) {
 			break;
 		}
+	}
+
+	if ( action_done == TRUE ) {
+		screen_compose();
 	}
 }
 

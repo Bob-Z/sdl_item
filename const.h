@@ -20,8 +20,8 @@
 #ifndef CONST_H
 #define CONST_H
 
-#define FALSE 1
-#define false 1
+#define FALSE 0
+#define false 0
 #define TRUE 1
 #define true 1
 

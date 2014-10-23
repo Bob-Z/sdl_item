@@ -7,4 +7,4 @@ SDL_LIB=`sdl2-config --libs`
 libsdl_item_a_LIBADD=$(ADD_LIB)
 libsdl_item_a_CFLAGS=$(AM_CFLAGS)
 
-dist_noinst_HEADERS = sdl.h item.h anim.h
+dist_noinst_HEADERS = sdl.h item.h anim.h const.h
