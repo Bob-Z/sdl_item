@@ -578,6 +578,7 @@ void sdl_print_item(SDL_Renderer * render,item_t * item)
 int sdl_blit_item(SDL_Renderer * render,item_t * item)
 {
 	Uint32 timer = SDL_GetTicks();
+	SDL_Rect rect;
 
 	if( item->timer ) {
 		if( item->timer + VIRTUAL_ANIM_DURATION > timer) {
@@ -598,7 +599,11 @@ int sdl_blit_item(SDL_Renderer * render,item_t * item)
 	}
 
 	if(item->anim_over) {
-		sdl_blit_anim(render,item->anim_over,&item->rect,item->angle,item->zoom_x,item->zoom_y,item->flip,item->anim_start,item->anim_end,item->overlay);
+		rect.w = item->anim_over->w;
+		rect.h = item->anim_over->h;
+		rect.x = item->rect.x;
+		rect.y = item->rect.y;
+		sdl_blit_anim(render,item->anim_over,&rect,item->angle,item->zoom_x,item->zoom_y,item->flip,item->anim_start,item->anim_end,item->overlay);
 	}
 
 	if( item->font != NULL && item->string != NULL ) {
