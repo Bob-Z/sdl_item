@@ -35,3 +35,4 @@ config.status
 configure
 stamp-h1
 *.orig
+*.swp
