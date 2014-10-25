@@ -327,41 +327,41 @@ void sdl_mouse_manager(SDL_Renderer * render, SDL_Event * event, item_t * item_l
 
 	while(mousecb) {
 		switch (event->type) {
-			case SDL_MOUSEMOTION:
-				if( mousecb->event_type != MOUSE_MOTION) {
-					mousecb = mousecb->next;
-					continue;
+		case SDL_MOUSEMOTION:
+			if( mousecb->event_type != MOUSE_MOTION) {
+				mousecb = mousecb->next;
+				continue;
+			}
+			mousecb->cb(mouse_x,mouse_y);
+			break;
+		case SDL_MOUSEBUTTONDOWN:
+			if( mousecb->event_type != MOUSE_BUTTON_DOWN) {
+				mousecb = mousecb->next;
+				continue;
+			}
+			mousecb->cb(event->button.button,0);
+			break;
+		case SDL_MOUSEBUTTONUP:
+			if( mousecb->event_type != MOUSE_BUTTON_UP) {
+				mousecb = mousecb->next;
+				continue;
+			}
+			mousecb->cb(event->button.button,0);
+			break;
+		case SDL_MOUSEWHEEL:
+			if( mousecb->event_type != MOUSE_WHEEL_UP && mousecb->event_type != MOUSE_WHEEL_DOWN ) {
+				mousecb = mousecb->next;
+				continue;
+			}
+			if( event->wheel.timestamp != timestamp ) {
+				if( event->wheel.y > 0 && mousecb->event_type == MOUSE_WHEEL_UP ) {
+					mousecb->cb(event->wheel.y,0);
 				}
-				mousecb->cb(mouse_x,mouse_y);
-				break;
-			case SDL_MOUSEBUTTONDOWN:
-				if( mousecb->event_type != MOUSE_BUTTON_DOWN) {
-					mousecb = mousecb->next;
-					continue;
+				if( event->wheel.y < 0 && mousecb->event_type == MOUSE_WHEEL_DOWN ) {
+					mousecb->cb(event->wheel.y,0);
 				}
-				mousecb->cb(event->button.button,0);
-				break;
-			case SDL_MOUSEBUTTONUP:
-				if( mousecb->event_type != MOUSE_BUTTON_UP) {
-					mousecb = mousecb->next;
-					continue;
-				}
-				mousecb->cb(event->button.button,0);
-				break;
-			case SDL_MOUSEWHEEL:
-				if( mousecb->event_type != MOUSE_WHEEL_UP && mousecb->event_type != MOUSE_WHEEL_DOWN ) {
-					mousecb = mousecb->next;
-					continue;
-				}
-				if( event->wheel.timestamp != timestamp ) {
-					if( event->wheel.y > 0 && mousecb->event_type == MOUSE_WHEEL_UP ) {
-						mousecb->cb(event->wheel.y,0);
-					}
-					if( event->wheel.y < 0 && mousecb->event_type == MOUSE_WHEEL_DOWN ) {
-						mousecb->cb(event->wheel.y,0);
-					}
-				}
-				break;
+			}
+			break;
 		}
 		mousecb = mousecb->next;
 	}
