@@ -404,13 +404,13 @@ static anim_t * libav_load(SDL_Renderer * render, const char * filename)
 	}
 
 	// Allocate video frame
-	pFrame = avcodec_alloc_frame();
+	pFrame = av_frame_alloc();
 	if (pFrame == NULL) {
 		//Could not allocate video frame
 		goto error;
 	}
 	// Allocate an AVFrame structure
-	pFrameRGB = avcodec_alloc_frame();
+	pFrameRGB = av_frame_alloc();
 	if (pFrameRGB == NULL) {
 		//Could not allocate AVFrame structure
 		goto error;
