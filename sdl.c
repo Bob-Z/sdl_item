@@ -54,8 +54,17 @@ static void (*screen_compose)(void) = NULL;
 void sdl_set_pixel(SDL_Surface *surface, int x, int y, Uint32 R, Uint32 G, Uint32 B, Uint32 A)
 {
 	Uint32 color = (A << 24) + (R << 16) + (G << 8) + (B);
-	Uint8 *target_pixel = (Uint8 *)surface->pixels + y * surface->pitch + x * sizeof(color);
+	Uint8 *target_pixel = (Uint8 *)surface->pixels + y * surface->pitch + x * surface->format->BytesPerPixel;
 	*(Uint32 *)target_pixel = color;
+}
+
+/************************************************************************
+************************************************************************/
+//You must SDL_LockSurface(surface); then SDL_UnlockSurface(surface); before calling this function
+Uint32 sdl_get_pixel(SDL_Surface *surface, int x, int y)
+{
+	Uint8 *target_pixel = (Uint8 *)surface->pixels + y * surface->pitch + x * surface->format->BytesPerPixel;
+	return *(Uint32 *)target_pixel;
 }
 
 /************************************************************************
