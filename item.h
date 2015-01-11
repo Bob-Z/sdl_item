@@ -66,7 +66,7 @@ typedef struct item {
 	void (*wheel_down)(void * arg); //callback on mouse wheel down
 	void * wheel_down_arg;
 	void (*wheel_down_free)(void * arg); //if not NULL, used to free memory pointed by arf
-	void (*over)(void * arg); //callback on mouse over this item
+	void (*over)(void * arg,int x, int y); //callback on mouse over this item
 	void * over_arg;
 	void (*over_free)(void * arg); //if not NULL, used to free memory pointed by arf
 	char * string;		// string centered on item
@@ -103,7 +103,9 @@ void item_set_double_click_left(item_t * item,void (*click_left)(void * arg),voi
 void item_set_double_click_right(item_t * item,void (*click_right)(void * arg),void * click_right_arg, void (*free_func)(void *ptr));
 void item_set_wheel_up(item_t * item,void (*cb_wheel_up)(void * arg),void * wheel_up_arg, void (*free_func)(void *ptr));
 void item_set_wheel_down(item_t * item,void (*cb_wheel_down)(void * arg),void * wheel_down_arg, void (*free_func)(void *ptr));
-void item_set_over(item_t * item,void (*over)(void * arg),void * over_arg, void (*free_func)(void *ptr));
+/* x,y is the mouse pointer position relative to the item itself.
+i.e. 0,0 is the mouse pointer is in the upper-left corner of the item */
+void item_set_over(item_t * item,void (*over)(void * arg,int x,int y),void * over_arg, void (*free_func)(void *ptr));
 void item_set_string(item_t * item,char * string);
 void item_set_string_bg(item_t * item,Uint32 color);
 void item_set_editable(item_t * item,int is_editable);

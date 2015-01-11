@@ -254,7 +254,9 @@ void sdl_mouse_manager(SDL_Renderer * render, SDL_Event * event, item_t * item_l
 				case SDL_MOUSEMOTION:
 					I->current_frame = I->frame_over;
 					if( I->over ) {
-						I->over(I->over_arg);
+						/* x,y is the mouse pointer position relative to the item itself.
+						i.e. 0,0 is the mouse pointer is in the upper-left corner of the item */
+						I->over(I->over_arg,mx-I->rect.x,my-I->rect.y);
 					}
 					action_done = TRUE;
 					break;

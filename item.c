@@ -363,7 +363,7 @@ void item_set_wheel_down(item_t * item,void (*wheel_down)(void * arg),void * whe
 
 /************************************************************************
 ************************************************************************/
-void item_set_over(item_t * item,void (*over)(void * arg),void * over_arg, void (*free_func)(void *ptr))
+void item_set_over(item_t * item,void (*over)(void * arg,int x, int y),void * over_arg, void (*free_func)(void *ptr))
 {
 	item->over=over;
 	item->over_arg=over_arg;
