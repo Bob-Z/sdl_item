@@ -41,6 +41,8 @@ typedef struct item {
 	anim_t * anim;
 	anim_t * anim_over;
 	anim_t * default_anim_over;
+	anim_t * anim_click;
+	anim_t * default_anim_click;
 	int anim_start;
 	int anim_end;
 	int current_frame;
@@ -96,6 +98,7 @@ void item_set_overlay(item_t * item, int overlay);
 void item_set_frame_normal(item_t * item, int num_frame);
 void item_set_frame_over(item_t * item, int num_frame);
 void item_set_anim_over(item_t * item, anim_t * anim);
+void item_set_anim_click(item_t * item, anim_t * anim);
 void item_set_frame_click(item_t * item, int num_frame);
 void item_set_click_left(item_t * item,void (*click_left)(void * arg),void * click_left_arg, void (*free_func)(void *ptr));
 void item_set_click_right(item_t * item,void (*click_right)(void * arg),void * click_right_arg, void (*free_func)(void *ptr));

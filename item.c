@@ -120,6 +120,8 @@ void item_init(item_t * item)
 	item->frame_over=0;
 	item->anim_over=NULL;
 	item->default_anim_over=NULL;
+	item->anim_click=NULL;
+	item->default_anim_click=NULL;
 	item->frame_click=0;
 	item->clicked=0;
 	item->click_left=NULL;
@@ -300,6 +302,12 @@ void item_set_anim_over(item_t * item, anim_t * anim)
 	item->default_anim_over = anim;
 }
 
+/************************************************************************
+************************************************************************/
+void item_set_anim_click(item_t * item, anim_t * anim)
+{
+	item->default_anim_click = anim;
+}
 /************************************************************************
 ************************************************************************/
 void item_set_frame_click(item_t * item, int num_frame)
