@@ -603,15 +603,13 @@ int sdl_blit_item(SDL_Renderer * render,item_t * item)
 		rect.x = item->rect.x;
 		rect.y = item->rect.y;
 		sdl_blit_anim(render,item->anim_click,&rect,item->angle,item->zoom_x,item->zoom_y,item->flip,item->anim_start,item->anim_end,item->overlay);
-	}
-	else if(item->anim_over) {
+	} else if(item->anim_over) {
 		rect.w = item->anim_over->w;
 		rect.h = item->anim_over->h;
 		rect.x = item->rect.x;
 		rect.y = item->rect.y;
 		sdl_blit_anim(render,item->anim_over,&rect,item->angle,item->zoom_x,item->zoom_y,item->flip,item->anim_start,item->anim_end,item->overlay);
-	}
-	else if(item->anim) {
+	} else if(item->anim) {
 		if( item->timer ) {
 			if( item->timer + VIRTUAL_ANIM_DURATION > timer) {
 				item->rect.x = (int)((double)item->old_x + (double)(item->x - item->old_x) * (double)(timer - item->timer) / (double)VIRTUAL_ANIM_DURATION);

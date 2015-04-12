@@ -149,7 +149,7 @@ static anim_t * giflib_load(SDL_Renderer * render, const char * filename)
 		/* Prepare next rendering depending of disposal */
 		allow_draw = 1;
 		switch( disposal ) {
-			/* Do not touch render for next frame */
+		/* Do not touch render for next frame */
 		case DISPOSE_DO_NOT:
 			allow_draw = 0;
 			break;
