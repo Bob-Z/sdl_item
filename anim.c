@@ -274,6 +274,10 @@ static anim_t * libpng_load(SDL_Renderer * render, const char * filename)
 		png_set_packing (png_ptr);
 	}
 
+	if ( !(color_type &= PNG_COLOR_MASK_ALPHA) ) {
+		png_set_filler(png_ptr, 0xff, PNG_FILLER_AFTER);
+	}
+
 	/* optional call to update the info structure */
 	png_read_update_info(png_ptr, info_ptr);
 
