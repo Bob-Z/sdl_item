@@ -212,6 +212,13 @@ void item_set_anim(item_t * item, int x, int y,anim_t * anim)
 
 /************************************************************************
 ************************************************************************/
+void item_set_anim_move(item_t * item, anim_t * anim)
+{
+	item->anim_move = anim;
+}
+
+/************************************************************************
+************************************************************************/
 void item_set_smooth_anim(item_t * item, int x, int y,int old_x, int old_y, Uint32 timer, anim_t * anim)
 {
 	item->x = x;

@@ -596,6 +596,7 @@ int sdl_blit_item(SDL_Renderer * render,item_t * item)
 {
 	Uint32 timer = SDL_GetTicks();
 	SDL_Rect rect;
+	anim_t * anim;
 
 	if(item->anim_click) {
 		rect.w = item->anim_click->w;
@@ -610,8 +611,13 @@ int sdl_blit_item(SDL_Renderer * render,item_t * item)
 		rect.y = item->rect.y;
 		sdl_blit_anim(render,item->anim_over,&rect,item->angle,item->zoom_x,item->zoom_y,item->flip,item->anim_start,item->anim_end,item->overlay);
 	} else if(item->anim) {
+		anim = item->anim;
+
 		if( item->timer ) {
 			if( item->timer + VIRTUAL_ANIM_DURATION > timer) {
+				if( item->anim_move ) {
+					anim = item->anim_move;
+				}
 				item->rect.x = (int)((double)item->old_x + (double)(item->x - item->old_x) * (double)(timer - item->timer) / (double)VIRTUAL_ANIM_DURATION);
 				item->rect.y = (int)((double)item->old_y + (double)(item->y - item->old_y) * (double)(timer - item->timer) / (double)VIRTUAL_ANIM_DURATION);
 			} else {
@@ -621,9 +627,9 @@ int sdl_blit_item(SDL_Renderer * render,item_t * item)
 		}
 
 		if( item->frame_normal == -1 ) {
-			sdl_blit_anim(render,item->anim,&item->rect,item->angle,item->zoom_x,item->zoom_y,item->flip,item->anim_start,item->anim_end,item->overlay);
+			sdl_blit_anim(render,anim,&item->rect,item->angle,item->zoom_x,item->zoom_y,item->flip,item->anim_start,item->anim_end,item->overlay);
 		} else {
-			sdl_blit_tex(render,item->anim->tex[item->frame_normal],&item->rect,item->angle,item->zoom_x,item->zoom_y, item->flip,item->overlay);
+			sdl_blit_tex(render,anim->tex[item->frame_normal],&item->rect,item->angle,item->zoom_x,item->zoom_y, item->flip,item->overlay);
 		}
 	}
 
