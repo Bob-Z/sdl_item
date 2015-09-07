@@ -232,10 +232,10 @@ void item_set_smooth_anim(item_t * item, int x, int y,int old_x, int old_y, Uint
 
 /************************************************************************
 ************************************************************************/
-void item_set_tile(item_t * item, int x, int y)
+void item_set_user(item_t * item, int user1, int user2)
 {
-	item->tile_x = x;
-	item->tile_y = y;
+	item->user1 = user1;
+	item->user2 = user2;
 }
 
 /************************************************************************

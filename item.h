@@ -35,8 +35,8 @@ typedef struct item {
 	int old_x;	// For smooth animation
 	int old_y;	// For smooth animation
 	Uint32 timer;	// For smooth animation
-	int tile_x;	// Coordinate in tile
-	int tile_y;	// Coordinate in tile
+	int user1;	// User defined
+	int user2;	// User defined
 	int overlay;
 	anim_t * anim;			//default sprite
 	anim_t * anim_move; 		//sprite used when item is moving
@@ -91,7 +91,7 @@ void item_set_frame_shape(item_t * item, int x, int y,int w, int h);
 void item_set_anim(item_t * item, int x, int y,anim_t * anim);
 void item_set_anim_move(item_t * item, anim_t * anim);
 void item_set_smooth_anim(item_t * item, int x, int y,int old_x, int old_y, Uint32 timer, anim_t * anim);
-void item_set_tile(item_t * item, int x, int y);
+void item_set_user(item_t * item, int user1, int user2);
 void item_set_angle(item_t * item, double a);
 void item_set_zoom_x(item_t * item, double a);
 void item_set_zoom_y(item_t * item, double a);
