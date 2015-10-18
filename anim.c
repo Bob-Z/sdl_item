@@ -419,8 +419,6 @@ static int extract_zip(struct zip *fd_zip,int index)
 	free(data);
 	zip_fclose(file_zip);
 
-	free(data);
-
 	return 0;
 }
 
