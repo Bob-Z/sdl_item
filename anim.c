@@ -24,14 +24,18 @@
 
 #include <gif_lib.h>
 #include <png.h>
+#include <zip.h>
 
-#define GIF_GCE 0xf9
+#define GIF_GCE			(0xf9)
 
-#define DISPOSE_DO_NOT 1 /* Draw on top of previous image */
-#define DISPOSE_BACKGROUND 2 /* Clean with the background color */
-#define DISPOSE_PREVIOUS 3 /* Restore to previous content */
+#define DISPOSE_DO_NOT		(1) /* Draw on top of previous image */
+#define DISPOSE_BACKGROUND	(2) /* Clean with the background color */
+#define DISPOSE_PREVIOUS	(3) /* Restore to previous content */
 
-#define DEFAULT_DELAY 40
+#define DEFAULT_DELAY		(40)
+
+#define ZIP_TIMING_FILE		"timing"
+#define ZIP_TMP_FILE		"/tmp/si_tmp"
 
 /************************************************************************
 return NULL if error
@@ -183,13 +187,12 @@ static anim_t * giflib_load(SDL_Renderer * render, const char * filename)
 /************************************************************************
 return NULL if error
 ************************************************************************/
-static anim_t * libpng_load(SDL_Renderer * render, const char * filename)
+static SDL_Texture * libpng_load_texture(SDL_Renderer * render, const char * filename, int * width_out, int * height_out)
 {
 	FILE *fp = NULL;
 	png_structp png_ptr = NULL;
 	png_infop info_ptr = NULL;
 	SDL_Surface* surf = NULL;
-	anim_t * anim = NULL;
 	png_bytep *row_pointers = NULL;
 	png_uint_32 width = 0;
 	png_uint_32 height = 0;
@@ -197,6 +200,7 @@ static anim_t * libpng_load(SDL_Renderer * render, const char * filename)
 	int color_type = 0;
 	int i = 0;
 	png_byte magic[8];
+	SDL_Texture * tex = NULL;
 
 	/* open image file */
 	fp = fopen (filename, "rb");
@@ -290,16 +294,6 @@ static anim_t * libpng_load(SDL_Renderer * render, const char * filename)
 	//wlog(LOGDEBUG,"size: %dx%d bit_depth: %d, type: %d",width,height,bit_depth,color_type);
 	/* allocate the memory to hold the image using the fields
 	   of png_info. */
-	anim = malloc(sizeof(anim_t));
-	memset(anim,0,sizeof(anim_t));
-
-	anim->num_frame = 1;
-	anim->tex = malloc(sizeof(SDL_Texture *) * anim->num_frame);
-	anim->w = width;
-	anim->h = height;
-	anim->delay = malloc(sizeof(Uint32) * anim->num_frame);
-	anim->delay[0] = 0;
-
 	surf = SDL_CreateRGBSurface(0,width,height,32,0x000000ff,0x0000ff00,0x00ff0000,0xff000000);
 	memset(surf->pixels,0,width*height*sizeof(Uint32));
 	row_pointers = (png_bytep *)malloc (sizeof (png_bytep) * height);
@@ -324,8 +318,196 @@ static anim_t * libpng_load(SDL_Renderer * render, const char * filename)
 	/* close the file */
 	fclose(fp);
 
-	anim->tex[0] = SDL_CreateTextureFromSurface(render,surf);
+	tex = SDL_CreateTextureFromSurface(render,surf);
 	SDL_FreeSurface(surf);
+
+	*width_out = width;
+	*height_out = height;
+
+	return tex;
+}
+
+/************************************************************************
+return NULL if error
+************************************************************************/
+static anim_t * libpng_load(SDL_Renderer * render, const char * filename)
+{
+	anim_t * anim = NULL;
+	SDL_Texture * tex;
+	int width;
+	int height;
+
+	tex = libpng_load_texture(render,filename, &width, &height);
+	if( tex == NULL ){
+		return NULL;
+	}
+
+	anim = malloc(sizeof(anim_t));
+	memset(anim,0,sizeof(anim_t));
+
+	anim->num_frame = 1;
+	anim->tex = malloc(sizeof(SDL_Texture *) * anim->num_frame);
+	anim->delay = malloc(sizeof(Uint32) * anim->num_frame);
+	anim->delay[0] = 0;
+	anim->tex[0] = tex;
+	anim->w = width;
+	anim->h = height;
+
+	return anim;
+}
+
+/************************************************************************
+************************************************************************/
+static int cmp(const void *p1, const void *p2)
+{
+    return strcmp(* (char **) p1, * (char **) p2);
+}
+
+/************************************************************************
+************************************************************************/
+static void read_timing(char * filename, int count, Uint32 * delay)
+{
+	FILE * file;
+	int i = 0;
+
+	file = fopen(filename,"r");
+	for( i=0 ; i<count ; i++ ){
+		fscanf(file,"%d", &delay[i]);
+	}
+	fclose(file);
+}
+
+/************************************************************************
+return <0 on failure
+************************************************************************/
+static int extract_zip(struct zip *fd_zip,int index)
+{
+	struct zip_stat	file_stat;
+	struct zip_file *file_zip=NULL;
+	char * data;
+	FILE *file_dest;
+
+	zip_stat_index(fd_zip, index, 0, &file_stat);
+
+	file_zip = zip_fopen(fd_zip, file_stat.name, ZIP_FL_UNCHANGED);
+	if( file_zip == 0 ){
+		return -1;
+	}
+
+	data = malloc((size_t)(file_stat.size));
+	if( zip_fread(file_zip, data, (size_t)(file_stat.size)) != file_stat.size ){
+		free(data);
+		zip_fclose(file_zip);
+		return -1;
+	}
+
+	file_dest = fopen(ZIP_TMP_FILE, "wb");
+	if( file_dest == NULL ){
+		free(data);
+		zip_fclose(file_zip);
+		return -1;
+	}
+
+	if( fwrite(data,sizeof(char),(size_t)file_stat.size,file_dest) != file_stat.size ){
+		fclose(file_dest);
+		free(data);
+		zip_fclose(file_zip);
+		return -1;
+	}
+
+	fclose(file_dest);
+	free(data);
+	zip_fclose(file_zip);
+
+	free(data);
+
+	return 0;
+}
+
+/************************************************************************
+return NULL if error
+************************************************************************/
+static anim_t * libzip_load(SDL_Renderer * render, const char * filename)
+{
+	anim_t * anim = NULL;
+	struct zip *fd_zip=NULL;
+	int err = 0;
+	int file_count = 0;
+	int i;
+	char ** zip_filename = NULL;
+	int index = 0;
+
+	fd_zip = zip_open(filename, ZIP_CHECKCONS, &err);
+	if( err != ZIP_ER_OK ) {
+#if 0
+		zip_error_to_str(buf_erreur, sizeof buf_erreur, err, errno);
+		printf("Error %d : %s\n",err, buf_erreur);
+#endif
+		return NULL;
+	}
+
+	if( fd_zip == NULL ){
+		return NULL;
+	}
+
+	file_count = zip_get_num_files(fd_zip);
+	if( file_count == -1 ){
+		zip_close(fd_zip);
+		return NULL;
+	}
+
+	anim = malloc(sizeof(anim_t));
+	memset(anim,0,sizeof(anim_t));
+	anim->tex = malloc( file_count * sizeof(SDL_Texture*) );
+	anim->delay = malloc( file_count * sizeof(Uint32) );
+	for( i=0 ; i<file_count ; i++ ){
+		anim->delay[i] = DEFAULT_DELAY;
+	}
+
+	/* Get zip archive filenames and sort them alphabetically */
+	zip_filename = malloc( sizeof(char*) * file_count );
+	for( i=0; i<file_count; i++ ){
+		zip_filename[i] = strdup(zip_get_name(fd_zip, i, ZIP_FL_UNCHANGED));
+	}
+
+	qsort(zip_filename, file_count, sizeof(char*), cmp);
+
+	/* Read file in archive and process them (either as PNG file or timing file */	
+	for( i=0; i<file_count; i++ ){
+		index = zip_name_locate(fd_zip,zip_filename[i],0);
+		if( index == -1 ){
+			continue;
+		}
+
+		/* Create ZIP_TMP_FILE file */
+		if( extract_zip(fd_zip,index) < 0 ){
+			continue;
+		}
+
+		/* timing file */
+		if( !strcmp( zip_filename[i], ZIP_TIMING_FILE) ){
+			read_timing(ZIP_TMP_FILE, file_count-1, anim->delay);
+			continue;
+		}
+
+		/* PNG file */
+		anim->tex[anim->num_frame] = libpng_load_texture(render, ZIP_TMP_FILE, &anim->w, &anim->h);
+		if( anim->tex[anim->num_frame] == NULL ){
+#if 0
+			printf("Corrupted PNG file");
+#endif
+			continue;
+		}
+
+		anim->num_frame++;
+	}
+
+	/* Clean-up */
+	for( i=0; i<file_count; i++ ){
+		free(zip_filename[i]);
+	}
+
+	zip_close(fd_zip);
 
 	return anim;
 }
@@ -535,12 +717,21 @@ anim_t * anim_load(SDL_Renderer * render, const char * filename)
 {
 	anim_t * ret;
 
+	if( filename == NULL ) {
+		return NULL;
+	}
+
 	ret = giflib_load(render, filename);
 	if(ret != NULL) {
 		return ret;
 	}
 
 	ret = libpng_load(render, filename);
+	if(ret != NULL) {
+		return ret;
+	}
+
+	ret = libzip_load(render, filename);
 	if(ret != NULL) {
 		return ret;
 	}
