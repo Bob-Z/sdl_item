@@ -205,7 +205,7 @@ static SDL_Texture * libpng_load_texture(SDL_Renderer * render, const char * fil
 	/* open image file */
 	fp = fopen (filename, "rb");
 	if (!fp) {
-		fprintf (stderr, "error: couldn't open \"%s\"!\n", filename);
+		//fprintf (stderr, "error: couldn't open \"%s\"!\n", filename);
 		return NULL;
 	}
 
