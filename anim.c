@@ -338,7 +338,7 @@ static anim_t * libpng_load(SDL_Renderer * render, const char * filename)
 	int height;
 
 	tex = libpng_load_texture(render,filename, &width, &height);
-	if( tex == NULL ){
+	if( tex == NULL ) {
 		return NULL;
 	}
 
@@ -360,7 +360,7 @@ static anim_t * libpng_load(SDL_Renderer * render, const char * filename)
 ************************************************************************/
 static int cmp(const void *p1, const void *p2)
 {
-    return strcmp(* (char **) p1, * (char **) p2);
+	return strcmp(* (char **) p1, * (char **) p2);
 }
 
 /************************************************************************
@@ -371,7 +371,7 @@ static void read_timing(char * filename, int count, Uint32 * delay)
 	int i = 0;
 
 	file = fopen(filename,"r");
-	for( i=0 ; i<count ; i++ ){
+	for( i=0 ; i<count ; i++ ) {
 		fscanf(file,"%d", &delay[i]);
 	}
 	fclose(file);
@@ -390,25 +390,25 @@ static int extract_zip(struct zip *fd_zip,int index)
 	zip_stat_index(fd_zip, index, 0, &file_stat);
 
 	file_zip = zip_fopen(fd_zip, file_stat.name, ZIP_FL_UNCHANGED);
-	if( file_zip == 0 ){
+	if( file_zip == 0 ) {
 		return -1;
 	}
 
 	data = malloc((size_t)(file_stat.size));
-	if( zip_fread(file_zip, data, (size_t)(file_stat.size)) != file_stat.size ){
+	if( zip_fread(file_zip, data, (size_t)(file_stat.size)) != file_stat.size ) {
 		free(data);
 		zip_fclose(file_zip);
 		return -1;
 	}
 
 	file_dest = fopen(ZIP_TMP_FILE, "wb");
-	if( file_dest == NULL ){
+	if( file_dest == NULL ) {
 		free(data);
 		zip_fclose(file_zip);
 		return -1;
 	}
 
-	if( fwrite(data,sizeof(char),(size_t)file_stat.size,file_dest) != file_stat.size ){
+	if( fwrite(data,sizeof(char),(size_t)file_stat.size,file_dest) != file_stat.size ) {
 		fclose(file_dest);
 		free(data);
 		zip_fclose(file_zip);
@@ -444,12 +444,12 @@ static anim_t * libzip_load(SDL_Renderer * render, const char * filename)
 		return NULL;
 	}
 
-	if( fd_zip == NULL ){
+	if( fd_zip == NULL ) {
 		return NULL;
 	}
 
 	file_count = zip_get_num_files(fd_zip);
-	if( file_count == -1 ){
+	if( file_count == -1 ) {
 		zip_close(fd_zip);
 		return NULL;
 	}
@@ -458,39 +458,39 @@ static anim_t * libzip_load(SDL_Renderer * render, const char * filename)
 	memset(anim,0,sizeof(anim_t));
 	anim->tex = malloc( file_count * sizeof(SDL_Texture*) );
 	anim->delay = malloc( file_count * sizeof(Uint32) );
-	for( i=0 ; i<file_count ; i++ ){
+	for( i=0 ; i<file_count ; i++ ) {
 		anim->delay[i] = DEFAULT_DELAY;
 	}
 
 	/* Get zip archive filenames and sort them alphabetically */
 	zip_filename = malloc( sizeof(char*) * file_count );
-	for( i=0; i<file_count; i++ ){
+	for( i=0; i<file_count; i++ ) {
 		zip_filename[i] = strdup(zip_get_name(fd_zip, i, ZIP_FL_UNCHANGED));
 	}
 
 	qsort(zip_filename, file_count, sizeof(char*), cmp);
 
-	/* Read file in archive and process them (either as PNG file or timing file */	
-	for( i=0; i<file_count; i++ ){
+	/* Read file in archive and process them (either as PNG file or timing file */
+	for( i=0; i<file_count; i++ ) {
 		index = zip_name_locate(fd_zip,zip_filename[i],0);
-		if( index == -1 ){
+		if( index == -1 ) {
 			continue;
 		}
 
 		/* Create ZIP_TMP_FILE file */
-		if( extract_zip(fd_zip,index) < 0 ){
+		if( extract_zip(fd_zip,index) < 0 ) {
 			continue;
 		}
 
 		/* timing file */
-		if( !strcmp( zip_filename[i], ZIP_TIMING_FILE) ){
+		if( !strcmp( zip_filename[i], ZIP_TIMING_FILE) ) {
 			read_timing(ZIP_TMP_FILE, file_count-1, anim->delay);
 			continue;
 		}
 
 		/* PNG file */
 		anim->tex[anim->num_frame] = libpng_load_texture(render, ZIP_TMP_FILE, &anim->w, &anim->h);
-		if( anim->tex[anim->num_frame] == NULL ){
+		if( anim->tex[anim->num_frame] == NULL ) {
 #if 0
 			printf("Corrupted PNG file");
 #endif
@@ -501,7 +501,7 @@ static anim_t * libzip_load(SDL_Renderer * render, const char * filename)
 	}
 
 	/* Clean-up */
-	for( i=0; i<file_count; i++ ){
+	for( i=0; i<file_count; i++ ) {
 		free(zip_filename[i]);
 	}
 
