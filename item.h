@@ -24,6 +24,11 @@
 #include <SDL2/SDL_ttf.h>
 #include "anim.h"
 
+typedef struct anim_array {
+	anim_t ** array;
+	int num; // Number of *anim in array
+} anim_array_t;
+
 typedef struct item {
 	SDL_Rect rect;
 	int x;	// For smooth animation
@@ -38,12 +43,12 @@ typedef struct item {
 	int user1;	// User defined
 	int user2;	// User defined
 	int overlay;
-	anim_t * anim;			//default sprite
-	anim_t * anim_move; 		//sprite used when item is moving
-	anim_t * anim_over;
-	anim_t * default_anim_over;
-	anim_t * anim_click;
-	anim_t * default_anim_click;
+	anim_array_t anim;		//default sprite
+	anim_array_t anim_move;		//sprite used when item is moving
+	anim_array_t anim_over;		//is set to default_anim_over, when needed (i.e. mouse over this item)
+	anim_array_t default_anim_over;
+	anim_array_t anim_click;	//is set to default_anim_click, when needed (i.e. click on this item)
+	anim_array_t default_anim_click;
 	int anim_start;
 	int anim_end;
 	int current_frame;
@@ -86,11 +91,11 @@ item_t * item_list_add(item_t ** item_list);
 void item_list_free(item_t * item_list);
 void item_init(item_t * item);
 void item_set_pos(item_t * item, int x, int y);
-void item_set_frame(item_t * item, int x, int y,anim_t * anim);
+void item_set_frame(item_t * item, int x, int y,anim_t * anim,int anim_index);
 void item_set_frame_shape(item_t * item, int x, int y,int w, int h);
-void item_set_anim(item_t * item, int x, int y,anim_t * anim);
-void item_set_anim_move(item_t * item, anim_t * anim);
-void item_set_smooth_anim(item_t * item, int x, int y,int old_x, int old_y, Uint32 timer, anim_t * anim);
+void item_set_anim(item_t * item, int x, int y,anim_t * anim,int anim_index);
+void item_set_anim_move(item_t * item, anim_t * anim,int anim_index);
+void item_set_smooth_anim(item_t * item, int x, int y,int old_x, int old_y, Uint32 timer, anim_t * anim,int anim_index);
 void item_set_user(item_t * item, int user1, int user2);
 void item_set_angle(item_t * item, double a);
 void item_set_zoom_x(item_t * item, double a);
@@ -99,8 +104,8 @@ void item_set_flip(item_t * item, int a);
 void item_set_overlay(item_t * item, int overlay);
 void item_set_frame_normal(item_t * item, int num_frame);
 void item_set_frame_over(item_t * item, int num_frame);
-void item_set_anim_over(item_t * item, anim_t * anim);
-void item_set_anim_click(item_t * item, anim_t * anim);
+void item_set_anim_over(item_t * item, anim_t * anim,int anim_index);
+void item_set_anim_click(item_t * item, anim_t * anim,int anim_index);
 void item_set_frame_click(item_t * item, int num_frame);
 void item_set_click_left(item_t * item,void (*click_left)(void * arg),void * click_left_arg, void (*free_func)(void *ptr));
 void item_set_click_right(item_t * item,void (*click_right)(void * arg),void * click_right_arg, void (*free_func)(void *ptr));

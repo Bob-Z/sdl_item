@@ -161,16 +161,21 @@ void sdl_mouse_position_manager(SDL_Renderer * render, item_t * item_list)
 			zoomed_h = I->rect.h * current_vz;
 		}
 
-		I->anim_over = NULL;
-		I->anim_click=NULL;
+		I->anim_over.array=NULL;
+		I->anim_over.num=0;
+		I->anim_click.array=NULL;
+		I->anim_click.num=0;
+
 		if( (zoomed_x <= mx) &&
 				((zoomed_x+zoomed_w) > mx) &&
 				(zoomed_y <= my) &&
 				((zoomed_y+zoomed_h) > my) ) {
-			I->anim_over = I->default_anim_over;
+			I->anim_over.array = I->default_anim_over.array;
+			I->anim_over.num = I->default_anim_over.num;
 			/* Display clicked anim */
 			if( SDL_GetMouseState(NULL,NULL) ) {
-				I->anim_click=I->default_anim_click;
+				I->anim_click.array=I->default_anim_click.array;
+				I->anim_click.num=I->default_anim_click.num;
 			}
 		}
 
@@ -472,6 +477,10 @@ void sdl_blit_tex(SDL_Renderer * render,SDL_Texture * tex, SDL_Rect * rect, doub
 	int vx;
 	int vy;
 
+	if( tex == NULL ){
+		return;
+	}
+
 	if(overlay) {
 		r.x = rect->x;
 		r.y = rect->y;
@@ -515,7 +524,7 @@ int sdl_blit_anim(SDL_Renderer * render,anim_t * anim, SDL_Rect * rect, double a
 	Uint32 time = SDL_GetTicks();
 
 	if(anim == NULL) {
-		assert(0);
+		return -1;
 	}
 
 	if(anim->tex==NULL) {
@@ -596,27 +605,34 @@ int sdl_blit_item(SDL_Renderer * render,item_t * item)
 {
 	Uint32 timer = SDL_GetTicks();
 	SDL_Rect rect;
-	anim_t * anim;
+	anim_array_t * anim;
+	int i;
 
-	if(item->anim_click) {
-		rect.w = item->anim_click->w;
-		rect.h = item->anim_click->h;
+	if(item->anim_click.array) {
+		//FIXME we use first anim size which might not be optimal
+		rect.w = item->anim_click.array[0]->w;
+		rect.h = item->anim_click.array[0]->h;
 		rect.x = item->rect.x;
 		rect.y = item->rect.y;
-		sdl_blit_anim(render,item->anim_click,&rect,item->angle,item->zoom_x,item->zoom_y,item->flip,item->anim_start,item->anim_end,item->overlay);
-	} else if(item->anim_over) {
-		rect.w = item->anim_over->w;
-		rect.h = item->anim_over->h;
+		for(i=0;i<item->anim_click.num;i++){
+			sdl_blit_anim(render,item->anim_click.array[i],&rect,item->angle,item->zoom_x,item->zoom_y,item->flip,item->anim_start,item->anim_end,item->overlay);
+		}
+	} else if(item->anim_over.array) {
+		//FIXME we use first anim size which might not be optimal
+		rect.w = item->anim_over.array[0]->w;
+		rect.h = item->anim_over.array[0]->h;
 		rect.x = item->rect.x;
 		rect.y = item->rect.y;
-		sdl_blit_anim(render,item->anim_over,&rect,item->angle,item->zoom_x,item->zoom_y,item->flip,item->anim_start,item->anim_end,item->overlay);
-	} else if(item->anim) {
-		anim = item->anim;
+		for(i=0;i<item->anim_over.num;i++){
+			sdl_blit_anim(render,item->anim_over.array[i],&rect,item->angle,item->zoom_x,item->zoom_y,item->flip,item->anim_start,item->anim_end,item->overlay);
+		}
+	} else if(item->anim.array) {
+		anim = &item->anim;
 
 		if( item->timer ) {
 			if( item->timer + VIRTUAL_ANIM_DURATION > timer) {
-				if( item->anim_move ) {
-					anim = item->anim_move;
+				if( item->anim_move.array ) {
+					anim = &item->anim_move;
 				}
 				item->rect.x = (int)((double)item->old_x + (double)(item->x - item->old_x) * (double)(timer - item->timer) / (double)VIRTUAL_ANIM_DURATION);
 				item->rect.y = (int)((double)item->old_y + (double)(item->y - item->old_y) * (double)(timer - item->timer) / (double)VIRTUAL_ANIM_DURATION);
@@ -627,9 +643,13 @@ int sdl_blit_item(SDL_Renderer * render,item_t * item)
 		}
 
 		if( item->frame_normal == -1 ) {
-			sdl_blit_anim(render,anim,&item->rect,item->angle,item->zoom_x,item->zoom_y,item->flip,item->anim_start,item->anim_end,item->overlay);
+			for(i=0; i<anim->num; i++){
+				sdl_blit_anim(render,anim->array[i],&item->rect,item->angle,item->zoom_x,item->zoom_y,item->flip,item->anim_start,item->anim_end,item->overlay);
+			}
 		} else {
-			sdl_blit_tex(render,anim->tex[item->frame_normal],&item->rect,item->angle,item->zoom_x,item->zoom_y, item->flip,item->overlay);
+			for(i=0; i<anim->num; i++){
+				sdl_blit_tex(render,anim->array[i]->tex[item->frame_normal],&item->rect,item->angle,item->zoom_x,item->zoom_y, item->flip,item->overlay);
+			}
 		}
 	}
 

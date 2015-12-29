@@ -50,31 +50,43 @@ Note that item->anim is not freed here !
 ************************************************************************/
 static void item_free(item_t * item)
 {
-	if( item->string ) {
+	if( item->anim.array ){
+		free(item->anim.array);
+	}
+	if( item->anim_move.array ){
+		free(item->anim_move.array);
+	}
+	if( item->default_anim_over.array ){
+		free(item->default_anim_over.array);
+	}
+	if( item->default_anim_click.array ){
+		free(item->default_anim_click.array);
+	}
+	if( item->string ){
 		free(item->string);
 	}
-	if( item->str_tex ) {
+	if( item->str_tex ){
 		SDL_DestroyTexture(item->str_tex);
 	}
-	if( item->click_left_free ) {
+	if( item->click_left_free ){
 		item->click_left_free(item->click_left_arg);
 	}
-	if( item->click_right_free ) {
+	if( item->click_right_free ){
 		item->click_right_free(item->click_right_arg);
 	}
-	if( item->double_click_left_free ) {
+	if( item->double_click_left_free ){
 		item->double_click_left_free(item->double_click_left_arg);
 	}
-	if( item->double_click_right_free ) {
+	if( item->double_click_right_free ){
 		item->double_click_right_free(item->double_click_right_arg);
 	}
-	if( item->wheel_up_free ) {
+	if( item->wheel_up_free ){
 		item->wheel_up_free(item->wheel_up_arg);
 	}
-	if( item->wheel_down_free ) {
+	if( item->wheel_down_free ){
 		item->wheel_down_free(item->wheel_down_arg);
 	}
-	if( item->over_free ) {
+	if( item->over_free ){
 		item->over_free(item->over_arg);
 	}
 
@@ -112,16 +124,23 @@ void item_init(item_t * item)
 	item->old_y=-1;
 	item->timer=0;
 	item->overlay=0;
-	item->anim=NULL;
+	item->anim.array=NULL;
+	item->anim.num=0;
+	item->anim_move.array=NULL;
+	item->anim_move.num=0;
+	item->anim_over.array=NULL;
+	item->anim_over.num=0;
+	item->default_anim_over.array=NULL;
+	item->default_anim_over.num=0;
+	item->anim_click.array=NULL;
+	item->anim_click.num=0;
+	item->default_anim_click.array=NULL;
+	item->default_anim_click.num=0;
 	item->anim_start=0;
 	item->anim_end=-1;
 	item->current_frame=0;
 	item->frame_normal=0;
 	item->frame_over=0;
-	item->anim_over=NULL;
-	item->default_anim_over=NULL;
-	item->anim_click=NULL;
-	item->default_anim_click=NULL;
 	item->frame_click=0;
 	item->clicked=0;
 	item->click_left=NULL;
@@ -165,7 +184,25 @@ void item_set_pos(item_t * item, int x, int y)
 
 /************************************************************************
 ************************************************************************/
-void item_set_frame(item_t * item, int x, int y,anim_t * anim)
+static void add_and_set_anim(anim_array_t * anim_array, anim_t * anim, int anim_index)
+{
+	int i;
+
+	if( anim_array->num <= anim_index ){
+		anim_array->array = realloc(anim_array->array,(anim_index+1)*sizeof(anim_t*));
+
+		for(i=anim_array->num;i<=anim_index;i++){
+			anim_array->array[i] = NULL;
+		}
+		anim_array->num = anim_index+1;
+	}
+
+	anim_array->array[anim_index]=anim;
+}
+
+/************************************************************************
+************************************************************************/
+void item_set_frame(item_t * item, int x, int y,anim_t * anim, int anim_index)
 {
 	int w;
 	int h;
@@ -175,7 +212,7 @@ void item_set_frame(item_t * item, int x, int y,anim_t * anim)
 	item_set_pos(item,x,y);
 
 	if( anim ) {
-		item->anim = anim;
+		add_and_set_anim(&item->anim, anim, anim_index);
 		max_w = anim->w;
 		max_h = anim->h;
 	}
@@ -204,29 +241,29 @@ void item_set_frame_shape(item_t * item, int x, int y,int w, int h)
 
 /************************************************************************
 ************************************************************************/
-void item_set_anim(item_t * item, int x, int y,anim_t * anim)
+void item_set_anim(item_t * item, int x, int y,anim_t * anim, int anim_index)
 {
-	item_set_frame(item,x,y,anim);
+	item_set_frame(item,x,y,anim,anim_index);
 	item->frame_normal = -1;
 }
 
 /************************************************************************
 ************************************************************************/
-void item_set_anim_move(item_t * item, anim_t * anim)
+void item_set_anim_move(item_t * item, anim_t * anim, int anim_index)
 {
-	item->anim_move = anim;
+	add_and_set_anim(&item->anim_move, anim, anim_index);
 }
 
 /************************************************************************
 ************************************************************************/
-void item_set_smooth_anim(item_t * item, int x, int y,int old_x, int old_y, Uint32 timer, anim_t * anim)
+void item_set_smooth_anim(item_t * item, int x, int y,int old_x, int old_y, Uint32 timer, anim_t * anim, int anim_index)
 {
 	item->x = x;
 	item->y = y;
 	item->old_x = old_x;
 	item->old_y = old_y;
 	item->timer = timer;
-	item_set_frame(item,x,y,anim);
+	item_set_frame(item,x,y,anim,anim_index);
 	item->frame_normal = -1;
 }
 
@@ -304,16 +341,16 @@ void item_set_frame_over(item_t * item, int num_frame)
 
 /************************************************************************
 ************************************************************************/
-void item_set_anim_over(item_t * item, anim_t * anim)
+void item_set_anim_over(item_t * item, anim_t * anim,int anim_index)
 {
-	item->default_anim_over = anim;
+	add_and_set_anim(&item->default_anim_over, anim, anim_index);
 }
 
 /************************************************************************
 ************************************************************************/
-void item_set_anim_click(item_t * item, anim_t * anim)
+void item_set_anim_click(item_t * item, anim_t * anim,int anim_index)
 {
-	item->default_anim_click = anim;
+	add_and_set_anim(&item->default_anim_click, anim, anim_index);
 }
 /************************************************************************
 ************************************************************************/
