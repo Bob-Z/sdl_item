@@ -608,7 +608,7 @@ int sdl_blit_item(SDL_Renderer * render,item_t * item)
 	anim_array_t * anim;
 	int i;
 
-	if(item->anim_click.array) {
+	if(item->anim_click.array && item->anim_click.array[0]) {
 		//FIXME we use first anim size which might not be optimal
 		rect.w = item->anim_click.array[0]->w;
 		rect.h = item->anim_click.array[0]->h;
@@ -617,7 +617,7 @@ int sdl_blit_item(SDL_Renderer * render,item_t * item)
 		for(i=0;i<item->anim_click.num;i++){
 			sdl_blit_anim(render,item->anim_click.array[i],&rect,item->angle,item->zoom_x,item->zoom_y,item->flip,item->anim_start,item->anim_end,item->overlay);
 		}
-	} else if(item->anim_over.array) {
+	} else if(item->anim_over.array && item->anim_over.array[0]) {
 		//FIXME we use first anim size which might not be optimal
 		rect.w = item->anim_over.array[0]->w;
 		rect.h = item->anim_over.array[0]->h;
@@ -626,12 +626,12 @@ int sdl_blit_item(SDL_Renderer * render,item_t * item)
 		for(i=0;i<item->anim_over.num;i++){
 			sdl_blit_anim(render,item->anim_over.array[i],&rect,item->angle,item->zoom_x,item->zoom_y,item->flip,item->anim_start,item->anim_end,item->overlay);
 		}
-	} else if(item->anim.array) {
+	} else if(item->anim.array && item->anim.array[0]) {
 		anim = &item->anim;
 
 		if( item->timer ) {
 			if( item->timer + VIRTUAL_ANIM_DURATION > timer) {
-				if( item->anim_move.array ) {
+				if( item->anim_move.array && item->anim_move.array[0] ) {
 					anim = &item->anim_move;
 				}
 				item->rect.x = (int)((double)item->old_x + (double)(item->x - item->old_x) * (double)(timer - item->timer) / (double)VIRTUAL_ANIM_DURATION);
