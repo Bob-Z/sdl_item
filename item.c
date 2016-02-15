@@ -226,8 +226,12 @@ void item_set_frame(item_t * item, int x, int y,anim_t * anim, int anim_index)
 		}
 	}
 
-	item->rect.w = max_w;
-	item->rect.h = max_h;
+	if( item->rect.w < max_w ) {
+		item->rect.w = max_w;
+	}
+	if( item->rect.h < max_h ) {
+		item->rect.h = max_h;
+	}
 }
 
 /************************************************************************
