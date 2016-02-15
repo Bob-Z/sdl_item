@@ -138,10 +138,6 @@ void item_init(item_t * item)
 	item->default_anim_click.num=0;
 	item->anim_start=0;
 	item->anim_end=-1;
-	item->current_frame=0;
-	item->frame_normal=0;
-	item->frame_over=0;
-	item->frame_click=0;
 	item->clicked=0;
 	item->click_left=NULL;
 	item->click_left_arg=NULL;
@@ -202,7 +198,7 @@ static void add_and_set_anim(anim_array_t * anim_array, anim_t * anim, int anim_
 
 /************************************************************************
 ************************************************************************/
-void item_set_frame(item_t * item, int x, int y,anim_t * anim, int anim_index)
+void item_set_anim(item_t * item, int x, int y,anim_t * anim, int anim_index)
 {
 	int w;
 	int h;
@@ -236,19 +232,11 @@ void item_set_frame(item_t * item, int x, int y,anim_t * anim, int anim_index)
 
 /************************************************************************
 ************************************************************************/
-void item_set_frame_shape(item_t * item, int x, int y,int w, int h)
+void item_set_anim_shape(item_t * item, int x, int y,int w, int h)
 {
 	item_set_pos(item,x,y);
 	item->rect.w = w;
 	item->rect.h = h;
-}
-
-/************************************************************************
-************************************************************************/
-void item_set_anim(item_t * item, int x, int y,anim_t * anim, int anim_index)
-{
-	item_set_frame(item,x,y,anim,anim_index);
-	item->frame_normal = -1;
 }
 
 /************************************************************************
@@ -280,8 +268,7 @@ void item_set_smooth_anim(item_t * item, int x, int y,int old_x, int old_y, Uint
 	item->old_x = old_x;
 	item->old_y = old_y;
 	item->timer = timer;
-	item_set_frame(item,x,y,anim,anim_index);
-	item->frame_normal = -1;
+	item_set_anim(item,x,y,anim,anim_index);
 }
 
 /************************************************************************
@@ -330,13 +317,6 @@ void item_set_overlay(item_t * item, int overlay)
 
 /************************************************************************
 ************************************************************************/
-void item_set_frame_normal(item_t * item, int num_frame)
-{
-	item->frame_normal = num_frame;
-}
-
-/************************************************************************
-************************************************************************/
 void item_set_anim_start(item_t * item, int start_frame)
 {
 	item->anim_start = start_frame;
@@ -347,13 +327,6 @@ void item_set_anim_start(item_t * item, int start_frame)
 void item_set_anim_end(item_t * item, int end_frame)
 {
 	item->anim_end = end_frame;
-}
-
-/************************************************************************
-************************************************************************/
-void item_set_frame_over(item_t * item, int num_frame)
-{
-	item->frame_over = num_frame;
 }
 
 /************************************************************************
@@ -392,13 +365,6 @@ void item_set_anim_click_array(item_t * item, anim_t ** anim)
 		item_set_anim_click(item,anim[num_anim],num_anim);
 		num_anim++;
 	}
-}
-
-/************************************************************************
-************************************************************************/
-void item_set_frame_click(item_t * item, int num_frame)
-{
-	item->frame_click = num_frame;
 }
 
 /************************************************************************

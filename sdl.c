@@ -258,8 +258,6 @@ void sdl_mouse_manager(SDL_Renderer * render, SDL_Event * event, item_t * item_l
 				zoomed_h = I->rect.h * current_vz;
 			}
 
-			I->current_frame = I->frame_normal;
-
 			/* Manage event related to mouse position */
 			if( (zoomed_x <= mx) &&
 					((zoomed_x+zoomed_w) > mx) &&
@@ -272,7 +270,6 @@ void sdl_mouse_manager(SDL_Renderer * render, SDL_Event * event, item_t * item_l
 
 				switch (event->type) {
 				case SDL_MOUSEMOTION:
-					I->current_frame = I->frame_over;
 					if( I->over ) {
 						/* x,y is the mouse pointer position relative to the item itself.
 						i.e. 0,0 is the mouse pointer is in the upper-left corner of the item */
@@ -286,20 +283,16 @@ void sdl_mouse_manager(SDL_Renderer * render, SDL_Event * event, item_t * item_l
 						sdl_keyboard_text_init(I->string,I->edit_cb);
 					}
 
-					I->current_frame = I->frame_click;
 					if( I->click_left && event->button.button == SDL_BUTTON_LEFT) {
-						I->current_frame=I->frame_click;
 						I->clicked=1;
 					}
 					if( I->click_right && event->button.button == SDL_BUTTON_RIGHT) {
-						I->current_frame=I->frame_click;
 						I->clicked=1;
 					}
 					action_done = TRUE;
 					break;
 				case SDL_MOUSEBUTTONUP:
 					I->clicked=0;
-					I->current_frame = I->frame_normal;
 					if( I->click_left && event->button.button == SDL_BUTTON_LEFT && event->button.clicks == 1) {
 						I->click_left(I->click_left_arg);
 					}
@@ -332,7 +325,6 @@ void sdl_mouse_manager(SDL_Renderer * render, SDL_Event * event, item_t * item_l
 			}
 
 			if(I->clicked) {
-				I->current_frame = I->frame_click;
 			}
 			I = I->next;
 		}
@@ -605,51 +597,42 @@ int sdl_blit_item(SDL_Renderer * render,item_t * item)
 {
 	Uint32 timer = SDL_GetTicks();
 	SDL_Rect rect;
-	anim_array_t * anim;
+	anim_array_t * anim = NULL;
+	int is_moving = false;
 	int i;
 
-	if(item->anim_click.array && item->anim_click.array[0]) {
-		//FIXME we use first anim size which might not be optimal
-		rect.w = item->anim_click.array[0]->w;
-		rect.h = item->anim_click.array[0]->h;
-		rect.x = item->rect.x;
-		rect.y = item->rect.y;
-		for(i=0;i<item->anim_click.num;i++){
-			sdl_blit_anim(render,item->anim_click.array[i],&rect,item->angle,item->zoom_x,item->zoom_y,item->flip,item->anim_start,item->anim_end,item->overlay);
-		}
-	} else if(item->anim_over.array && item->anim_over.array[0]) {
-		//FIXME we use first anim size which might not be optimal
-		rect.w = item->anim_over.array[0]->w;
-		rect.h = item->anim_over.array[0]->h;
-		rect.x = item->rect.x;
-		rect.y = item->rect.y;
-		for(i=0;i<item->anim_over.num;i++){
-			sdl_blit_anim(render,item->anim_over.array[i],&rect,item->angle,item->zoom_x,item->zoom_y,item->flip,item->anim_start,item->anim_end,item->overlay);
-		}
-	} else if(item->anim.array && item->anim.array[0]) {
-		anim = &item->anim;
-
-		if( item->timer ) {
-			if( item->timer + VIRTUAL_ANIM_DURATION > timer) {
-				if( item->anim_move.array && item->anim_move.array[0] ) {
-					anim = &item->anim_move;
-				}
-				item->rect.x = (int)((double)item->old_x + (double)(item->x - item->old_x) * (double)(timer - item->timer) / (double)VIRTUAL_ANIM_DURATION);
-				item->rect.y = (int)((double)item->old_y + (double)(item->y - item->old_y) * (double)(timer - item->timer) / (double)VIRTUAL_ANIM_DURATION);
-			} else {
-				item->rect.x =item->x;
-				item->rect.y =item->y;
-			}
-		}
-
-		if( item->frame_normal == -1 ) {
-			for(i=0; i<anim->num; i++){
-				sdl_blit_anim(render,anim->array[i],&item->rect,item->angle,item->zoom_x,item->zoom_y,item->flip,item->anim_start,item->anim_end,item->overlay);
-			}
+	if( item->timer ) {
+		if( item->timer + VIRTUAL_ANIM_DURATION > timer) {
+			is_moving = true;
+			item->rect.x = (int)((double)item->old_x + (double)(item->x - item->old_x) * (double)(timer - item->timer) / (double)VIRTUAL_ANIM_DURATION);
+			item->rect.y = (int)((double)item->old_y + (double)(item->y - item->old_y) * (double)(timer - item->timer) / (double)VIRTUAL_ANIM_DURATION);
 		} else {
-			for(i=0; i<anim->num; i++){
-				sdl_blit_tex(render,anim->array[i]->tex[item->frame_normal],&item->rect,item->angle,item->zoom_x,item->zoom_y, item->flip,item->overlay);
-			}
+			item->rect.x =item->x;
+			item->rect.y =item->y;
+		}
+	}
+
+	rect.x = item->rect.x;
+	rect.y = item->rect.y;
+
+	if(item->anim.array && item->anim.array[0]) {
+		anim = &item->anim;
+	}
+	if(item->anim_click.array && item->anim_click.array[0]) {
+		anim = &item->anim_click;
+	}
+	if(item->anim_over.array && item->anim_over.array[0]) {
+		anim = &item->anim_over;
+	}
+	if(is_moving && item->anim_move.array && item->anim_move.array[0]) {
+		anim = &item->anim_move;
+	}
+
+	if(anim) {
+		for(i=0; i<anim->num; i++){
+			rect.w = anim->array[i]->w;
+			rect.h = anim->array[i]->h;
+			sdl_blit_anim(render,anim->array[i],&rect,item->angle,item->zoom_x,item->zoom_y,item->flip,item->anim_start,item->anim_end,item->overlay);
 		}
 	}
 
