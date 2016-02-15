@@ -248,6 +248,19 @@ void item_set_anim(item_t * item, int x, int y,anim_t * anim, int anim_index)
 }
 
 /************************************************************************
+anim_array is a NULL terminated anim array
+************************************************************************/
+void item_set_anim_array(item_t * item, int x, int y,anim_t ** anim_array)
+{
+	int num_anim = 0;
+
+	while( anim_array[num_anim] ) {
+		item_set_anim(item,x,y,anim_array[num_anim],num_anim);
+		num_anim++;
+	}
+}
+
+/************************************************************************
 ************************************************************************/
 void item_set_anim_move(item_t * item, anim_t * anim, int anim_index)
 {
@@ -348,10 +361,35 @@ void item_set_anim_over(item_t * item, anim_t * anim,int anim_index)
 
 /************************************************************************
 ************************************************************************/
+void item_set_anim_over_array(item_t * item, anim_t ** anim)
+{
+	int num_anim = 0;
+
+	while( anim[num_anim] ) {
+		item_set_anim_over(item,anim[num_anim],num_anim);
+		num_anim++;
+	}
+}
+
+/************************************************************************
+************************************************************************/
 void item_set_anim_click(item_t * item, anim_t * anim,int anim_index)
 {
 	add_and_set_anim(&item->default_anim_click, anim, anim_index);
 }
+
+/************************************************************************
+************************************************************************/
+void item_set_anim_click_array(item_t * item, anim_t ** anim)
+{
+	int num_anim = 0;
+
+	while( anim[num_anim] ) {
+		item_set_anim_click(item,anim[num_anim],num_anim);
+		num_anim++;
+	}
+}
+
 /************************************************************************
 ************************************************************************/
 void item_set_frame_click(item_t * item, int num_frame)
