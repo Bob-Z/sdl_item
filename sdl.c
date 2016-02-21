@@ -76,7 +76,7 @@ void sdl_cleanup()
 
 /************************************************************************
 ************************************************************************/
-void sdl_init(const char * title, SDL_Renderer ** render,SDL_Window ** window, void (*screen_compose_cb)(void))
+void sdl_init(const char * title, SDL_Renderer ** render,SDL_Window ** window, void (*screen_compose_cb)(void), int vsync)
 {
 	if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
 		exit(EXIT_FAILURE);
@@ -97,7 +97,7 @@ void sdl_init(const char * title, SDL_Renderer ** render,SDL_Window ** window, v
 		exit(EXIT_FAILURE);
 	}
 
-	*render = SDL_CreateRenderer(*window, -1, SDL_RENDERER_PRESENTVSYNC);
+	*render = SDL_CreateRenderer(*window, -1, vsync?SDL_RENDERER_PRESENTVSYNC:0);
 	if( *render == NULL) {
 		exit(EXIT_FAILURE);
 	}
@@ -438,10 +438,11 @@ void sdl_loop_manager()
 	}
 
 	timer = SDL_GetTicks();
-
+#if 0
 	if( timer < old_timer + FRAME_DELAY ) {
 		SDL_Delay(old_timer + FRAME_DELAY - timer);
 	}
+#endif
 
 	timer = SDL_GetTicks();
 	if( virtual_tick + VIRTUAL_ANIM_DURATION > timer ) {

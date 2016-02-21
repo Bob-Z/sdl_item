@@ -58,7 +58,7 @@ typedef struct mousecb {
 	struct mousecb * next;
 } mousecb_t;
 
-void sdl_init(const char * title, SDL_Renderer ** render,SDL_Window ** window, void (*screen_compose_cb)(void));
+void sdl_init(const char * title, SDL_Renderer ** render,SDL_Window ** window, void (*screen_compose_cb)(void),int vsync);
 void sdl_cleanup(void);
 void sdl_set_pixel(SDL_Surface *surface, int x, int y, Uint32 R, Uint32 G, Uint32 B, Uint32 A);
 Uint32 sdl_get_pixel(SDL_Surface *surface, int x, int y);
