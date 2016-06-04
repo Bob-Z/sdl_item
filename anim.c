@@ -64,14 +64,22 @@ static anim_t * giflib_load(SDL_Renderer * render, const char * filename)
 	int frame_width = 0;
 	int frame_height = 0;
 	int allow_draw = 1;
-	int error;
+	int error = 0;
+	int ret;
 
 	gif = DGifOpenFileName(filename,&error);
 	if(gif == NULL) {
+#if 0
+		printf("%s: %s\n", filename,GifErrorString(error));
+#endif
 		return NULL;
 	}
-	//Using giflib to decode
-	DGifSlurp(gif);
+
+	ret = DGifSlurp(gif);
+	if (ret != D_GIF_SUCCEEDED || gif->Error != D_GIF_SUCCEEDED) {
+		DGifCloseFile(gif,&error);
+        	return NULL;
+	}
 
 	anim = malloc(sizeof(anim_t));
 	memset(anim,0,sizeof(anim_t));
@@ -232,7 +240,7 @@ static SDL_Texture * libpng_load_texture(SDL_Renderer * render, const char * fil
 
 	/* set error handling */
 	if (setjmp(png_ptr->jmpbuf)) {
-		png_read_destroy(png_ptr, info_ptr, (png_info *)0);
+		png_destroy_read_struct(&png_ptr, &info_ptr, (png_info **)0);
 		fclose(fp);
 		free(png_ptr);
 		free(info_ptr);
@@ -549,19 +557,19 @@ static anim_t * libav_load(SDL_Renderer * render, const char * filename)
 	//wlog(LOGDEBUG,"Loading %d streams in %s",pFormatCtx->nb_streams,filename);
 	// Find the first video stream
 	videoStream = -1;
-	for (i = 0; i < pFormatCtx->nb_streams; i++)
+	for (i = 0; i < pFormatCtx->nb_streams; i++) {
 		if (pFormatCtx->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO) {
 			videoStream = i;
 			/* total stream duration (in nanosecond) / number of image in the stream / 1000 (to get milliseconds */
 			delay = pFormatCtx->duration / pFormatCtx->streams[i]->duration / 1000;
-			/* If the above doesn't work try with frame_rate :
-			pFormatCtx->streams[i]->r_frame_rate
-			*/
-			anim->num_frame = pFormatCtx->streams[i]->duration;
-			anim->tex = (SDL_Texture**)malloc(anim->num_frame * sizeof(SDL_Texture*));
-			anim->delay = (Uint32*)malloc(anim->num_frame * sizeof(Uint32));
+			// If the above doesn't work try with frame_rate :
+			//delay = pFormatCtx->streams[i]->r_frame_rate;
+
+			anim->tex = NULL;
+			anim->delay = NULL;
 			break;
 		}
+	}
 
 	if (videoStream == -1) {
 		//Didn't find a video stream
@@ -642,7 +650,9 @@ static anim_t * libav_load(SDL_Renderer * render, const char * filename)
 						  pFrameRGB->data,
 						  pFrameRGB->linesize);
 
+				anim->delay = (Uint32*)realloc(anim->delay,(i+1) * sizeof(Uint32));
 				anim->delay[i] = delay;
+				anim->tex = (SDL_Texture**)realloc(anim->tex, (i+1) * sizeof(SDL_Texture*));
 				anim->tex[i] = SDL_CreateTexture(render, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STATIC, pCodecCtx->width,pCodecCtx->height);
 				if( anim->tex[i] == NULL ) {
 					//SDL_CreateTexture error
@@ -654,6 +664,7 @@ static anim_t * libav_load(SDL_Renderer * render, const char * filename)
 				i++;
 			}
 		}
+		anim->num_frame = i;
 
 		// Free the packet that was allocated by av_read_frame
 		av_free_packet(&packet);
