@@ -76,7 +76,11 @@ static anim_t * giflib_load(SDL_Renderer * render, const char * filename)
 	}
 
 	ret = DGifSlurp(gif);
-	if (ret != D_GIF_SUCCEEDED || gif->Error != D_GIF_SUCCEEDED) {
+	if (ret != GIF_OK) {
+		DGifCloseFile(gif,&error);
+        	return NULL;
+	}
+	if ( gif->Error != D_GIF_SUCCEEDED) {
 		DGifCloseFile(gif,&error);
         	return NULL;
 	}
