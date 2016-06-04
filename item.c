@@ -50,43 +50,43 @@ Note that item->anim is not freed here !
 ************************************************************************/
 static void item_free(item_t * item)
 {
-	if( item->anim.array ){
+	if( item->anim.array ) {
 		free(item->anim.array);
 	}
-	if( item->anim_move.array ){
+	if( item->anim_move.array ) {
 		free(item->anim_move.array);
 	}
-	if( item->default_anim_over.array ){
+	if( item->default_anim_over.array ) {
 		free(item->default_anim_over.array);
 	}
-	if( item->default_anim_click.array ){
+	if( item->default_anim_click.array ) {
 		free(item->default_anim_click.array);
 	}
-	if( item->string ){
+	if( item->string ) {
 		free(item->string);
 	}
-	if( item->str_tex ){
+	if( item->str_tex ) {
 		SDL_DestroyTexture(item->str_tex);
 	}
-	if( item->click_left_free ){
+	if( item->click_left_free ) {
 		item->click_left_free(item->click_left_arg);
 	}
-	if( item->click_right_free ){
+	if( item->click_right_free ) {
 		item->click_right_free(item->click_right_arg);
 	}
-	if( item->double_click_left_free ){
+	if( item->double_click_left_free ) {
 		item->double_click_left_free(item->double_click_left_arg);
 	}
-	if( item->double_click_right_free ){
+	if( item->double_click_right_free ) {
 		item->double_click_right_free(item->double_click_right_arg);
 	}
-	if( item->wheel_up_free ){
+	if( item->wheel_up_free ) {
 		item->wheel_up_free(item->wheel_up_arg);
 	}
-	if( item->wheel_down_free ){
+	if( item->wheel_down_free ) {
 		item->wheel_down_free(item->wheel_down_arg);
 	}
-	if( item->over_free ){
+	if( item->over_free ) {
 		item->over_free(item->over_arg);
 	}
 
@@ -184,10 +184,10 @@ static void add_and_set_anim(anim_array_t * anim_array, anim_t * anim, int anim_
 {
 	int i;
 
-	if( anim_array->num <= anim_index ){
+	if( anim_array->num <= anim_index ) {
 		anim_array->array = realloc(anim_array->array,(anim_index+1)*sizeof(anim_t*));
 
-		for(i=anim_array->num;i<=anim_index;i++){
+		for(i=anim_array->num; i<=anim_index; i++) {
 			anim_array->array[i] = NULL;
 		}
 		anim_array->num = anim_index+1;

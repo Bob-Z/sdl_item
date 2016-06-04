@@ -470,7 +470,7 @@ void sdl_blit_tex(SDL_Renderer * render,SDL_Texture * tex, SDL_Rect * rect, doub
 	int vx;
 	int vy;
 
-	if( tex == NULL ){
+	if( tex == NULL ) {
 		return;
 	}
 
@@ -630,7 +630,7 @@ int sdl_blit_item(SDL_Renderer * render,item_t * item)
 	}
 
 	if(anim) {
-		for(i=0; i<anim->num; i++){
+		for(i=0; i<anim->num; i++) {
 			rect.w = anim->array[i]->w;
 			rect.h = anim->array[i]->h;
 			sdl_blit_anim(render,anim->array[i],&rect,item->angle,item->zoom_x,item->zoom_y,item->flip,item->anim_start,item->anim_end,item->overlay);
