@@ -28,10 +28,6 @@
 
 #define GIF_GCE			(0xf9)
 
-#define DISPOSE_DO_NOT		(1) /* Draw on top of previous image */
-#define DISPOSE_BACKGROUND	(2) /* Clean with the background color */
-#define DISPOSE_PREVIOUS	(3) /* Restore to previous content */
-
 #define DEFAULT_DELAY		(40)
 
 #define ZIP_TIMING_FILE		"timing"
@@ -68,8 +64,9 @@ static anim_t * giflib_load(SDL_Renderer * render, const char * filename)
 	int frame_width = 0;
 	int frame_height = 0;
 	int allow_draw = 1;
+	int error;
 
-	gif = DGifOpenFileName(filename);
+	gif = DGifOpenFileName(filename,&error);
 	if(gif == NULL) {
 		return NULL;
 	}
@@ -179,7 +176,7 @@ static anim_t * giflib_load(SDL_Renderer * render, const char * filename)
 	}
 	SDL_FreeSurface(surf);
 
-	DGifCloseFile(gif);
+	DGifCloseFile(gif,&error);
 
 	return anim;
 }
