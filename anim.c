@@ -223,6 +223,7 @@ static SDL_Texture * libpng_load_texture(SDL_Renderer * render, const char * fil
 
 	/* check for valid magic number */
 	if (!png_check_sig (magic, sizeof (magic))) {
+		fclose(fp);
 		return NULL;
 	}
 
@@ -230,6 +231,7 @@ static SDL_Texture * libpng_load_texture(SDL_Renderer * render, const char * fil
 	png_ptr = png_create_read_struct
 			  (PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 	if (!png_ptr) {
+		fclose(fp);
 		return NULL;
 	}
 
@@ -237,6 +239,7 @@ static SDL_Texture * libpng_load_texture(SDL_Renderer * render, const char * fil
 	info_ptr = png_create_info_struct (png_ptr);
 	if (!info_ptr) {
 		png_destroy_read_struct (&png_ptr, NULL, NULL);
+		fclose(fp);
 		return NULL;
 	}
 
