@@ -294,6 +294,10 @@ static SDL_Texture * libpng_load_texture(SDL_Renderer * render, const char * fil
 		png_set_filler(png_ptr, 0xff, PNG_FILLER_AFTER);
 	}
 
+	if( color_type == PNG_COLOR_TYPE_GRAY || color_type == PNG_COLOR_TYPE_GRAY_ALPHA) {
+		png_set_gray_to_rgb(png_ptr);
+	}
+
 	/* optional call to update the info structure */
 	png_read_update_info(png_ptr, info_ptr);
 
@@ -443,6 +447,7 @@ static anim_t * libzip_load(SDL_Renderer * render, const char * filename)
 	struct zip *fd_zip=NULL;
 	int err = 0;
 	int file_count = 0;
+	int anim_count = 0;
 	int i;
 	char ** zip_filename = NULL;
 	int index = 0;
@@ -466,11 +471,13 @@ static anim_t * libzip_load(SDL_Renderer * render, const char * filename)
 		return NULL;
 	}
 
+	// Remove timing file
+	anim_count = file_count - 1;
 	anim = malloc(sizeof(anim_t));
 	memset(anim,0,sizeof(anim_t));
-	anim->tex = malloc( file_count * sizeof(SDL_Texture*) );
-	anim->delay = malloc( file_count * sizeof(Uint32) );
-	for( i=0 ; i<file_count ; i++ ) {
+	anim->tex = malloc( anim_count * sizeof(SDL_Texture*) );
+	anim->delay = malloc( anim_count * sizeof(Uint32) );
+	for( i=0 ; i<anim_count ; i++ ) {
 		anim->delay[i] = DEFAULT_DELAY;
 	}
 
