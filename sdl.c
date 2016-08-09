@@ -526,18 +526,20 @@ int sdl_blit_anim(SDL_Renderer * render,anim_t * anim, SDL_Rect * rect, double a
 	if( anim->prev_time == 0 ) {
 		anim->prev_time = global_time;
 	}
-	if( global_time >= anim->prev_time + anim->delay[anim->current_frame]) {
-		(anim->current_frame)++;
-		anim->prev_time = global_time;
-		if( end != -1 ) {
-			if(anim->current_frame >= end) {
-				anim->current_frame = start;
-				return 0;
-			}
-		} else {
-			if(anim->current_frame >= anim->num_frame) {
-				anim->current_frame = 0;
-				return 0;
+
+	unsigned int delay = anim->delay[anim->current_frame];
+	if( delay ) {
+		if( global_time >= anim->prev_time + delay) {
+			unsigned int number = (global_time - anim->prev_time) / delay;
+			anim->prev_time += (number * delay);
+
+			if( end != -1 ) {
+				anim->current_frame = anim->current_frame + number;
+				if(anim->current_frame >= end) {
+					anim->current_frame = start;
+				}
+			} else {
+				anim->current_frame = (anim->current_frame + number) % anim->num_frame;
 			}
 		}
 	}
