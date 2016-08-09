@@ -90,4 +90,5 @@ void sdl_add_keycb(SDL_Scancode code,void (*cb)(void*),void (*cb_up)(void*),void
 void sdl_free_keycb();
 void sdl_add_mousecb(Uint32 event_type,void (*cb)(Uint32,Uint32));
 void sdl_free_mousecb();
+Uint32 sdl_get_global_time();
 

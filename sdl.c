@@ -42,6 +42,7 @@ static Uint32 virtual_tick = 0;
 static int mouse_x = 0;
 static int mouse_y = 0;
 static int mouse_in = 1;
+static Uint32 global_time;
 
 static keycb_t * key_callback = NULL;
 static mousecb_t * mouse_callback = NULL;
@@ -431,24 +432,22 @@ int sdl_screen_manager(SDL_Window * window,SDL_Renderer * render,SDL_Event * eve
 void sdl_loop_manager()
 {
 	static Uint32 old_timer = 0;
-	Uint32 timer;
 
 	if( old_timer == 0 ) {
 		old_timer = SDL_GetTicks();
 	}
 
-	timer = SDL_GetTicks();
+	global_time = SDL_GetTicks();
 #if 0
 	if( timer < old_timer + FRAME_DELAY ) {
 		SDL_Delay(old_timer + FRAME_DELAY - timer);
 	}
 #endif
 
-	timer = SDL_GetTicks();
-	if( virtual_tick + VIRTUAL_ANIM_DURATION > timer ) {
-		current_vx = (int)((double)old_vx + (double)( virtual_x - old_vx ) * (double)(timer - virtual_tick) / (double)VIRTUAL_ANIM_DURATION);
-		current_vy = (int)((double)old_vy + (double)( virtual_y - old_vy ) * (double)(timer - virtual_tick) / (double)VIRTUAL_ANIM_DURATION);
-		current_vz = (double)old_vz + (double)( virtual_z - old_vz ) * (double)(timer - virtual_tick) / (double)VIRTUAL_ANIM_DURATION;
+	if( virtual_tick + VIRTUAL_ANIM_DURATION > global_time ) {
+		current_vx = (int)((double)old_vx + (double)( virtual_x - old_vx ) * (double)(global_time - virtual_tick) / (double)VIRTUAL_ANIM_DURATION);
+		current_vy = (int)((double)old_vy + (double)( virtual_y - old_vy ) * (double)(global_time - virtual_tick) / (double)VIRTUAL_ANIM_DURATION);
+		current_vz = (double)old_vz + (double)( virtual_z - old_vz ) * (double)(global_time - virtual_tick) / (double)VIRTUAL_ANIM_DURATION;
 	} else {
 		old_vx = virtual_x;
 		current_vx = virtual_x;
@@ -514,8 +513,6 @@ return -1 if blit NOK
 *******************************/
 int sdl_blit_anim(SDL_Renderer * render,anim_t * anim, SDL_Rect * rect, double angle, double zoom_x, double zoom_y, int flip, int start, int end,int overlay)
 {
-	Uint32 time = SDL_GetTicks();
-
 	if(anim == NULL) {
 		return -1;
 	}
@@ -527,11 +524,11 @@ int sdl_blit_anim(SDL_Renderer * render,anim_t * anim, SDL_Rect * rect, double a
 	sdl_blit_tex(render,anim->tex[anim->current_frame],rect,angle,zoom_x,zoom_y,flip,overlay);
 
 	if( anim->prev_time == 0 ) {
-		anim->prev_time = time;
+		anim->prev_time = global_time;
 	}
-	if( time >= anim->prev_time + anim->delay[anim->current_frame]) {
+	if( global_time >= anim->prev_time + anim->delay[anim->current_frame]) {
 		(anim->current_frame)++;
-		anim->prev_time = time;
+		anim->prev_time = global_time;
 		if( end != -1 ) {
 			if(anim->current_frame >= end) {
 				anim->current_frame = start;
@@ -596,17 +593,16 @@ void sdl_print_item(SDL_Renderer * render,item_t * item)
 ************************************************************************/
 int sdl_blit_item(SDL_Renderer * render,item_t * item)
 {
-	Uint32 timer = SDL_GetTicks();
 	SDL_Rect rect;
 	anim_array_t * anim = NULL;
 	int is_moving = false;
 	int i;
 
 	if( item->timer ) {
-		if( item->timer + VIRTUAL_ANIM_DURATION > timer) {
+		if( item->timer + VIRTUAL_ANIM_DURATION > global_time) {
 			is_moving = true;
-			item->rect.x = (int)((double)item->old_x + (double)(item->x - item->old_x) * (double)(timer - item->timer) / (double)VIRTUAL_ANIM_DURATION);
-			item->rect.y = (int)((double)item->old_y + (double)(item->y - item->old_y) * (double)(timer - item->timer) / (double)VIRTUAL_ANIM_DURATION);
+			item->rect.x = (int)((double)item->old_x + (double)(item->x - item->old_x) * (double)(global_time - item->timer) / (double)VIRTUAL_ANIM_DURATION);
+			item->rect.y = (int)((double)item->old_y + (double)(item->y - item->old_y) * (double)(global_time - item->timer) / (double)VIRTUAL_ANIM_DURATION);
 		} else {
 			item->rect.x =item->x;
 			item->rect.y =item->y;
@@ -779,7 +775,7 @@ void sdl_set_virtual_x(int x)
 	if( x != virtual_x ) {
 		old_vx = current_vx;
 		virtual_x = x;
-		virtual_tick = SDL_GetTicks();
+		virtual_tick = global_time;
 	}
 }
 
@@ -790,7 +786,7 @@ void sdl_set_virtual_y(int y)
 	if( y != virtual_y ) {
 		old_vy = current_vy;
 		virtual_y = y;
-		virtual_tick = SDL_GetTicks();
+		virtual_tick = global_time;
 	}
 }
 
@@ -801,7 +797,7 @@ void sdl_set_virtual_z(double z)
 	if( z != virtual_z ) {
 		old_vz = current_vz;
 		virtual_z = z;
-		virtual_tick = SDL_GetTicks();
+		virtual_tick = global_time;
 	}
 }
 
@@ -958,3 +954,11 @@ void sdl_free_mousecb()
 
 	mouse_callback = NULL;
 }
+
+/************************************************************************
+************************************************************************/
+Uint32 sdl_get_global_time()
+{
+	return global_time;
+}
+
