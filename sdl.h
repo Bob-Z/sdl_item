@@ -34,6 +34,7 @@
 #define FRAME_DELAY 20
 
 #define VIRTUAL_ANIM_DURATION 150
+#define VIRTUAL_CAMERA_ANIM_DURATION 150
 
 //#define PAL_TO_RGB(x) x.r<<2,x.g<<2,x.b<<2,SDL_OPAQUE
 #define PAL_TO_RGB(x) x.r,x.g,x.b,SDL_OPAQUE

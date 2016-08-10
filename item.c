@@ -120,9 +120,9 @@ void item_init(item_t * item)
 	item->zoom_x=1.0;
 	item->zoom_y=1.0;
 	item->flip=SDL_FLIP_NONE;
-	item->old_x=-1;
-	item->old_y=-1;
-	item->timer=0;
+	item->from_x=-1;
+	item->from_y=-1;
+	item->move_start_tick=0;
 	item->overlay=0;
 	item->anim.list=NULL;
 	item->anim.num=0;
@@ -198,14 +198,14 @@ static void add_and_set_anim(anim_array_t * anim_array, anim_t * anim, int anim_
 
 /************************************************************************
 ************************************************************************/
-void item_set_anim(item_t * item, int x, int y,anim_t * anim, int anim_index)
+void item_set_anim(item_t * item, anim_t * anim, int anim_index)
 {
 	int w;
 	int h;
 	int max_w = 0;
 	int max_h = 0;
 
-	item_set_pos(item,x,y);
+//	item_set_pos(item,x,y);
 
 	if( anim ) {
 		add_and_set_anim(&item->anim, anim, anim_index);
@@ -242,12 +242,12 @@ void item_set_anim_shape(item_t * item, int x, int y,int w, int h)
 /************************************************************************
 anim_array is a NULL terminated anim array
 ************************************************************************/
-void item_set_anim_array(item_t * item, int x, int y,anim_t ** anim_array)
+void item_set_anim_array(item_t * item, anim_t ** anim_array)
 {
 	int num_anim = 0;
 
 	while( anim_array[num_anim] ) {
-		item_set_anim(item,x,y,anim_array[num_anim],num_anim);
+		item_set_anim(item,anim_array[num_anim],num_anim);
 		num_anim++;
 	}
 }
@@ -278,31 +278,14 @@ void item_set_anim_move_array(item_t * item, anim_t ** anim_array)
 
 /************************************************************************
 ************************************************************************/
-void item_set_smooth_anim(item_t * item, int x, int y,int old_x, int old_y, Uint32 timer, anim_t * anim, int anim_index)
+void item_set_move(item_t * item, int from_x, int from_y,int to_x, int to_y, Uint32 duration)
 {
-	item->x = x;
-	item->y = y;
-	item->old_x = old_x;
-	item->old_y = old_y;
-	item->timer = timer;
-	item_set_anim(item,x,y,anim,anim_index);
-}
-
-/************************************************************************
-anim_array is a NULL terminated anim array
-************************************************************************/
-void item_set_smooth_anim_array(item_t * item, int x, int y,int old_x, int old_y, Uint32 timer,anim_t ** anim_array)
-{
-	int num_anim = 0;
-
-	if( anim_array == NULL ) {
-		return;
-	}
-
-	while( anim_array[num_anim] ) {
-		item_set_smooth_anim(item,x,y,old_x,old_y,timer,anim_array[num_anim],num_anim);
-		num_anim++;
-	}
+	item->x = to_x;
+	item->y = to_y;
+	item->from_x = from_x;
+	item->from_y = from_y;
+	item->move_start_tick = sdl_get_global_time();
+	item->move_duration = duration;
 }
 
 /************************************************************************

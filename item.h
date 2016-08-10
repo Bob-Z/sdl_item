@@ -37,9 +37,10 @@ typedef struct item {
 	double zoom_x;
 	double zoom_y;
 	int flip;
-	int old_x;	// For smooth animation
-	int old_y;	// For smooth animation
-	Uint32 timer;	// For smooth animation
+	int from_x;		// For smooth movement animation
+	int from_y;		// For smooth movement animation
+	Uint32 move_start_tick;	// For smooth movement animation
+	Uint32 move_duration;	// For smooth movement animation
 	int user1;	// User defined
 	int user2;	// User defined
 	int overlay;
@@ -87,13 +88,12 @@ item_t * item_list_add(item_t ** item_list);
 void item_list_free(item_t * item_list);
 void item_init(item_t * item);
 void item_set_pos(item_t * item, int x, int y);
+void item_set_move(item_t * item, int from_x, int from_y,int to_x, int to_y, Uint32 duration);
 
-void item_set_anim(item_t * item, int x, int y,anim_t * anim,int anim_index);
-void item_set_anim_array(item_t * item, int x, int y,anim_t ** anim_array);
+void item_set_anim(item_t * item, anim_t * anim,int anim_index);
+void item_set_anim_array(item_t * item, anim_t ** anim_array);
 void item_set_anim_move(item_t * item, anim_t * anim,int anim_index);
 void item_set_anim_move_array(item_t * item, anim_t ** anim);
-void item_set_smooth_anim(item_t * item, int x, int y,int old_x, int old_y, Uint32 timer, anim_t * anim,int anim_index);
-void item_set_smooth_anim_array(item_t * item, int x, int y,int old_x, int old_y, Uint32 timer, anim_t ** anim);
 void item_set_anim_over(item_t * item, anim_t * anim,int anim_index);
 void item_set_anim_over_array(item_t * item, anim_t ** anim);
 void item_set_anim_click(item_t * item, anim_t * anim,int anim_index);

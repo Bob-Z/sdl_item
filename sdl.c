@@ -444,10 +444,10 @@ void sdl_loop_manager()
 	}
 #endif
 
-	if( virtual_tick + VIRTUAL_ANIM_DURATION > global_time ) {
-		current_vx = (int)((double)old_vx + (double)( virtual_x - old_vx ) * (double)(global_time - virtual_tick) / (double)VIRTUAL_ANIM_DURATION);
-		current_vy = (int)((double)old_vy + (double)( virtual_y - old_vy ) * (double)(global_time - virtual_tick) / (double)VIRTUAL_ANIM_DURATION);
-		current_vz = (double)old_vz + (double)( virtual_z - old_vz ) * (double)(global_time - virtual_tick) / (double)VIRTUAL_ANIM_DURATION;
+	if( virtual_tick + VIRTUAL_CAMERA_ANIM_DURATION > global_time ) {
+		current_vx = (int)((double)old_vx + (double)( virtual_x - old_vx ) * (double)(global_time - virtual_tick) / (double)VIRTUAL_CAMERA_ANIM_DURATION);
+		current_vy = (int)((double)old_vy + (double)( virtual_y - old_vy ) * (double)(global_time - virtual_tick) / (double)VIRTUAL_CAMERA_ANIM_DURATION);
+		current_vz = (double)old_vz + (double)( virtual_z - old_vz ) * (double)(global_time - virtual_tick) / (double)VIRTUAL_CAMERA_ANIM_DURATION;
 	} else {
 		old_vx = virtual_x;
 		current_vx = virtual_x;
@@ -600,11 +600,11 @@ int sdl_blit_item(SDL_Renderer * render,item_t * item)
 	int is_moving = false;
 	int i;
 
-	if( item->timer ) {
-		if( item->timer + VIRTUAL_ANIM_DURATION > global_time) {
+	if( item->move_start_tick ) {
+		if( item->move_start_tick + item->move_duration > global_time) {
 			is_moving = true;
-			item->rect.x = (int)((double)item->old_x + (double)(item->x - item->old_x) * (double)(global_time - item->timer) / (double)VIRTUAL_ANIM_DURATION);
-			item->rect.y = (int)((double)item->old_y + (double)(item->y - item->old_y) * (double)(global_time - item->timer) / (double)VIRTUAL_ANIM_DURATION);
+			item->rect.x = (int)((double)item->from_x + (double)(item->x - item->from_x) * (double)(global_time - item->move_start_tick) / (double)item->move_duration);
+			item->rect.y = (int)((double)item->from_y + (double)(item->y - item->from_y) * (double)(global_time - item->move_start_tick) / (double)item->move_duration);
 		} else {
 			item->rect.x =item->x;
 			item->rect.y =item->y;
