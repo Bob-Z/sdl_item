@@ -162,20 +162,20 @@ void sdl_mouse_position_manager(SDL_Renderer * render, item_t * item_list)
 			zoomed_h = I->rect.h * current_vz;
 		}
 
-		I->anim_over.array=NULL;
+		I->anim_over.list=NULL;
 		I->anim_over.num=0;
-		I->anim_click.array=NULL;
+		I->anim_click.list=NULL;
 		I->anim_click.num=0;
 
 		if( (zoomed_x <= mx) &&
 				((zoomed_x+zoomed_w) > mx) &&
 				(zoomed_y <= my) &&
 				((zoomed_y+zoomed_h) > my) ) {
-			I->anim_over.array = I->default_anim_over.array;
+			I->anim_over.list = I->default_anim_over.list;
 			I->anim_over.num = I->default_anim_over.num;
 			/* Display clicked anim */
 			if( SDL_GetMouseState(NULL,NULL) ) {
-				I->anim_click.array=I->default_anim_click.array;
+				I->anim_click.list=I->default_anim_click.list;
 				I->anim_click.num=I->default_anim_click.num;
 			}
 		}
@@ -596,7 +596,7 @@ void sdl_print_item(SDL_Renderer * render,item_t * item)
 int sdl_blit_item(SDL_Renderer * render,item_t * item)
 {
 	SDL_Rect rect;
-	anim_array_t * anim = NULL;
+	anim_array_t * anim_array = NULL;
 	int is_moving = false;
 	int i;
 
@@ -614,24 +614,24 @@ int sdl_blit_item(SDL_Renderer * render,item_t * item)
 	rect.x = item->rect.x;
 	rect.y = item->rect.y;
 
-	if(item->anim.array && item->anim.array[0]) {
-		anim = &item->anim;
+	if(item->anim.list && item->anim.list[0]) {
+		anim_array = &item->anim;
 	}
-	if(item->anim_click.array && item->anim_click.array[0]) {
-		anim = &item->anim_click;
+	if(item->anim_click.list && item->anim_click.list[0]) {
+		anim_array = &item->anim_click;
 	}
-	if(item->anim_over.array && item->anim_over.array[0]) {
-		anim = &item->anim_over;
+	if(item->anim_over.list && item->anim_over.list[0]) {
+		anim_array = &item->anim_over;
 	}
-	if(is_moving && item->anim_move.array && item->anim_move.array[0]) {
-		anim = &item->anim_move;
+	if(is_moving && item->anim_move.list && item->anim_move.list[0]) {
+		anim_array = &item->anim_move;
 	}
 
-	if(anim) {
-		for(i=0; i<anim->num; i++) {
-			rect.w = anim->array[i]->w;
-			rect.h = anim->array[i]->h;
-			sdl_blit_anim(render,anim->array[i],&rect,item->angle,item->zoom_x,item->zoom_y,item->flip,item->anim_start,item->anim_end,item->overlay);
+	if(anim_array) {
+		for(i=0; i<anim_array->num; i++) {
+			rect.w = anim_array->list[i]->w;
+			rect.h = anim_array->list[i]->h;
+			sdl_blit_anim(render,anim_array->list[i],&rect,item->angle,item->zoom_x,item->zoom_y,item->flip,item->anim_start,item->anim_end,item->overlay);
 		}
 	}
 

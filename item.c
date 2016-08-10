@@ -50,17 +50,17 @@ Note that item->anim is not freed here !
 ************************************************************************/
 static void item_free(item_t * item)
 {
-	if( item->anim.array ) {
-		free(item->anim.array);
+	if( item->anim.list ) {
+		free(item->anim.list);
 	}
-	if( item->anim_move.array ) {
-		free(item->anim_move.array);
+	if( item->anim_move.list ) {
+		free(item->anim_move.list);
 	}
-	if( item->default_anim_over.array ) {
-		free(item->default_anim_over.array);
+	if( item->default_anim_over.list ) {
+		free(item->default_anim_over.list);
 	}
-	if( item->default_anim_click.array ) {
-		free(item->default_anim_click.array);
+	if( item->default_anim_click.list ) {
+		free(item->default_anim_click.list);
 	}
 	if( item->string ) {
 		free(item->string);
@@ -124,17 +124,17 @@ void item_init(item_t * item)
 	item->old_y=-1;
 	item->timer=0;
 	item->overlay=0;
-	item->anim.array=NULL;
+	item->anim.list=NULL;
 	item->anim.num=0;
-	item->anim_move.array=NULL;
+	item->anim_move.list=NULL;
 	item->anim_move.num=0;
-	item->anim_over.array=NULL;
+	item->anim_over.list=NULL;
 	item->anim_over.num=0;
-	item->default_anim_over.array=NULL;
+	item->default_anim_over.list=NULL;
 	item->default_anim_over.num=0;
-	item->anim_click.array=NULL;
+	item->anim_click.list=NULL;
 	item->anim_click.num=0;
-	item->default_anim_click.array=NULL;
+	item->default_anim_click.list=NULL;
 	item->default_anim_click.num=0;
 	item->anim_start=0;
 	item->anim_end=-1;
@@ -185,15 +185,15 @@ static void add_and_set_anim(anim_array_t * anim_array, anim_t * anim, int anim_
 	int i;
 
 	if( anim_array->num <= anim_index ) {
-		anim_array->array = realloc(anim_array->array,(anim_index+1)*sizeof(anim_t*));
+		anim_array->list = realloc(anim_array->list,(anim_index+1)*sizeof(anim_t*));
 
 		for(i=anim_array->num; i<=anim_index; i++) {
-			anim_array->array[i] = NULL;
+			anim_array->list[i] = NULL;
 		}
 		anim_array->num = anim_index+1;
 	}
 
-	anim_array->array[anim_index]=anim;
+	anim_array->list[anim_index]=anim;
 }
 
 /************************************************************************

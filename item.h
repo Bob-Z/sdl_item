@@ -25,8 +25,8 @@
 #include "anim.h"
 
 typedef struct anim_array {
-	anim_t ** array;
-	int num; // Number of *anim in array
+	anim_t ** list;
+	int num; // Number of *anim in list
 } anim_array_t;
 
 typedef struct item {
