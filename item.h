@@ -88,8 +88,7 @@ item_t * item_list_add(item_t ** item_list);
 void item_list_free(item_t * item_list);
 void item_init(item_t * item);
 void item_set_pos(item_t * item, int x, int y);
-void item_set_move(item_t * item, int from_x, int from_y,int to_x, int to_y, Uint32 duration);
-
+void item_set_move(item_t * item, int from_x, int from_y,int to_x, int to_y, Uint32 start_tick, Uint32 duration);
 void item_set_anim(item_t * item, anim_t * anim,int anim_index);
 void item_set_anim_array(item_t * item, anim_t ** anim_array);
 void item_set_anim_move(item_t * item, anim_t * anim,int anim_index);

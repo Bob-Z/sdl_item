@@ -278,13 +278,13 @@ void item_set_anim_move_array(item_t * item, anim_t ** anim_array)
 
 /************************************************************************
 ************************************************************************/
-void item_set_move(item_t * item, int from_x, int from_y,int to_x, int to_y, Uint32 duration)
+void item_set_move(item_t * item, int from_x, int from_y,int to_x, int to_y, Uint32 start_tick, Uint32 duration)
 {
 	item->x = to_x;
 	item->y = to_y;
 	item->from_x = from_x;
 	item->from_y = from_y;
-	item->move_start_tick = sdl_get_global_time();
+	item->move_start_tick = start_tick;
 	item->move_duration = duration;
 }
 
