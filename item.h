@@ -17,8 +17,8 @@
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
 
-#ifndef MMI_H
-#define MMI_H
+#ifndef SIITEM_H
+#define SIITEM_H
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
@@ -33,15 +33,15 @@ typedef struct item {
 	SDL_Rect rect;
 	int x;	// For smooth animation
 	int y;	// For smooth animation
-	double angle;
-	double zoom_x;
-	double zoom_y;
-	int flip;
 	int from_x;		// For smooth movement animation
 	int from_y;		// For smooth movement animation
 	Uint32 move_start_tick;	// For smooth movement animation
 	Uint32 move_duration;	// For smooth movement animation
 	Uint32 anim_start_tick;	// Tick from when animation will be calculated
+	int flip;
+	double angle;
+	double zoom_x;
+	double zoom_y;
 	int user1;	// User defined
 	int user2;	// User defined
 	int overlay;
