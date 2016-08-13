@@ -20,6 +20,7 @@
 #include <SDL2/SDL.h>
 #include "item.h"
 #include "sdl.h"
+#include "const.h"
 
 /************************************************************************
 Return a pointer to the newly creates item_t
@@ -123,6 +124,8 @@ void item_init(item_t * item)
 	item->from_x=-1;
 	item->from_y=-1;
 	item->move_start_tick=0;
+	item->move_duration=0;
+	item->anim_start_tick=0;
 	item->overlay=0;
 	item->anim.list=NULL;
 	item->anim.num=0;
@@ -136,8 +139,7 @@ void item_init(item_t * item)
 	item->anim_click.num=0;
 	item->default_anim_click.list=NULL;
 	item->default_anim_click.num=0;
-	item->anim_start=0;
-	item->anim_end=-1;
+	item->anim_loop=TRUE;
 	item->clicked=0;
 	item->click_left=NULL;
 	item->click_left_arg=NULL;
@@ -334,16 +336,9 @@ void item_set_overlay(item_t * item, int overlay)
 
 /************************************************************************
 ************************************************************************/
-void item_set_anim_start(item_t * item, int start_frame)
+void item_set_anim_loop(item_t * item, int loop)
 {
-	item->anim_start = start_frame;
-}
-
-/************************************************************************
-************************************************************************/
-void item_set_anim_end(item_t * item, int end_frame)
-{
-	item->anim_end = end_frame;
+	item->anim_loop = loop;
 }
 
 /************************************************************************
@@ -509,3 +504,9 @@ void item_set_font(item_t * item, TTF_Font * font)
 	}
 }
 
+/************************************************************************
+************************************************************************/
+void item_set_anim_start_tick(item_t * item, Uint32 tick)
+{
+	item->anim_start_tick = tick;
+}

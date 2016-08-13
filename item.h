@@ -41,6 +41,7 @@ typedef struct item {
 	int from_y;		// For smooth movement animation
 	Uint32 move_start_tick;	// For smooth movement animation
 	Uint32 move_duration;	// For smooth movement animation
+	Uint32 anim_start_tick;	// Tick from when animation will be calculated
 	int user1;	// User defined
 	int user2;	// User defined
 	int overlay;
@@ -50,8 +51,7 @@ typedef struct item {
 	anim_array_t default_anim_over;
 	anim_array_t anim_click;	//is set to default_anim_click, when needed (i.e. click on this item)
 	anim_array_t default_anim_click;
-	int anim_start;
-	int anim_end;
+	int anim_loop;
 	int clicked;
 	void (*click_left)(void * arg); //callback on left click on this item
 	void * click_left_arg;
@@ -119,9 +119,9 @@ void item_set_string_bg(item_t * item,Uint32 color);
 void item_set_editable(item_t * item,int is_editable);
 void item_set_edit_cb(item_t * item,void (*cb_edit)(void * arg));
 void item_set_geometry(item_t * item,int x, int y, int w, int h);
-void item_set_anim_start(item_t * item, int start_frame);
-void item_set_anim_end(item_t * item, int end_frame);
+void item_set_anim_loop(item_t * item, int loop);
 void item_set_font(item_t * item, TTF_Font * font);
+void item_set_anim_start_tick(item_t * item, Uint32 tick);
 
 #endif
 

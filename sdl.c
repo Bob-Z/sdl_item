@@ -507,11 +507,51 @@ void sdl_blit_tex(SDL_Renderer * render,SDL_Texture * tex, SDL_Rect * rect, doub
 	}
 }
 
+/************************************************************************
+************************************************************************/
+int get_current_frame(anim_t * anim, int loop, Uint32 anim_start_tick)
+{
+	int current_frame = 0;
+
+	if( anim->total_duration != 0 ) {
+		if( loop == FALSE ) {
+			if( anim_start_tick + anim->total_duration < global_time) {
+				current_frame = anim->num_frame-1;
+			}
+			else {
+				Uint32 tick = anim_start_tick;
+				int i;
+				for( i=0 ; i<anim->num_frame ; i++ ) {
+					if( tick + anim->delay[i] > global_time) {
+						current_frame = i;
+						break;
+					}
+					tick += anim->delay[i];
+				}
+			}
+		}
+		// Loop animation
+		else {
+			Uint32 tick = (global_time - anim_start_tick )  % anim->total_duration;
+			Uint32 current_delay = 0;
+			int i;
+			for( i=0 ; i<anim->num_frame ; i++ ) {
+				current_delay += anim->delay[i];
+				if( tick < current_delay ) {
+					current_frame = i;
+					break;
+				}
+			}
+		}
+	}
+
+	return current_frame;
+}
 /*******************************
 return 0 if blit OK
 return -1 if blit NOK
 *******************************/
-int sdl_blit_anim(SDL_Renderer * render,anim_t * anim, SDL_Rect * rect, double angle, double zoom_x, double zoom_y, int flip, int start, int end,int overlay)
+int sdl_blit_anim(SDL_Renderer * render,anim_t * anim, SDL_Rect * rect, double angle, double zoom_x, double zoom_y, int flip, int loop, int overlay, Uint32 anim_start_tick)
 {
 	if(anim == NULL) {
 		return -1;
@@ -521,28 +561,9 @@ int sdl_blit_anim(SDL_Renderer * render,anim_t * anim, SDL_Rect * rect, double a
 		return -1;
 	}
 
-	sdl_blit_tex(render,anim->tex[anim->current_frame],rect,angle,zoom_x,zoom_y,flip,overlay);
+	int current_frame = get_current_frame(anim,loop,anim_start_tick);
 
-	if( anim->prev_time == 0 ) {
-		anim->prev_time = global_time;
-	}
-
-	unsigned int delay = anim->delay[anim->current_frame];
-	if( delay ) {
-		if( global_time >= anim->prev_time + delay) {
-			unsigned int number = (global_time - anim->prev_time) / delay;
-			anim->prev_time += (number * delay);
-
-			if( end != -1 ) {
-				anim->current_frame = anim->current_frame + number;
-				if(anim->current_frame >= end) {
-					anim->current_frame = start;
-				}
-			} else {
-				anim->current_frame = (anim->current_frame + number) % anim->num_frame;
-			}
-		}
-	}
+	sdl_blit_tex(render,anim->tex[current_frame],rect,angle,zoom_x,zoom_y,flip,overlay);
 
 	return 0;
 }
@@ -578,7 +599,7 @@ void sdl_print_item(SDL_Renderer * render,item_t * item)
 
 	if( item->string_bg != 0 ) {
 		bg_anim = anim_create_color(render,rect.w,rect.h,item->string_bg);
-		sdl_blit_anim(render,bg_anim,&rect,item->angle,item->zoom_x,item->zoom_y,item->flip,0,0,item->overlay);
+		sdl_blit_anim(render,bg_anim,&rect,item->angle,item->zoom_x,item->zoom_y,item->flip,0,item->overlay,0);
 		si_anim_free(bg_anim);
 	}
 
@@ -631,7 +652,7 @@ int sdl_blit_item(SDL_Renderer * render,item_t * item)
 		for(i=0; i<anim_array->num; i++) {
 			rect.w = anim_array->list[i]->w;
 			rect.h = anim_array->list[i]->h;
-			sdl_blit_anim(render,anim_array->list[i],&rect,item->angle,item->zoom_x,item->zoom_y,item->flip,item->anim_start,item->anim_end,item->overlay);
+			sdl_blit_anim(render,anim_array->list[i],&rect,item->angle,item->zoom_x,item->zoom_y,item->flip,item->anim_loop,item->overlay,item->anim_start_tick);
 		}
 	}
 

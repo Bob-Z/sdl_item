@@ -25,15 +25,13 @@
 typedef struct {
 	int num_frame;
 	SDL_Texture ** tex;
-	int current_frame;
 	int w; // width
 	int h; // height
 	Uint32 * delay; //delay between each frame in millisecond
-	Uint32 prev_time; //time to show the current_frame
+	Uint32 total_duration;
 } anim_t;
 
 anim_t * anim_load(SDL_Renderer * render, const char * filename);
-void anim_reset_anim(anim_t * anim);
 anim_t * anim_create_color(SDL_Renderer * render, Uint32 width, Uint32 height, Uint32 color);
 void si_anim_free(anim_t * anim);
 #endif

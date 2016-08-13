@@ -725,14 +725,6 @@ error:
 
 /************************************************************************
 ************************************************************************/
-void anim_reset_anim(anim_t * anim)
-{
-	anim->prev_time=0;
-	anim->current_frame=0;
-}
-
-/************************************************************************
-************************************************************************/
 anim_t * anim_load(SDL_Renderer * render, const char * filename)
 {
 	anim_t * ret;
@@ -742,21 +734,23 @@ anim_t * anim_load(SDL_Renderer * render, const char * filename)
 	}
 
 	ret = giflib_load(render, filename);
-	if(ret != NULL) {
-		return ret;
+	if(ret == NULL) {
+		ret = libpng_load(render, filename);
+		if(ret == NULL) {
+			ret = libzip_load(render, filename);
+			if(ret == NULL) {
+				ret = libav_load(render, filename);
+			}
+		}
 	}
 
-	ret = libpng_load(render, filename);
-	if(ret != NULL) {
-		return ret;
+	if( ret != NULL ) {
+		ret->total_duration = 0;
+		int i;
+		for( i=0 ; i<ret->num_frame ; i++) {
+			ret->total_duration += ret->delay[i];
+		}
 	}
-
-	ret = libzip_load(render, filename);
-	if(ret != NULL) {
-		return ret;
-	}
-
-	ret = libav_load(render, filename);
 
 	return ret;
 }
