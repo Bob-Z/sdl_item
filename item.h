@@ -30,13 +30,15 @@ typedef struct anim_array {
 } anim_array_t;
 
 typedef struct item {
-	SDL_Rect rect;
-	int x;	// For smooth animation
-	int y;	// For smooth animation
-	int from_x;		// For smooth movement animation
-	int from_y;		// For smooth movement animation
-	Uint32 move_start_tick;	// For smooth movement animation
-	Uint32 move_duration;	// For smooth movement animation
+	SDL_Rect rect; // Current coordinate/size in pixels
+	int from_px;
+	int from_py;
+	int to_px;
+	int to_py;
+	int * saved_px;
+	int * saved_py;
+	Uint32 move_start_tick;
+	Uint32 move_duration;
 	Uint32 anim_start_tick;	// Tick from when animation will be calculated
 	int flip;
 	double angle;
@@ -89,6 +91,7 @@ void item_list_free(item_t * item_list);
 void item_init(item_t * item);
 void item_set_pos(item_t * item, int x, int y);
 void item_set_move(item_t * item, int from_x, int from_y,int to_x, int to_y, Uint32 start_tick, Uint32 duration);
+void item_set_save_coordinate(item_t * item, int * saved_px, int * saved_py);
 void item_set_anim(item_t * item, anim_t * anim,int anim_index);
 void item_set_anim_array(item_t * item, anim_t ** anim_array);
 void item_set_anim_move(item_t * item, anim_t * anim,int anim_index);

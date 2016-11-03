@@ -115,14 +115,16 @@ void item_init(item_t * item)
 	item->rect.y=-1;
 	item->rect.w=0;
 	item->rect.h=0;
-	item->x=-1;
-	item->y=-1;
 	item->angle=0;
 	item->zoom_x=1.0;
 	item->zoom_y=1.0;
 	item->flip=SDL_FLIP_NONE;
-	item->from_x=-1;
-	item->from_y=-1;
+	item->from_px=-1;
+	item->from_py=-1;
+	item->to_px=-1;
+	item->to_py=-1;
+	item->saved_px=NULL;
+	item->saved_py=NULL;
 	item->move_start_tick=0;
 	item->move_duration=0;
 	item->anim_start_tick=0;
@@ -207,8 +209,6 @@ void item_set_anim(item_t * item, anim_t * anim, int anim_index)
 	int max_w = 0;
 	int max_h = 0;
 
-//	item_set_pos(item,x,y);
-
 	if( anim ) {
 		add_and_set_anim(&item->anim, anim, anim_index);
 		max_w = anim->w;
@@ -280,16 +280,23 @@ void item_set_anim_move_array(item_t * item, anim_t ** anim_array)
 
 /************************************************************************
 ************************************************************************/
-void item_set_move(item_t * item, int from_x, int from_y,int to_x, int to_y, Uint32 start_tick, Uint32 duration)
+void item_set_move(item_t * item, int from_px, int from_py,int to_px, int to_py, Uint32 start_tick, Uint32 duration)
 {
-	item->x = to_x;
-	item->y = to_y;
-	item->from_x = from_x;
-	item->from_y = from_y;
+	item->to_px = to_px;
+	item->to_py = to_py;
+	item->from_px = from_px;
+	item->from_py = from_py;
 	item->move_start_tick = start_tick;
 	item->move_duration = duration;
 }
 
+/************************************************************************
+************************************************************************/
+void item_set_save_coordinate(item_t * item, int * saved_px, int * saved_py)
+{
+	item->saved_px = saved_px;
+	item->saved_py = saved_py;
+}
 /************************************************************************
 ************************************************************************/
 void item_set_user(item_t * item, int user1, int user2)

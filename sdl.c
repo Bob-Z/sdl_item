@@ -624,12 +624,21 @@ int sdl_blit_item(SDL_Renderer * render,item_t * item)
 	if( item->move_start_tick ) {
 		if( item->move_start_tick + item->move_duration > global_time) {
 			is_moving = true;
-			item->rect.x = (int)((double)item->from_x + (double)(item->x - item->from_x) * (double)(global_time - item->move_start_tick) / (double)item->move_duration);
-			item->rect.y = (int)((double)item->from_y + (double)(item->y - item->from_y) * (double)(global_time - item->move_start_tick) / (double)item->move_duration);
+			item->rect.x = (int)((double)item->from_px + (double)(item->to_px - item->from_px) * (double)(global_time - item->move_start_tick) / (double)item->move_duration);
+			item->rect.y = (int)((double)item->from_py + (double)(item->to_py - item->from_py) * (double)(global_time - item->move_start_tick) / (double)item->move_duration);
 		} else {
-			item->rect.x =item->x;
-			item->rect.y =item->y;
+			item->rect.x =item->to_px;
+			item->rect.y =item->to_py;
 		}
+	}
+
+	if( item->saved_px )
+	{
+		*item->saved_px = item->rect.x;
+	}
+	if( item->saved_py )
+	{
+		*item->saved_py = item->rect.y;
 	}
 
 	rect.x = item->rect.x;
