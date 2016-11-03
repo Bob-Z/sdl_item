@@ -804,8 +804,8 @@ void sdl_blit_to_screen(SDL_Renderer * render)
 ************************************************************************/
 void sdl_set_virtual_x(int x)
 {
+	old_vx = current_vx;
 	if( x != virtual_x ) {
-		old_vx = current_vx;
 		virtual_x = x;
 		virtual_tick = global_time;
 	}
@@ -815,8 +815,8 @@ void sdl_set_virtual_x(int x)
 ************************************************************************/
 void sdl_set_virtual_y(int y)
 {
+	old_vy = current_vy;
 	if( y != virtual_y ) {
-		old_vy = current_vy;
 		virtual_y = y;
 		virtual_tick = global_time;
 	}
