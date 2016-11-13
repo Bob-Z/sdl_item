@@ -21,6 +21,7 @@
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
 #include <libswscale/swscale.h>
+#include <libavutil/imgutils.h>
 
 #include <gif_lib.h>
 #include <png.h>
@@ -246,7 +247,7 @@ static SDL_Texture * libpng_load_texture(SDL_Renderer * render, const char * fil
 	//wlog(LOGDEBUG,"Using libpng to decode %s",filename);
 
 	/* set error handling */
-	if (setjmp(png_ptr->jmpbuf)) {
+	if (setjmp(png_jmpbuf(png_ptr))) {
 		png_destroy_read_struct(&png_ptr, &info_ptr, (png_info **)0);
 		fclose(fp);
 		free(png_ptr);
@@ -277,7 +278,7 @@ static SDL_Texture * libpng_load_texture(SDL_Renderer * render, const char * fil
 	/* convert 1-2-4 bits grayscale images to 8 bits
 	   grayscale. */
 	if (color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8) {
-		png_set_gray_1_2_4_to_8 (png_ptr);
+		png_set_expand_gray_1_2_4_to_8(png_ptr);
 	}
 
 	if (png_get_valid (png_ptr, info_ptr, PNG_INFO_tRNS)) {
@@ -541,13 +542,11 @@ static anim_t * libav_load(SDL_Renderer * render, const char * filename)
 	int videoStream = 0;
 	AVCodecContext *pCodecCtx = NULL;
 	AVCodec *pCodec = NULL;
-	AVFrame *pFrame = NULL;
-	AVFrame *pFrameRGB = NULL;
+	AVFrame *pDecodedFrame = NULL;
+	AVFrame *pFrameRGBA = NULL;
 	struct SwsContext * pSwsCtx = NULL;
 	AVPacket packet;
 	int frameFinished = 0;
-	int numBytes = 0;
-	uint8_t *buffer = NULL;
 	int delay = 0;
 
 	anim = malloc(sizeof(anim_t));
@@ -558,23 +557,19 @@ static anim_t * libav_load(SDL_Renderer * render, const char * filename)
 
 	// Open video file
 	if (avformat_open_input(&pFormatCtx, filename, NULL, NULL) != 0) {
-		//Cannot open file
 		goto error;
 	}
 
-	// Retrieve stream information
 	if (avformat_find_stream_info(pFormatCtx, NULL) < 0) {
-		//Cannot find stream information
 		goto error;
 	}
 
-	//wlog(LOGDEBUG,"Loading %d streams in %s",pFormatCtx->nb_streams,filename);
 	// Find the first video stream
 	videoStream = -1;
 	for (i = 0; i < pFormatCtx->nb_streams; i++) {
 		if (pFormatCtx->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO) {
 			videoStream = i;
-			/* total stream duration (in nanosecond) / number of image in the stream / 1000 (to get milliseconds */
+			// total stream duration (in nanosecond) / number of image in the stream / 1000 (to get milliseconds
 			delay = pFormatCtx->duration / pFormatCtx->streams[i]->duration / 1000;
 			// If the above doesn't work try with frame_rate :
 			//delay = pFormatCtx->streams[i]->r_frame_rate;
@@ -586,7 +581,6 @@ static anim_t * libav_load(SDL_Renderer * render, const char * filename)
 	}
 
 	if (videoStream == -1) {
-		//Didn't find a video stream
 		goto error;
 	}
 
@@ -596,57 +590,46 @@ static anim_t * libav_load(SDL_Renderer * render, const char * filename)
 	// Find the decoder for the video stream
 	pCodec = avcodec_find_decoder(pCodecCtx->codec_id);
 	if (pCodec == NULL) {
-		//Unsupported codec
 		goto error;
 	}
 
 	// Open codec
 	if (avcodec_open2(pCodecCtx, pCodec, NULL) < 0) {
-		//Could not open codec
 		goto error;
 	}
 
 	// Allocate video frame
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(55,28,1)
-	//Allocate a video frame
-	pFrame = av_frame_alloc();
-
-	// Allocate an AVFrame structure
-	pFrameRGB = av_frame_alloc();
+	pDecodedFrame = av_frame_alloc();
+	pFrameRGBA = av_frame_alloc();
 #else
-	pFrame = avcodec_alloc_frame();
-	pFrameRGB = avcodec_alloc_frame();
+	pDecodedFrame = avcodec_alloc_frame();
+	pFrameRGBA = avcodec_alloc_frame();
 #endif
-	if (pFrame == NULL) {
+
+	if (pDecodedFrame == NULL) {
 		goto error;
 	}
-	if (pFrameRGB == NULL) {
+	if (pFrameRGBA == NULL) {
 		goto error;
 	}
 
-	// Determine required buffer size and allocate buffer
-	numBytes = avpicture_get_size(PIX_FMT_RGBA, pCodecCtx->width,
-								  pCodecCtx->height);
-	buffer = (uint8_t *) av_malloc(numBytes * sizeof(uint8_t));
-
-	// Assign appropriate parts of buffer to image planes in pFrameRGB
-	// Note that pFrameRGB is an AVFrame, but AVFrame is a superset
-	// of AVPicture
-	avpicture_fill((AVPicture *) pFrameRGB, buffer, PIX_FMT_RGBA,
-				   pCodecCtx->width, pCodecCtx->height);
-
+	pFrameRGBA->format = AV_PIX_FMT_RGBA;
+	pFrameRGBA->height = pCodecCtx->height;
+	pFrameRGBA->width = pCodecCtx->width;
+	av_frame_get_buffer(pFrameRGBA,16);
+	
 	pSwsCtx = sws_getContext(pCodecCtx->width,
-							 pCodecCtx->height, pCodecCtx->pix_fmt,
-							 pCodecCtx->width, pCodecCtx->height,
-							 PIX_FMT_RGBA, SWS_BILINEAR, NULL, NULL, NULL);
+			pCodecCtx->height, pCodecCtx->pix_fmt,
+			pCodecCtx->width, pCodecCtx->height,
+			AV_PIX_FMT_RGBA, SWS_BILINEAR, NULL, NULL, NULL);
+
+	if (pSwsCtx == NULL) {
+		goto error;
+	}
 
 	anim->w = pCodecCtx->width;
 	anim->h = pCodecCtx->height;
-
-	if (pSwsCtx == NULL) {
-		//Cannot initialize sws context
-		goto error;
-	}
 
 	// Read frames
 	i = 0;
@@ -654,15 +637,15 @@ static anim_t * libav_load(SDL_Renderer * render, const char * filename)
 		// Is this a packet from the video stream?
 		if (packet.stream_index == videoStream) {
 			// Decode video frame
-			avcodec_decode_video2(pCodecCtx, pFrame, &frameFinished, &packet);
+			avcodec_decode_video2(pCodecCtx, pDecodedFrame, &frameFinished, &packet);
 			// Did we get a video frame?
 			if (frameFinished) {
-				// Convert the image from its native format to ABGR
+				// Convert the image from its native format to RGBA
 				sws_scale(pSwsCtx,
-						  (const uint8_t * const *) pFrame->data,
-						  pFrame->linesize, 0, pCodecCtx->height,
-						  pFrameRGB->data,
-						  pFrameRGB->linesize);
+						  (const uint8_t * const *) pDecodedFrame->data,
+						  pDecodedFrame->linesize, 0, pCodecCtx->height,
+						  pFrameRGBA->data,
+						  pFrameRGBA->linesize);
 
 				anim->delay = (Uint32*)realloc(anim->delay,(i+1) * sizeof(Uint32));
 				anim->delay[i] = delay;
@@ -671,8 +654,8 @@ static anim_t * libav_load(SDL_Renderer * render, const char * filename)
 				if( anim->tex[i] == NULL ) {
 					//SDL_CreateTexture error
 				}
-				/* Copy decoded bits to render texture */
-				if (SDL_UpdateTexture(anim->tex[i],NULL,pFrameRGB->data[0],pFrameRGB->linesize[0]) < 0) {
+				// Copy decoded bits to render texture
+				if (SDL_UpdateTexture(anim->tex[i],NULL,pFrameRGBA->data[0],pFrameRGBA->linesize[0]) < 0) {
 					//SDL_UpdateTexture error
 				}
 				i++;
@@ -680,8 +663,7 @@ static anim_t * libav_load(SDL_Renderer * render, const char * filename)
 		}
 		anim->num_frame = i;
 
-		// Free the packet that was allocated by av_read_frame
-		av_free_packet(&packet);
+		av_packet_unref(&packet);
 	}
 
 	ret = anim;
@@ -696,26 +678,18 @@ error:
 		}
 	}
 
-	// Free the RGB image
-	if(buffer) {
-		av_free(buffer);
+	if(pFrameRGBA) {
+		av_free(pFrameRGBA);
 	}
 
-	if(pFrameRGB) {
-		av_free(pFrameRGB);
+	if(pDecodedFrame) {
+		av_free(pDecodedFrame);
 	}
 
-	// Free the YUV frame
-	if(pFrame) {
-		av_free(pFrame);
-	}
-
-	// Close the codec
 	if(pCodecCtx) {
 		avcodec_close(pCodecCtx);
 	}
 
-	// Close the video file
 	if(pFormatCtx) {
 		avformat_close_input(&pFormatCtx);
 	}
