@@ -27,6 +27,10 @@
 #include <png.h>
 #include <zip.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define GIF_GCE			(0xf9)
 
 #define DEFAULT_DELAY		(40)
@@ -778,4 +782,8 @@ void si_anim_free(anim_t * anim)
 
 	free(anim);
 }
+
+#ifdef __cplusplus
+}
+#endif
 

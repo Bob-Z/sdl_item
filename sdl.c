@@ -22,6 +22,10 @@
 #include <assert.h>
 #include "const.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 static int fullscreen = 0;
 
 static char *keyboard_text_buf = NULL;
@@ -993,4 +997,8 @@ Uint32 sdl_get_global_time()
 {
 	return global_time;
 }
+
+#ifdef __cplusplus
+}
+#endif
 

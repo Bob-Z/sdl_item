@@ -22,6 +22,10 @@
 #include "sdl.h"
 #include "const.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /************************************************************************
 Return a pointer to the newly creates item_t
 ************************************************************************/
@@ -517,3 +521,8 @@ void item_set_anim_start_tick(item_t * item, Uint32 tick)
 {
 	item->anim_start_tick = tick;
 }
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+

@@ -20,6 +20,10 @@
 #include <SDL2/SDL.h>
 #include "item.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define SDL_OPAQUE 0xff
 #define SDL_TRANSPARENT 0x00
 
@@ -92,4 +96,8 @@ void sdl_free_keycb();
 void sdl_add_mousecb(Uint32 event_type,void (*cb)(Uint32,Uint32));
 void sdl_free_mousecb();
 Uint32 sdl_get_global_time();
+
+#ifdef __cplusplus
+}
+#endif
 

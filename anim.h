@@ -22,6 +22,10 @@
 
 #include <SDL2/SDL.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct {
 	int num_frame;
 	SDL_Texture ** tex;
@@ -34,5 +38,10 @@ typedef struct {
 anim_t * anim_load(SDL_Renderer * render, const char * filename);
 anim_t * anim_create_color(SDL_Renderer * render, Uint32 width, Uint32 height, Uint32 color);
 void si_anim_free(anim_t * anim);
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif
 
