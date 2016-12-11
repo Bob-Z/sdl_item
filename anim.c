@@ -622,11 +622,11 @@ static anim_t * libav_load(SDL_Renderer * render, const char * filename)
 	pFrameRGBA->height = pCodecCtx->height;
 	pFrameRGBA->width = pCodecCtx->width;
 	av_frame_get_buffer(pFrameRGBA,16);
-	
+
 	pSwsCtx = sws_getContext(pCodecCtx->width,
-			pCodecCtx->height, pCodecCtx->pix_fmt,
-			pCodecCtx->width, pCodecCtx->height,
-			AV_PIX_FMT_RGBA, SWS_BILINEAR, NULL, NULL, NULL);
+							 pCodecCtx->height, pCodecCtx->pix_fmt,
+							 pCodecCtx->width, pCodecCtx->height,
+							 AV_PIX_FMT_RGBA, SWS_BILINEAR, NULL, NULL, NULL);
 
 	if (pSwsCtx == NULL) {
 		goto error;

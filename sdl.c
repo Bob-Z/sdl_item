@@ -521,8 +521,7 @@ int get_current_frame(anim_t * anim, int loop, Uint32 anim_start_tick)
 		if( loop == FALSE ) {
 			if( anim_start_tick + anim->total_duration < global_time) {
 				current_frame = anim->num_frame-1;
-			}
-			else {
+			} else {
 				Uint32 tick = anim_start_tick;
 				int i;
 				for( i=0 ; i<anim->num_frame ; i++ ) {
@@ -636,12 +635,10 @@ int sdl_blit_item(SDL_Renderer * render,item_t * item)
 		}
 	}
 
-	if( item->saved_px )
-	{
+	if( item->saved_px ) {
 		*item->saved_px = item->rect.x;
 	}
-	if( item->saved_py )
-	{
+	if( item->saved_py ) {
 		*item->saved_py = item->rect.y;
 	}
 
