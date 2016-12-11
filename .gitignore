@@ -36,3 +36,7 @@ configure
 stamp-h1
 *.orig
 *.swp
+
+CMakeFiles
+cmake_install.cmake
+
