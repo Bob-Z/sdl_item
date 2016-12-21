@@ -28,6 +28,7 @@
 extern "C" {
 #endif
 
+typedef enum layout { LAYOUT_TOP_LEFT, LAYOUT_CENTER } layout_t;
 typedef struct anim_array {
 	anim_t ** list;
 	int num; // Number of *anim in list
@@ -57,6 +58,7 @@ typedef struct item {
 	anim_array_t default_anim_over;
 	anim_array_t anim_click;	//is set to default_anim_click, when needed (i.e. click on this item)
 	anim_array_t default_anim_click;
+	int layout;	// How to display array of anim (default is top-left
 	int anim_loop;
 	int clicked;
 	void (*click_left)(void * arg); //callback on left click on this item
@@ -126,6 +128,7 @@ void item_set_string_bg(item_t * item,Uint32 color);
 void item_set_editable(item_t * item,int is_editable);
 void item_set_edit_cb(item_t * item,void (*cb_edit)(void * arg));
 void item_set_geometry(item_t * item,int x, int y, int w, int h);
+void item_set_layout(item_t * item, layout_t layout);
 void item_set_anim_loop(item_t * item, int loop);
 void item_set_font(item_t * item, TTF_Font * font);
 void item_set_anim_start_tick(item_t * item, Uint32 tick);

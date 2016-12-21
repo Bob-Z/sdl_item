@@ -145,6 +145,7 @@ void item_init(item_t * item)
 	item->anim_click.num=0;
 	item->default_anim_click.list=NULL;
 	item->default_anim_click.num=0;
+	item->layout=LAYOUT_TOP_LEFT;
 	item->anim_loop=TRUE;
 	item->clicked=0;
 	item->click_left=NULL;
@@ -343,6 +344,13 @@ void item_set_flip(item_t * item, int a)
 void item_set_overlay(item_t * item, int overlay)
 {
 	item->overlay = overlay;
+}
+
+/************************************************************************
+************************************************************************/
+void item_set_layout(item_t * item, layout_t layout)
+{
+	item->layout = layout;
 }
 
 /************************************************************************

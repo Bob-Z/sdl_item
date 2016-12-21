@@ -642,9 +642,6 @@ int sdl_blit_item(SDL_Renderer * render,item_t * item)
 		*item->saved_py = item->rect.y;
 	}
 
-	rect.x = item->rect.x;
-	rect.y = item->rect.y;
-
 	if(item->anim.list && item->anim.list[0]) {
 		anim_array = &item->anim;
 	}
@@ -659,7 +656,35 @@ int sdl_blit_item(SDL_Renderer * render,item_t * item)
 	}
 
 	if(anim_array) {
+		int max_width = 0;
+		int max_height = 0;
+
+		if( item->layout == LAYOUT_CENTER) {
+			for(i=0; i<anim_array->num; i++) {
+				if( anim_array->list[i]->w > max_width ) {
+					max_width = anim_array->list[i]->w;
+				}
+				if( anim_array->list[i]->h > max_height ) {
+					max_height = anim_array->list[i]->h;
+				}
+			}
+		}
+
 		for(i=0; i<anim_array->num; i++) {
+			rect.x = item->rect.x;
+			rect.y = item->rect.y;
+			switch( item->layout ) {
+				case LAYOUT_CENTER:
+					rect.x = item->rect.x + (( max_width - anim_array->list[i]->w )/2) ;
+					rect.y = item->rect.y + (( max_height - anim_array->list[i]->h )/2) ;
+					break;
+
+				case LAYOUT_TOP_LEFT:
+				default:
+					rect.x = item->rect.x;
+					rect.y = item->rect.y;
+					break;
+			}
 			rect.w = anim_array->list[i]->w;
 			rect.h = anim_array->list[i]->h;
 			sdl_blit_anim(render,anim_array->list[i],&rect,item->angle,item->zoom_x,item->zoom_y,item->flip,item->anim_loop,item->overlay,item->anim_start_tick);
