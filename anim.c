@@ -641,28 +641,30 @@ static anim_t * libav_load(SDL_Renderer * render, const char * filename)
 		// Is this a packet from the video stream?
 		if (packet.stream_index == videoStream) {
 			// Decode video frame
-			avcodec_decode_video2(pCodecCtx, pDecodedFrame, &frameFinished, &packet);
-			// Did we get a video frame?
-			if (frameFinished) {
-				// Convert the image from its native format to RGBA
-				sws_scale(pSwsCtx,
-						  (const uint8_t * const *) pDecodedFrame->data,
-						  pDecodedFrame->linesize, 0, pCodecCtx->height,
-						  pFrameRGBA->data,
-						  pFrameRGBA->linesize);
+			if( avcodec_send_packet(pCodecCtx, &packet) == 0 )
+			{
+				if( avcodec_receive_frame(pCodecCtx, pDecodedFrame) == 0 )
+				{
+					// Convert the image from its native format to RGBA
+					sws_scale(pSwsCtx,
+							(const uint8_t * const *) pDecodedFrame->data,
+							pDecodedFrame->linesize, 0, pCodecCtx->height,
+							pFrameRGBA->data,
+							pFrameRGBA->linesize);
 
-				anim->delay = (Uint32*)realloc(anim->delay,(i+1) * sizeof(Uint32));
-				anim->delay[i] = delay;
-				anim->tex = (SDL_Texture**)realloc(anim->tex, (i+1) * sizeof(SDL_Texture*));
-				anim->tex[i] = SDL_CreateTexture(render, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STATIC, pCodecCtx->width,pCodecCtx->height);
-				if( anim->tex[i] == NULL ) {
-					//SDL_CreateTexture error
+					anim->delay = (Uint32*)realloc(anim->delay,(i+1) * sizeof(Uint32));
+					anim->delay[i] = delay;
+					anim->tex = (SDL_Texture**)realloc(anim->tex, (i+1) * sizeof(SDL_Texture*));
+					anim->tex[i] = SDL_CreateTexture(render, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STATIC, pCodecCtx->width,pCodecCtx->height);
+					if( anim->tex[i] == NULL ) {
+						//SDL_CreateTexture error
+					}
+					// Copy decoded bits to render texture
+					if (SDL_UpdateTexture(anim->tex[i],NULL,pFrameRGBA->data[0],pFrameRGBA->linesize[0]) < 0) {
+						//SDL_UpdateTexture error
+					}
+					i++;
 				}
-				// Copy decoded bits to render texture
-				if (SDL_UpdateTexture(anim->tex[i],NULL,pFrameRGBA->data[0],pFrameRGBA->linesize[0]) < 0) {
-					//SDL_UpdateTexture error
-				}
-				i++;
 			}
 		}
 		anim->num_frame = i;
