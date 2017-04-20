@@ -674,16 +674,16 @@ int sdl_blit_item(SDL_Renderer * render,item_t * item)
 			rect.x = item->rect.x;
 			rect.y = item->rect.y;
 			switch( item->layout ) {
-				case LAYOUT_CENTER:
-					rect.x = item->rect.x + (( max_width - anim_array->list[i]->w )/2) ;
-					rect.y = item->rect.y + (( max_height - anim_array->list[i]->h )/2) ;
-					break;
+			case LAYOUT_CENTER:
+				rect.x = item->rect.x + (( max_width - anim_array->list[i]->w )/2) ;
+				rect.y = item->rect.y + (( max_height - anim_array->list[i]->h )/2) ;
+				break;
 
-				case LAYOUT_TOP_LEFT:
-				default:
-					rect.x = item->rect.x;
-					rect.y = item->rect.y;
-					break;
+			case LAYOUT_TOP_LEFT:
+			default:
+				rect.x = item->rect.x;
+				rect.y = item->rect.y;
+				break;
 			}
 			rect.w = anim_array->list[i]->w;
 			rect.h = anim_array->list[i]->h;

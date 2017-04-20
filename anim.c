@@ -641,16 +641,14 @@ static anim_t * libav_load(SDL_Renderer * render, const char * filename)
 		// Is this a packet from the video stream?
 		if (packet.stream_index == videoStream) {
 			// Decode video frame
-			if( avcodec_send_packet(pCodecCtx, &packet) == 0 )
-			{
-				if( avcodec_receive_frame(pCodecCtx, pDecodedFrame) == 0 )
-				{
+			if( avcodec_send_packet(pCodecCtx, &packet) == 0 ) {
+				if( avcodec_receive_frame(pCodecCtx, pDecodedFrame) == 0 ) {
 					// Convert the image from its native format to RGBA
 					sws_scale(pSwsCtx,
-							(const uint8_t * const *) pDecodedFrame->data,
-							pDecodedFrame->linesize, 0, pCodecCtx->height,
-							pFrameRGBA->data,
-							pFrameRGBA->linesize);
+							  (const uint8_t * const *) pDecodedFrame->data,
+							  pDecodedFrame->linesize, 0, pCodecCtx->height,
+							  pFrameRGBA->data,
+							  pFrameRGBA->linesize);
 
 					anim->delay = (Uint32*)realloc(anim->delay,(i+1) * sizeof(Uint32));
 					anim->delay[i] = delay;
