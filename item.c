@@ -176,6 +176,7 @@ void item_init(item_t * item)
 	item->editable=0;
 	item->edit_cb=NULL;
 	item->user_ptr=NULL;
+	item->user1_ptr=NULL;
 	item->next=NULL;
 	item->last=NULL;
 }

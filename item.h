@@ -88,7 +88,8 @@ typedef struct item {
 	SDL_Texture * str_tex;
 	int editable;
 	void (*edit_cb)(void * arg);
-	void * user_ptr;
+	const void * user_ptr;
+	const void * user1_ptr;
 	struct item * next;	// next element in a list of item
 	struct item * last;	// last element in a list of item
 } item_t;
