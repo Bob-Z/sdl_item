@@ -192,6 +192,7 @@ static anim_t * giflib_load(SDL_Renderer * render, const char * filename)
 		}
 	}
 	SDL_FreeSurface(surf);
+	SDL_FreeSurface(prev_surf);
 
 	DGifCloseFile(gif,&error);
 
