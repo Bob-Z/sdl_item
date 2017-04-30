@@ -621,26 +621,7 @@ int sdl_blit_item(SDL_Renderer * render,item_t * item)
 {
 	SDL_Rect rect;
 	anim_array_t * anim_array = NULL;
-	int is_moving = false;
 	int i;
-
-	if( item->move_start_tick ) {
-		if( item->move_start_tick + item->move_duration > global_time) {
-			is_moving = true;
-			item->rect.x = (int)((double)item->from_px + (double)(item->to_px - item->from_px) * (double)(global_time - item->move_start_tick) / (double)item->move_duration);
-			item->rect.y = (int)((double)item->from_py + (double)(item->to_py - item->from_py) * (double)(global_time - item->move_start_tick) / (double)item->move_duration);
-		} else {
-			item->rect.x =item->to_px;
-			item->rect.y =item->to_py;
-		}
-	}
-
-	if( item->saved_px ) {
-		*item->saved_px = item->rect.x;
-	}
-	if( item->saved_py ) {
-		*item->saved_py = item->rect.y;
-	}
 
 	if(item->anim.list && item->anim.list[0]) {
 		anim_array = &item->anim;
@@ -650,9 +631,6 @@ int sdl_blit_item(SDL_Renderer * render,item_t * item)
 	}
 	if(item->anim_over.list && item->anim_over.list[0]) {
 		anim_array = &item->anim_over;
-	}
-	if(is_moving && item->anim_move.list && item->anim_move.list[0]) {
-		anim_array = &item->anim_move;
 	}
 
 	if(anim_array) {

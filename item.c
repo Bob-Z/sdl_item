@@ -37,7 +37,7 @@ item_t * item_list_add(item_t ** item_list)
 	item = malloc(sizeof(item_t));
 	item_init(item);
 
-	/* add to item list */
+	// add to item list
 	if(*item_list != NULL) {
 		last_item = (*item_list)->last;
 		last_item->next = item;
@@ -57,9 +57,6 @@ static void item_free(item_t * item)
 {
 	if( item->anim.list ) {
 		free(item->anim.list);
-	}
-	if( item->anim_move.list ) {
-		free(item->anim_move.list);
 	}
 	if( item->default_anim_over.list ) {
 		free(item->default_anim_over.list);
@@ -123,20 +120,10 @@ void item_init(item_t * item)
 	item->zoom_x=1.0;
 	item->zoom_y=1.0;
 	item->flip=SDL_FLIP_NONE;
-	item->from_px=-1;
-	item->from_py=-1;
-	item->to_px=-1;
-	item->to_py=-1;
-	item->saved_px=NULL;
-	item->saved_py=NULL;
-	item->move_start_tick=0;
-	item->move_duration=0;
 	item->anim_start_tick=0;
 	item->overlay=0;
 	item->anim.list=NULL;
 	item->anim.num=0;
-	item->anim_move.list=NULL;
-	item->anim_move.num=0;
 	item->anim_over.list=NULL;
 	item->anim_over.num=0;
 	item->default_anim_over.list=NULL;
@@ -261,49 +248,6 @@ void item_set_anim_array(item_t * item, anim_t ** anim_array)
 	}
 }
 
-/************************************************************************
-************************************************************************/
-void item_set_anim_move(item_t * item, anim_t * anim, int anim_index)
-{
-	add_and_set_anim(&item->anim_move, anim, anim_index);
-}
-
-/************************************************************************
-anim_array is a NULL terminated anim array
-************************************************************************/
-void item_set_anim_move_array(item_t * item, anim_t ** anim_array)
-{
-	int num_anim = 0;
-
-	if( anim_array == NULL ) {
-		return;
-	}
-
-	while( anim_array[num_anim] ) {
-		item_set_anim_move(item,anim_array[num_anim],num_anim);
-		num_anim++;
-	}
-}
-
-/************************************************************************
-************************************************************************/
-void item_set_move(item_t * item, int from_px, int from_py,int to_px, int to_py, Uint32 start_tick, Uint32 duration)
-{
-	item->to_px = to_px;
-	item->to_py = to_py;
-	item->from_px = from_px;
-	item->from_py = from_py;
-	item->move_start_tick = start_tick;
-	item->move_duration = duration;
-}
-
-/************************************************************************
-************************************************************************/
-void item_set_save_coordinate(item_t * item, int * saved_px, int * saved_py)
-{
-	item->saved_px = saved_px;
-	item->saved_py = saved_py;
-}
 /************************************************************************
 ************************************************************************/
 void item_set_user(item_t * item, int user1, int user2)
