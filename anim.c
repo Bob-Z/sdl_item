@@ -472,7 +472,7 @@ static anim_t * libzip_load(SDL_Renderer * render, const char * filename)
 	}
 
 	file_count = zip_get_num_files(fd_zip);
-	if( file_count == -1 ) {
+	if( file_count <= 0 ) {
 		zip_close(fd_zip);
 		return NULL;
 	}
