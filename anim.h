@@ -20,11 +20,12 @@
 #ifndef ANIM_H
 #define ANIM_H
 
-#include <SDL2/SDL.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#include <SDL2/SDL.h>
 
 typedef struct {
 	int num_frame;

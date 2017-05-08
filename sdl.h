@@ -17,12 +17,12 @@
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
 
-#include <SDL2/SDL.h>
-#include "item.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#include <SDL2/SDL.h>
+#include "item.h"
 
 #define SDL_OPAQUE 0xff
 #define SDL_TRANSPARENT 0x00

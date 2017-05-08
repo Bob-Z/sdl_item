@@ -17,21 +17,21 @@
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "sdl.h"
 #include <math.h>
 #include <assert.h>
 #include "const.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 static int fullscreen = 0;
 
-static char *keyboard_text_buf = NULL;
+static char *keyboard_text_buf = nullptr;
 static unsigned int keyboard_text_index = 0;
 //static unsigned int keyboard_text_index_max = 0;
-static void (*keyboard_text_cb)(void * arg) = NULL;
+static void (*keyboard_text_cb)(void * arg) = nullptr;
 
 static int virtual_x = 0;
 static int virtual_y = 0;
@@ -48,10 +48,10 @@ static int mouse_y = 0;
 static int mouse_in = 1;
 static Uint32 global_time;
 
-static keycb_t * key_callback = NULL;
-static mousecb_t * mouse_callback = NULL;
+static keycb_t * key_callback = nullptr;
+static mousecb_t * mouse_callback = nullptr;
 
-static void (*screen_compose)(void) = NULL;
+static void (*screen_compose)(void) = nullptr;
 
 /************************************************************************
 ************************************************************************/
@@ -98,12 +98,12 @@ void sdl_init(const char * title, SDL_Renderer ** render,SDL_Window ** window, v
 							   SDL_WINDOWPOS_UNDEFINED,
 							   DEFAULT_SCREEN_W, DEFAULT_SCREEN_H,
 							   SDL_WINDOW_RESIZABLE);
-	if( *window == NULL) {
+	if( *window == nullptr) {
 		exit(EXIT_FAILURE);
 	}
 
 	*render = SDL_CreateRenderer(*window, -1, vsync?SDL_RENDERER_PRESENTVSYNC:0);
-	if( *render == NULL) {
+	if( *render == nullptr) {
 		exit(EXIT_FAILURE);
 	}
 
@@ -133,7 +133,7 @@ static void get_virtual(SDL_Renderer * render,int * vx, int * vy)
 ************************************************************************/
 void sdl_mouse_position_manager(SDL_Renderer * render, item_t * item_list)
 {
-	item_t * I = NULL;
+	item_t * I = nullptr;
 	int mx;
 	int my;
 	int vx = 0;
@@ -166,9 +166,9 @@ void sdl_mouse_position_manager(SDL_Renderer * render, item_t * item_list)
 			zoomed_h = I->rect.h * current_vz;
 		}
 
-		I->anim_over.list=NULL;
+		I->anim_over.list=nullptr;
 		I->anim_over.num=0;
-		I->anim_click.list=NULL;
+		I->anim_click.list=nullptr;
 		I->anim_click.num=0;
 
 		if( (zoomed_x <= mx) &&
@@ -178,7 +178,7 @@ void sdl_mouse_position_manager(SDL_Renderer * render, item_t * item_list)
 			I->anim_over.list = I->default_anim_over.list;
 			I->anim_over.num = I->default_anim_over.num;
 			/* Display clicked anim */
-			if( SDL_GetMouseState(NULL,NULL) ) {
+			if( SDL_GetMouseState(nullptr,nullptr) ) {
 				I->anim_click.list=I->default_anim_click.list;
 				I->anim_click.num=I->default_anim_click.num;
 			}
@@ -201,10 +201,10 @@ void sdl_mouse_manager(SDL_Renderer * render, SDL_Event * event, item_t * item_l
 	int zoomed_y;
 	int zoomed_w;
 	int zoomed_h;
-	item_t * I = NULL;
+	item_t * I = nullptr;
 	int overlay_first = 1;
 	int skip_non_overlay = FALSE;
-	static int timestamp = 0;
+	static Uint32 timestamp = 0;
 	int action_done = FALSE;
 	mousecb_t * mousecb = mouse_callback;
 
@@ -225,7 +225,7 @@ void sdl_mouse_manager(SDL_Renderer * render, SDL_Event * event, item_t * item_l
 		return;
 	}
 
-	if(item_list == NULL) {
+	if(item_list == nullptr) {
 		return;
 	}
 
@@ -405,7 +405,7 @@ int sdl_screen_manager(SDL_Window * window,SDL_Renderer * render,SDL_Event * eve
 	case SDL_KEYDOWN:
 		switch (event->key.keysym.sym) {
 		case SDLK_RETURN:
-			keystate = SDL_GetKeyboardState(NULL);
+			keystate = SDL_GetKeyboardState(nullptr);
 
 			if( keystate[SDL_SCANCODE_RALT] || keystate[SDL_SCANCODE_LALT] ) {
 				if(!fullscreen) {
@@ -473,7 +473,7 @@ void sdl_blit_tex(SDL_Renderer * render,SDL_Texture * tex, SDL_Rect * rect, doub
 	int vx;
 	int vy;
 
-	if( tex == NULL ) {
+	if( tex == nullptr ) {
 		return;
 	}
 
@@ -504,8 +504,8 @@ void sdl_blit_tex(SDL_Renderer * render,SDL_Texture * tex, SDL_Rect * rect, doub
 	}
 
 	if( tex ) {
-//		if( SDL_RenderCopy(render,tex,NULL,&r) < 0) {
-		if( SDL_RenderCopyEx(render,tex,NULL,&r,angle,NULL,flip) < 0) {
+//		if( SDL_RenderCopy(render,tex,nullptr,&r) < 0) {
+		if( SDL_RenderCopyEx(render,tex,nullptr,&r,angle,nullptr,(SDL_RendererFlip)flip) < 0) {
 			//Error
 		}
 	}
@@ -556,11 +556,11 @@ return -1 if blit NOK
 *******************************/
 int sdl_blit_anim(SDL_Renderer * render,anim_t * anim, SDL_Rect * rect, double angle, double zoom_x, double zoom_y, int flip, int loop, int overlay, Uint32 anim_start_tick)
 {
-	if(anim == NULL) {
+	if(anim == nullptr) {
 		return -1;
 	}
 
-	if(anim->tex==NULL) {
+	if(anim->tex==nullptr) {
 		return -1;
 	}
 
@@ -606,7 +606,7 @@ void sdl_print_item(SDL_Renderer * render,item_t * item)
 		si_anim_free(bg_anim);
 	}
 
-	if(item->str_tex == NULL ) {
+	if(item->str_tex == nullptr ) {
 		surf = TTF_RenderText_Blended(item->font, item->string, fg);
 		item->str_tex=SDL_CreateTextureFromSurface(render,surf);
 		SDL_FreeSurface(surf);
@@ -620,7 +620,7 @@ void sdl_print_item(SDL_Renderer * render,item_t * item)
 int sdl_blit_item(SDL_Renderer * render,item_t * item)
 {
 	SDL_Rect rect;
-	anim_array_t * anim_array = NULL;
+	anim_array_t * anim_array = nullptr;
 	int i;
 
 	if(item->anim.list && item->anim.list[0]) {
@@ -669,7 +669,7 @@ int sdl_blit_item(SDL_Renderer * render,item_t * item)
 		}
 	}
 
-	if( item->font != NULL && item->string != NULL ) {
+	if( item->font != nullptr && item->string != nullptr ) {
 		sdl_print_item(render,item);
 	}
 
@@ -693,7 +693,7 @@ void sdl_blit_item_list(SDL_Renderer * render,item_t * list)
 ************************************************************************/
 void sdl_keyboard_text_init(char * buf, void (*cb)(void*arg))
 {
-	if ( buf == NULL ) {
+	if ( buf == nullptr ) {
 		return;
 	}
 
@@ -707,8 +707,8 @@ void sdl_keyboard_text_init(char * buf, void (*cb)(void*arg))
 void sdl_keyboard_text_reset()
 {
 	keyboard_text_index=0;
-	keyboard_text_buf = NULL;
-	keyboard_text_cb = NULL;
+	keyboard_text_buf = nullptr;
+	keyboard_text_cb = nullptr;
 }
 
 /************************************************************************
@@ -741,7 +741,7 @@ void sdl_keyboard_manager(SDL_Event * event)
 		break;
 	case SDL_KEYDOWN:
 		/* If no keyboard_text ready, key are used for UI */
-		if( keyboard_text_buf == NULL ) {
+		if( keyboard_text_buf == nullptr ) {
 			key = key_callback;
 			if(key) {
 				do {
@@ -773,7 +773,7 @@ void sdl_keyboard_manager(SDL_Event * event)
 				event->key.keysym.sym < SDLK_DELETE ) {
 
 			/* Uppercase */
-			keystate = SDL_GetKeyboardState(NULL);
+			keystate = SDL_GetKeyboardState(nullptr);
 			if( (keystate[SDL_SCANCODE_RSHIFT] ||
 					keystate[SDL_SCANCODE_LSHIFT] ) &&
 					(event->key.keysym.sym >=SDL_SCANCODE_A &&
@@ -891,27 +891,27 @@ void sdl_add_keycb(SDL_Scancode code,void (*cb)(void*),void (*cb_up)(void*), voi
 {
 	keycb_t * key;
 
-	if(key_callback==NULL) {
-		key = malloc(sizeof(keycb_t));
+	if(key_callback==nullptr) {
+		key = (keycb_t *)malloc(sizeof(keycb_t));
 		key_callback = key;
 		key->code = code;
 		key->cb = cb;
 		key->cb_up = cb_up;
 		key->arg = arg;
-		key->next = NULL;
+		key->next = nullptr;
 		return;
 	} else {
 		key = key_callback;
-		while(key->next != NULL) {
+		while(key->next != nullptr) {
 			key = key->next;
 		}
-		key->next = malloc(sizeof(keycb_t));
+		key->next = (keycb_t *)malloc(sizeof(keycb_t));
 		key = key->next;
 		key->code = code;
 		key->cb = cb;
 		key->cb_up = cb_up;
 		key->arg = arg;
-		key->next = NULL;
+		key->next = nullptr;
 		return;
 	}
 }
@@ -920,7 +920,7 @@ void sdl_add_keycb(SDL_Scancode code,void (*cb)(void*),void (*cb_up)(void*), voi
 ************************************************************************/
 static void rec_free_keycb(keycb_t * key)
 {
-	if(key == NULL) {
+	if(key == nullptr) {
 		return;
 	}
 
@@ -937,7 +937,7 @@ void sdl_free_keycb()
 {
 	rec_free_keycb(key_callback);
 
-	key_callback = NULL;
+	key_callback = nullptr;
 }
 
 /************************************************************************
@@ -946,23 +946,23 @@ void sdl_add_mousecb(Uint32 event_type,void (*cb)(Uint32,Uint32))
 {
 	mousecb_t * mouse;
 
-	if(mouse_callback==NULL) {
-		mouse = malloc(sizeof(mousecb_t));
+	if(mouse_callback==nullptr) {
+		mouse = (mousecb_t *)malloc(sizeof(mousecb_t));
 		mouse_callback = mouse;
 		mouse->event_type = event_type;
 		mouse->cb = cb;
-		mouse->next = NULL;
+		mouse->next = nullptr;
 		return;
 	} else {
 		mouse = mouse_callback;
-		while(mouse->next != NULL) {
+		while(mouse->next != nullptr) {
 			mouse = mouse->next;
 		}
-		mouse->next = malloc(sizeof(mousecb_t));
+		mouse->next = (mousecb_t *)malloc(sizeof(mousecb_t));
 		mouse = mouse->next;
 		mouse->event_type = event_type;
 		mouse->cb = cb;
-		mouse->next = NULL;
+		mouse->next = nullptr;
 		return;
 	}
 }
@@ -971,7 +971,7 @@ void sdl_add_mousecb(Uint32 event_type,void (*cb)(Uint32,Uint32))
 ************************************************************************/
 static void rec_free_mousecb(mousecb_t * mouse)
 {
-	if(mouse == NULL) {
+	if(mouse == nullptr) {
 		return;
 	}
 
@@ -988,7 +988,7 @@ void sdl_free_mousecb()
 {
 	rec_free_mousecb(mouse_callback);
 
-	mouse_callback = NULL;
+	mouse_callback = nullptr;
 }
 
 /************************************************************************

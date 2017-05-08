@@ -20,13 +20,13 @@
 #ifndef SIITEM_H
 #define SIITEM_H
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_ttf.h>
-#include "anim.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
+#include "anim.h"
 
 typedef enum layout { LAYOUT_TOP_LEFT, LAYOUT_CENTER } layout_t;
 typedef struct anim_array {

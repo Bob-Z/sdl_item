@@ -17,14 +17,14 @@
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <SDL2/SDL.h>
 #include "item.h"
 #include "sdl.h"
 #include "const.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /************************************************************************
 Return a pointer to the newly creates item_t
@@ -34,7 +34,7 @@ item_t * item_list_add(item_t ** item_list)
 	item_t * item;
 	item_t * last_item;
 
-	item = malloc(sizeof(item_t));
+	item = (item_t*)malloc(sizeof(item_t));
 	item_init(item);
 
 	// add to item list
@@ -183,7 +183,7 @@ static void add_and_set_anim(anim_array_t * anim_array, anim_t * anim, int anim_
 	int i;
 
 	if( anim_array->num <= anim_index ) {
-		anim_array->list = realloc(anim_array->list,(anim_index+1)*sizeof(anim_t*));
+		anim_array->list = (anim_t **)realloc(anim_array->list,(anim_index+1)*sizeof(anim_t*));
 
 		for(i=anim_array->num; i<=anim_index; i++) {
 			anim_array->list[i] = NULL;
@@ -477,6 +477,6 @@ void item_set_anim_start_tick(item_t * item, Uint32 tick)
 }
 
 #ifdef __cplusplus
-extern "C" {
+}
 #endif
 

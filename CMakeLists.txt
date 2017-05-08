@@ -33,9 +33,9 @@ include_directories(
 add_library(
 	${PROJECT_NAME}
 	SHARED
-	anim.c
-	item.c
-	sdl.c
+	anim.cpp
+	item.cpp
+	sdl.cpp
 )
 
 target_link_libraries (${PROJECT_NAME}

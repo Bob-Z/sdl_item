@@ -17,6 +17,10 @@
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "sdl.h"
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
@@ -27,10 +31,6 @@
 #include <png.h>
 #include <zip.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #define GIF_GCE			(0xf9)
 
 #define DEFAULT_DELAY		(40)
@@ -39,29 +39,29 @@ extern "C" {
 #define ZIP_TMP_FILE		"/tmp/si_tmp"
 
 /************************************************************************
-return NULL if error
+return nullptr if error
 http://www.imagemagick.org/Usage/anim_basics/#dispose
 http://wwwcdf.pd.infn.it/libgif/gif89.txt
 http://wwwcdf.pd.infn.it/libgif/gif_lib.html
 ************************************************************************/
 static anim_t * giflib_load(SDL_Renderer * render, const char * filename)
 {
-	GifFileType * gif = NULL;
+	GifFileType * gif = nullptr;
 	int i = 0;
 	int j = 0;
 	int transparent = 0;
 	unsigned char transparent_color = 0;
 	int disposal = 0;
 	int delay = 0;
-	ColorMapObject * global_pal = NULL;
-	ColorMapObject * pal = NULL;
-	SDL_Surface* surf = NULL;
-	SDL_Surface* prev_surf = NULL;
+	ColorMapObject * global_pal = nullptr;
+	ColorMapObject * pal = nullptr;
+	SDL_Surface* surf = nullptr;
+	SDL_Surface* prev_surf = nullptr;
 	int x = 0;
 	int y = 0;
 	int col = 0;
 	int pix_index = 0;
-	anim_t * anim = NULL;
+	anim_t * anim = nullptr;
 	int render_width;
 	int render_height;
 	int frame_left = 0;
@@ -73,31 +73,31 @@ static anim_t * giflib_load(SDL_Renderer * render, const char * filename)
 	int ret;
 
 	gif = DGifOpenFileName(filename,&error);
-	if(gif == NULL) {
+	if(gif == nullptr) {
 #if 0
 		printf("%s: %s\n", filename,GifErrorString(error));
 #endif
-		return NULL;
+		return nullptr;
 	}
 
 	ret = DGifSlurp(gif);
 	if (ret != GIF_OK) {
 		DGifCloseFile(gif,&error);
-		return NULL;
+		return nullptr;
 	}
 	if ( gif->Error != D_GIF_SUCCEEDED) {
 		DGifCloseFile(gif,&error);
-		return NULL;
+		return nullptr;
 	}
 
-	anim = malloc(sizeof(anim_t));
+	anim = (anim_t*)malloc(sizeof(anim_t));
 	memset(anim,0,sizeof(anim_t));
 
 	anim->num_frame = gif->ImageCount;
-	anim->tex = malloc(sizeof(SDL_Texture *) * anim->num_frame);
+	anim->tex = (SDL_Texture **)malloc(sizeof(SDL_Texture *) * anim->num_frame);
 	anim->w = gif->SWidth;
 	anim->h = gif->SHeight;
-	anim->delay = malloc(sizeof(Uint32) * anim->num_frame);
+	anim->delay = (Uint32*)malloc(sizeof(Uint32) * anim->num_frame);
 
 	render_width = gif->SWidth;
 	render_height = gif->SHeight;
@@ -200,88 +200,84 @@ static anim_t * giflib_load(SDL_Renderer * render, const char * filename)
 }
 
 /************************************************************************
-return NULL if error
+return nullptr if error
 ************************************************************************/
 static SDL_Texture * libpng_load_texture(SDL_Renderer * render, const char * filename, int * width_out, int * height_out)
 {
-	FILE *fp = NULL;
-	png_structp png_ptr = NULL;
-	png_infop info_ptr = NULL;
-	SDL_Surface* surf = NULL;
-	png_bytep *row_pointers = NULL;
-	png_uint_32 width = 0;
-	png_uint_32 height = 0;
+	FILE *fp = nullptr;
+	png_structp png_ptr = nullptr;
+	png_infop info_ptr = nullptr;
+	SDL_Surface* surf = nullptr;
+	png_bytep *row_pointers = nullptr;
+	png_uint_32 width = 0U;
+	png_uint_32 height = 0U;
 	int bit_depth = 0;
 	int color_type = 0;
-	int i = 0;
+	png_uint_32 i = 0U;
 	png_byte magic[8];
-	SDL_Texture * tex = NULL;
+	SDL_Texture * tex = nullptr;
 
-	/* open image file */
+	// open image file
 	fp = fopen (filename, "rb");
 	if (!fp) {
 		//fprintf (stderr, "error: couldn't open \"%s\"!\n", filename);
-		return NULL;
+		return nullptr;
 	}
 
-	/* read magic number */
+	// read magic number
 	fread (magic, 1, sizeof (magic), fp);
 
-	/* check for valid magic number */
+	// check for valid magic number
 	if (!png_check_sig (magic, sizeof (magic))) {
 		fclose(fp);
-		return NULL;
+		return nullptr;
 	}
 
-	/* create a png read struct */
+	// create a png read struct
 	png_ptr = png_create_read_struct
-			  (PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-	if (!png_ptr) {
+			  (PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
+	if (png_ptr == nullptr) {
 		fclose(fp);
-		return NULL;
+		return nullptr;
 	}
 
-	/* create a png info struct */
+	// create a png info struct
 	info_ptr = png_create_info_struct (png_ptr);
-	if (!info_ptr) {
-		png_destroy_read_struct (&png_ptr, NULL, NULL);
+	if (info_ptr == nullptr) {
+		png_destroy_read_struct (&png_ptr, nullptr, nullptr);
 		fclose(fp);
-		return NULL;
+		return nullptr;
 	}
 
 	//wlog(LOGDEBUG,"Using libpng to decode %s",filename);
 
-	/* set error handling */
+	// set error handling
 	if (setjmp(png_jmpbuf(png_ptr))) {
-		png_destroy_read_struct(&png_ptr, &info_ptr, (png_info **)0);
+		png_destroy_read_struct(&png_ptr, &info_ptr, (png_info **)nullptr);
 		fclose(fp);
-		free(png_ptr);
-		free(info_ptr);
-		/* If we get here, we had a problem reading the file */
-		return NULL;
+		// If we get here, we had a problem reading the file
+		return nullptr;
 	}
 
-	/* setup libpng for using standard C fread() function
-	   with our FILE pointer */
+	// setup libpng for using standard C fread() function with our FILE pointer
 	png_init_io (png_ptr, fp);
 
-	/* tell libpng that we have already read the magic number */
+	// tell libpng that we have already read the magic number
 	png_set_sig_bytes (png_ptr, sizeof (magic));
 
-	/* read the file information */
+	// read the file information
 	png_read_info(png_ptr, info_ptr);
 
-	/* get some usefull information from header */
+	// get some usefull information from header
 	bit_depth = png_get_bit_depth (png_ptr, info_ptr);
 	color_type = png_get_color_type (png_ptr, info_ptr);
 
-	/* convert index color images to RGB images */
+	// convert index color images to RGB images
 	if (color_type == PNG_COLOR_TYPE_PALETTE) {
 		png_set_palette_to_rgb (png_ptr);
 	}
 
-	/* convert 1-2-4 bits grayscale images to 8 bits
-	   grayscale. */
+	// convert 1-2-4 bits grayscale images to 8 bits grayscale.
 	if (color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8) {
 		png_set_expand_gray_1_2_4_to_8(png_ptr);
 	}
@@ -304,40 +300,37 @@ static SDL_Texture * libpng_load_texture(SDL_Renderer * render, const char * fil
 		png_set_gray_to_rgb(png_ptr);
 	}
 
-	/* optional call to update the info structure */
+	// optional call to update the info structure
 	png_read_update_info(png_ptr, info_ptr);
 
-	/* retrieve updated information */
+	// retrieve updated information
 	png_get_IHDR (png_ptr, info_ptr,
 				  &width,&height,
 				  &bit_depth, &color_type,
-				  NULL, NULL, NULL);
+				  nullptr, nullptr, nullptr);
 
 	//wlog(LOGDEBUG,"size: %dx%d bit_depth: %d, type: %d",width,height,bit_depth,color_type);
-	/* allocate the memory to hold the image using the fields
-	   of png_info. */
+	// allocate the memory to hold the image using the fields of png_info.
 	surf = SDL_CreateRGBSurface(0,width,height,32,0x000000ff,0x0000ff00,0x00ff0000,0xff000000);
 	memset(surf->pixels,0,width*height*sizeof(Uint32));
 	row_pointers = (png_bytep *)malloc (sizeof (png_bytep) * height);
 
 	for (i = 0; i < height; i++) {
-		row_pointers[height-i-1] = (png_bytep)(surf->pixels +
-											   ((height - (i + 1)) * width * sizeof(Uint32)));
+		row_pointers[height-i-1] = (png_bytep)(surf->pixels) + ((height - (i + 1)) * width * sizeof(Uint32));
 	}
 
-	/* the easiest way to read the image */
+	// the easiest way to read the image
 	png_read_image(png_ptr, row_pointers);
 
 	free(row_pointers);
 
-	/* read the rest of the file, getting any additional chunks
-	   in info_ptr */
+	// read the rest of the file, getting any additional chunks in info_ptr
 	png_read_end(png_ptr, info_ptr);
 
-	/* clean up after the read, and free any memory allocated */
-	png_destroy_read_struct (&png_ptr, &info_ptr, NULL);
+	// clean up after the read, and free any memory allocated
+	png_destroy_read_struct (&png_ptr, &info_ptr, nullptr);
 
-	/* close the file */
+	// close the file
 	fclose(fp);
 
 	tex = SDL_CreateTextureFromSurface(render,surf);
@@ -350,26 +343,26 @@ static SDL_Texture * libpng_load_texture(SDL_Renderer * render, const char * fil
 }
 
 /************************************************************************
-return NULL if error
+return nullptr if error
 ************************************************************************/
 static anim_t * libpng_load(SDL_Renderer * render, const char * filename)
 {
-	anim_t * anim = NULL;
+	anim_t * anim = nullptr;
 	SDL_Texture * tex;
 	int width;
 	int height;
 
 	tex = libpng_load_texture(render,filename, &width, &height);
-	if( tex == NULL ) {
-		return NULL;
+	if( tex == nullptr ) {
+		return nullptr;
 	}
 
-	anim = malloc(sizeof(anim_t));
+	anim = (anim_t*)malloc(sizeof(anim_t));
 	memset(anim,0,sizeof(anim_t));
 
 	anim->num_frame = 1;
-	anim->tex = malloc(sizeof(SDL_Texture *) * anim->num_frame);
-	anim->delay = malloc(sizeof(Uint32) * anim->num_frame);
+	anim->tex = (SDL_Texture **)malloc(sizeof(SDL_Texture *) * anim->num_frame);
+	anim->delay = (Uint32*)malloc(sizeof(Uint32) * anim->num_frame);
 	anim->delay[0] = 0;
 	anim->tex[0] = tex;
 	anim->w = width;
@@ -387,7 +380,7 @@ static int cmp(const void *p1, const void *p2)
 
 /************************************************************************
 ************************************************************************/
-static void read_timing(char * filename, int count, Uint32 * delay)
+static void read_timing(const char * filename, int count, Uint32 * delay)
 {
 	FILE * file;
 	int i = 0;
@@ -405,7 +398,7 @@ return <0 on failure
 static int extract_zip(struct zip *fd_zip,int index)
 {
 	struct zip_stat	file_stat;
-	struct zip_file *file_zip=NULL;
+	struct zip_file *file_zip=nullptr;
 	char * data;
 	FILE *file_dest;
 
@@ -416,15 +409,15 @@ static int extract_zip(struct zip *fd_zip,int index)
 		return -1;
 	}
 
-	data = malloc((size_t)(file_stat.size));
-	if( zip_fread(file_zip, data, (size_t)(file_stat.size)) != file_stat.size ) {
+	data = (char*)malloc((size_t)(file_stat.size));
+	if( zip_fread(file_zip, data, (size_t)(file_stat.size)) != (int64_t)file_stat.size ) {
 		free(data);
 		zip_fclose(file_zip);
 		return -1;
 	}
 
 	file_dest = fopen(ZIP_TMP_FILE, "wb");
-	if( file_dest == NULL ) {
+	if( file_dest == nullptr ) {
 		free(data);
 		zip_fclose(file_zip);
 		return -1;
@@ -445,17 +438,17 @@ static int extract_zip(struct zip *fd_zip,int index)
 }
 
 /************************************************************************
-return NULL if error
+return nullptr if error
 ************************************************************************/
 static anim_t * libzip_load(SDL_Renderer * render, const char * filename)
 {
-	anim_t * anim = NULL;
-	struct zip *fd_zip=NULL;
+	anim_t * anim = nullptr;
+	struct zip *fd_zip=nullptr;
 	int err = 0;
 	int file_count = 0;
 	int anim_count = 0;
 	int i;
-	char ** zip_filename = NULL;
+	char ** zip_filename = nullptr;
 	int index = 0;
 
 	fd_zip = zip_open(filename, ZIP_CHECKCONS, &err);
@@ -464,50 +457,50 @@ static anim_t * libzip_load(SDL_Renderer * render, const char * filename)
 		zip_error_to_str(buf_erreur, sizeof buf_erreur, err, errno);
 		printf("Error %d : %s\n",err, buf_erreur);
 #endif
-		return NULL;
+		return nullptr;
 	}
 
-	if( fd_zip == NULL ) {
-		return NULL;
+	if( fd_zip == nullptr ) {
+		return nullptr;
 	}
 
 	file_count = zip_get_num_files(fd_zip);
 	if( file_count <= 0 ) {
 		zip_close(fd_zip);
-		return NULL;
+		return nullptr;
 	}
 
 	// Remove timing file
 	anim_count = file_count - 1;
-	anim = malloc(sizeof(anim_t));
+	anim = (anim_t*)malloc(sizeof(anim_t));
 	memset(anim,0,sizeof(anim_t));
-	anim->tex = malloc( anim_count * sizeof(SDL_Texture*) );
-	anim->delay = malloc( anim_count * sizeof(Uint32) );
+	anim->tex = (SDL_Texture**)malloc( anim_count * sizeof(SDL_Texture*) );
+	anim->delay = (Uint32*)malloc( anim_count * sizeof(Uint32) );
 	for( i=0 ; i<anim_count ; i++ ) {
 		anim->delay[i] = DEFAULT_DELAY;
 	}
 
-	/* Get zip archive filenames and sort them alphabetically */
-	zip_filename = malloc( sizeof(char*) * file_count );
+	// Get zip archive filenames and sort them alphabetically
+	zip_filename = (char**)malloc( sizeof(char*) * file_count );
 	for( i=0; i<file_count; i++ ) {
 		zip_filename[i] = strdup(zip_get_name(fd_zip, i, ZIP_FL_UNCHANGED));
 	}
 
 	qsort(zip_filename, file_count, sizeof(char*), cmp);
 
-	/* Read file in archive and process them (either as PNG file or timing file */
+	// Read file in archive and process them (either as PNG file or timing file
 	for( i=0; i<file_count; i++ ) {
 		index = zip_name_locate(fd_zip,zip_filename[i],0);
 		if( index == -1 ) {
 			continue;
 		}
 
-		/* Create ZIP_TMP_FILE file */
+		// Create ZIP_TMP_FILE file
 		if( extract_zip(fd_zip,index) < 0 ) {
 			continue;
 		}
 
-		/* timing file */
+		// timing file
 		if( !strcmp( zip_filename[i], ZIP_TIMING_FILE) ) {
 			read_timing(ZIP_TMP_FILE, file_count-1, anim->delay);
 			continue;
@@ -515,7 +508,7 @@ static anim_t * libzip_load(SDL_Renderer * render, const char * filename)
 
 		/* PNG file */
 		anim->tex[anim->num_frame] = libpng_load_texture(render, ZIP_TMP_FILE, &anim->w, &anim->h);
-		if( anim->tex[anim->num_frame] == NULL ) {
+		if( anim->tex[anim->num_frame] == nullptr ) {
 #if 0
 			printf("Corrupted PNG file");
 #endif
@@ -536,36 +529,35 @@ static anim_t * libzip_load(SDL_Renderer * render, const char * filename)
 }
 
 /************************************************************************
-return NULL if error
+return nullptr if error
 ************************************************************************/
 static anim_t * libav_load(SDL_Renderer * render, const char * filename)
 {
-	anim_t * anim = NULL;
-	anim_t * ret = NULL;
-	AVFormatContext *pFormatCtx = NULL;
-	int i = 0;
+	anim_t * anim = nullptr;
+	anim_t * ret = nullptr;
+	AVFormatContext *pFormatCtx = nullptr;
+	unsigned int i = 0U;
 	int videoStream = 0;
-	AVCodecContext *pCodecCtx = NULL;
-	AVCodec *pCodec = NULL;
-	AVFrame *pDecodedFrame = NULL;
-	AVFrame *pFrameRGBA = NULL;
-	struct SwsContext * pSwsCtx = NULL;
+	AVCodecContext *pCodecCtx = nullptr;
+	AVCodec *pCodec = nullptr;
+	AVFrame *pDecodedFrame = nullptr;
+	AVFrame *pFrameRGBA = nullptr;
+	struct SwsContext * pSwsCtx = nullptr;
 	AVPacket packet;
-	int frameFinished = 0;
 	int delay = 0;
 
-	anim = malloc(sizeof(anim_t));
+	anim = (anim_t*)malloc(sizeof(anim_t));
 	memset(anim,0,sizeof(anim_t));
 
 	// Register all formats and codecs
 	av_register_all();
 
 	// Open video file
-	if (avformat_open_input(&pFormatCtx, filename, NULL, NULL) != 0) {
+	if (avformat_open_input(&pFormatCtx, filename, nullptr, nullptr) != 0) {
 		goto error;
 	}
 
-	if (avformat_find_stream_info(pFormatCtx, NULL) < 0) {
+	if (avformat_find_stream_info(pFormatCtx, nullptr) < 0) {
 		goto error;
 	}
 
@@ -579,8 +571,8 @@ static anim_t * libav_load(SDL_Renderer * render, const char * filename)
 			// If the above doesn't work try with frame_rate :
 			//delay = pFormatCtx->streams[i]->r_frame_rate;
 
-			anim->tex = NULL;
-			anim->delay = NULL;
+			anim->tex = nullptr;
+			anim->delay = nullptr;
 			break;
 		}
 	}
@@ -594,12 +586,12 @@ static anim_t * libav_load(SDL_Renderer * render, const char * filename)
 
 	// Find the decoder for the video stream
 	pCodec = avcodec_find_decoder(pCodecCtx->codec_id);
-	if (pCodec == NULL) {
+	if (pCodec == nullptr) {
 		goto error;
 	}
 
 	// Open codec
-	if (avcodec_open2(pCodecCtx, pCodec, NULL) < 0) {
+	if (avcodec_open2(pCodecCtx, pCodec, nullptr) < 0) {
 		goto error;
 	}
 
@@ -612,10 +604,10 @@ static anim_t * libav_load(SDL_Renderer * render, const char * filename)
 	pFrameRGBA = avcodec_alloc_frame();
 #endif
 
-	if (pDecodedFrame == NULL) {
+	if (pDecodedFrame == nullptr) {
 		goto error;
 	}
-	if (pFrameRGBA == NULL) {
+	if (pFrameRGBA == nullptr) {
 		goto error;
 	}
 
@@ -627,9 +619,9 @@ static anim_t * libav_load(SDL_Renderer * render, const char * filename)
 	pSwsCtx = sws_getContext(pCodecCtx->width,
 							 pCodecCtx->height, pCodecCtx->pix_fmt,
 							 pCodecCtx->width, pCodecCtx->height,
-							 AV_PIX_FMT_RGBA, SWS_BILINEAR, NULL, NULL, NULL);
+							 AV_PIX_FMT_RGBA, SWS_BILINEAR, nullptr, nullptr, nullptr);
 
-	if (pSwsCtx == NULL) {
+	if (pSwsCtx == nullptr) {
 		goto error;
 	}
 
@@ -655,11 +647,11 @@ static anim_t * libav_load(SDL_Renderer * render, const char * filename)
 					anim->delay[i] = delay;
 					anim->tex = (SDL_Texture**)realloc(anim->tex, (i+1) * sizeof(SDL_Texture*));
 					anim->tex[i] = SDL_CreateTexture(render, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STATIC, pCodecCtx->width,pCodecCtx->height);
-					if( anim->tex[i] == NULL ) {
+					if( anim->tex[i] == nullptr ) {
 						//SDL_CreateTexture error
 					}
 					// Copy decoded bits to render texture
-					if (SDL_UpdateTexture(anim->tex[i],NULL,pFrameRGBA->data[0],pFrameRGBA->linesize[0]) < 0) {
+					if (SDL_UpdateTexture(anim->tex[i],nullptr,pFrameRGBA->data[0],pFrameRGBA->linesize[0]) < 0) {
 						//SDL_UpdateTexture error
 					}
 					i++;
@@ -674,7 +666,7 @@ static anim_t * libav_load(SDL_Renderer * render, const char * filename)
 	ret = anim;
 
 error:
-	if(ret == NULL) {
+	if(ret == nullptr) {
 		if(anim) {
 			if(anim->tex) {
 				free(anim->tex);
@@ -708,22 +700,22 @@ anim_t * anim_load(SDL_Renderer * render, const char * filename)
 {
 	anim_t * ret;
 
-	if( filename == NULL ) {
-		return NULL;
+	if( filename == nullptr ) {
+		return nullptr;
 	}
 
 	ret = giflib_load(render, filename);
-	if(ret == NULL) {
+	if(ret == nullptr) {
 		ret = libpng_load(render, filename);
-		if(ret == NULL) {
+		if(ret == nullptr) {
 			ret = libzip_load(render, filename);
-			if(ret == NULL) {
+			if(ret == nullptr) {
 				ret = libav_load(render, filename);
 			}
 		}
 	}
 
-	if( ret != NULL ) {
+	if( ret != nullptr ) {
 		ret->total_duration = 0;
 		int i;
 		for( i=0 ; i<ret->num_frame ; i++) {
@@ -741,22 +733,22 @@ anim_t * anim_create_color(SDL_Renderer * render, Uint32 width, Uint32 height, U
 {
 	anim_t * anim;
 	SDL_Surface* surf;
-	int i;
+	unsigned int i;
 	Uint32 * to_fill;
 
-	anim = malloc(sizeof(anim_t));
+	anim = (anim_t *)malloc(sizeof(anim_t));
 	memset(anim,0,sizeof(anim_t));
 
 	anim->num_frame = 1;
-	anim->tex = malloc(sizeof(SDL_Texture *) * anim->num_frame);
+	anim->tex = (SDL_Texture **)malloc(sizeof(SDL_Texture *) * anim->num_frame);
 	anim->w = width;
 	anim->h = height;
-	anim->delay = malloc(sizeof(Uint32) * anim->num_frame);
+	anim->delay = (Uint32*)malloc(sizeof(Uint32) * anim->num_frame);
 	anim->delay[0] = 0;
 
 	surf = SDL_CreateRGBSurface(0,width,height,32,0xff000000,0x00ff0000,0x0000ff00,0x000000ff);
 
-	to_fill = surf->pixels;
+	to_fill = (Uint32*)(surf->pixels);
 	for(i=0; i<width*height; i++) {
 		to_fill[i] = color;
 	}
