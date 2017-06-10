@@ -232,6 +232,8 @@ void sdl_mouse_manager(SDL_Renderer * render, SDL_Event * event, item_t * item_l
 		mouse_y = event->motion.y;
 	}
 
+	get_virtual(render,vx,vy, l_Width, l_Height);
+
 	// First test overlay (UI) before background
 	while(overlay_first!=-1) {
 		I = item_list;
@@ -252,7 +254,6 @@ void sdl_mouse_manager(SDL_Renderer * render, SDL_Event * event, item_t * item_l
 					I = I->next;
 					continue;
 				}
-				get_virtual(render,vx,vy, l_Width, l_Height);
 				mx = mouse_x - (vx * current_vz) ;
 				my = mouse_y - (vy * current_vz) ;
 				zoomed_x = I->rect.x * current_vz;
