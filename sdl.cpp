@@ -115,18 +115,12 @@ void sdl_init(const char * title, SDL_Renderer ** render,SDL_Window ** window, v
 
 /************************************************************************
 ************************************************************************/
-static void get_virtual(SDL_Renderer * render,int * vx, int * vy)
+static void get_virtual(SDL_Renderer * p_pRender,int & p_rVx, int & p_rVy, int & p_rWidth, int & p_rHeight)
 {
-	int sx;
-	int sy;
+	SDL_GetRendererOutputSize(p_pRender,&p_rWidth,&p_rHeight);
 
-	SDL_GetRendererOutputSize(render,&sx,&sy);
-
-	sx /= current_vz;
-	sy /= current_vz;
-
-	*vx = (sx/2)-current_vx;
-	*vy = (sy/2)-current_vy;
+	p_rVx = (p_rWidth / current_vz / 2) - current_vx;
+	p_rVy = (p_rHeight / current_vz / 2) - current_vy;
 }
 
 /************************************************************************
@@ -138,6 +132,8 @@ void sdl_mouse_position_manager(SDL_Renderer * render, item_t * item_list)
 	int my;
 	int vx = 0;
 	int vy = 0;
+	int l_Width = 0;
+	int l_Height = 0;
 	int zoomed_x;
 	int zoomed_y;
 	int zoomed_w;
@@ -157,7 +153,7 @@ void sdl_mouse_position_manager(SDL_Renderer * render, item_t * item_list)
 			zoomed_w = I->rect.w;
 			zoomed_h = I->rect.h;
 		} else {
-			get_virtual(render,&vx,&vy);
+			get_virtual(render,vx,vy, l_Width, l_Height);
 			mx = mouse_x - (vx * current_vz);
 			my = mouse_y - (vy * current_vz);
 			zoomed_x = I->rect.x * current_vz;
@@ -197,6 +193,8 @@ void sdl_mouse_manager(SDL_Renderer * render, SDL_Event * event, item_t * item_l
 	int my;
 	int vx = 0;
 	int vy = 0;
+	int l_Width = 0;
+	int l_Height = 0;
 	int zoomed_x;
 	int zoomed_y;
 	int zoomed_w;
@@ -234,7 +232,7 @@ void sdl_mouse_manager(SDL_Renderer * render, SDL_Event * event, item_t * item_l
 		mouse_y = event->motion.y;
 	}
 
-	/* First test overlay (UI) before background */
+	// First test overlay (UI) before background
 	while(overlay_first!=-1) {
 		I = item_list;
 		while(I) {
@@ -254,7 +252,7 @@ void sdl_mouse_manager(SDL_Renderer * render, SDL_Event * event, item_t * item_l
 					I = I->next;
 					continue;
 				}
-				get_virtual(render,&vx,&vy);
+				get_virtual(render,vx,vy, l_Width, l_Height);
 				mx = mouse_x - (vx * current_vz) ;
 				my = mouse_y - (vy * current_vz) ;
 				zoomed_x = I->rect.x * current_vz;
@@ -263,12 +261,12 @@ void sdl_mouse_manager(SDL_Renderer * render, SDL_Event * event, item_t * item_l
 				zoomed_h = I->rect.h * current_vz;
 			}
 
-			/* Manage event related to mouse position */
+			// Manage event related to mouse position
 			if( (zoomed_x <= mx) &&
 					((zoomed_x+zoomed_w) > mx) &&
 					(zoomed_y <= my) &&
 					((zoomed_y+zoomed_h) > my) ) {
-				/* We are on overlay item: skip, non-overlay item */
+				// We are on overlay item: skip, non-overlay item
 				if(overlay_first) {
 					skip_non_overlay=TRUE;
 				}
@@ -470,19 +468,21 @@ flip is one of SDL_FLIP_NONE, SDL_FLIP_HORIZONTAL, SDL_FLIP_VERTICAL
 void sdl_blit_tex(SDL_Renderer * render,SDL_Texture * tex, SDL_Rect * rect, double angle, double zoom_x, double zoom_y, int flip, int overlay)
 {
 	SDL_Rect r;
-	int vx;
-	int vy;
+	int vx = 0;
+	int vy = 0;
+	int l_Width = 0;
+	int l_Height = 0;
 
 	if( tex == nullptr ) {
 		return;
 	}
 
-	if(overlay) {
+	get_virtual(render,vx,vy, l_Width, l_Height);
+
+	if(overlay == 1) {
 		r.x = rect->x;
 		r.y = rect->y;
 	} else {
-		get_virtual(render,&vx,&vy);
-
 		r.x = rect->x + vx;
 		r.y = rect->y + vy;
 	}
@@ -490,21 +490,24 @@ void sdl_blit_tex(SDL_Renderer * render,SDL_Texture * tex, SDL_Rect * rect, doub
 	r.w = rect->w;
 	r.h = rect->h;
 
-	/* Sprite zoom */
+	// Sprite zoom
 	r.w *= zoom_x;
 	r.h *= zoom_y;
 
-	/* Do not globaly zoom overlay */
-	if( !overlay) {
-		/* Virtual zoom */
+	if( overlay == 0 ) {
+		// Virtual zoom
 		r.x = ceil( (double)r.x * current_vz);
 		r.y = ceil( (double)r.y * current_vz);
 		r.w = ceil( (double)r.w * current_vz);
 		r.h = ceil( (double)r.h * current_vz);
 	}
 
-	if( tex ) {
-//		if( SDL_RenderCopy(render,tex,nullptr,&r) < 0) {
+	// Crop
+	if( (r.x > l_Width) || ((r.x + r.w ) < 0) || (r.y > l_Height) || ((r.y + r.h) < 0)) {
+		return;
+	}
+
+	if( tex != nullptr ) {
 		if( SDL_RenderCopyEx(render,tex,nullptr,&r,angle,nullptr,(SDL_RendererFlip)flip) < 0) {
 			//Error
 		}
