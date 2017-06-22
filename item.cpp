@@ -64,9 +64,6 @@ static void item_free(item_t * item)
 	if( item->default_anim_click.list ) {
 		free(item->default_anim_click.list);
 	}
-	if( item->string ) {
-		free(item->string);
-	}
 	if( item->str_tex ) {
 		SDL_DestroyTexture(item->str_tex);
 	}
@@ -419,7 +416,7 @@ void item_set_over(item_t * item,void (*over)(void * arg,int x, int y),void * ov
 ************************************************************************/
 void item_set_string(item_t * item,char * buf)
 {
-	item->string = strdup(buf);
+	item->string = buf;
 
 	if(item->str_tex) {
 		SDL_DestroyTexture(item->str_tex);
