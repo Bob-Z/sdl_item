@@ -595,12 +595,20 @@ void sdl_print_item(SDL_Renderer * render,item_t * item)
 	SDL_Rect rect;
 	anim_t * bg_anim;
 
-	/* Get center of item */
+	// Get top/left of text
+
+	TTF_SizeText(item->font, item->string, &rect.w, &rect.h);
+	if( rect.w < item->rect.w ) {
+		rect.w = item->rect.w;
+	}
+	if( rect.h < item->rect.h ) {
+		rect.h = item->rect.h;
+	}
+
+	// Get center of item
 	rect.x = item->rect.x + (item->rect.w/2);
 	rect.y = item->rect.y + (item->rect.h/2);
 
-	/* Get top/left of text */
-	TTF_SizeText(item->font, item->string, &rect.w, &rect.h);
 	rect.x = rect.x-(rect.w/2);
 	rect.y = rect.y-(rect.h/2);
 
