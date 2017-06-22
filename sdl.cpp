@@ -594,25 +594,26 @@ void sdl_print_item(SDL_Renderer * render,item_t * item)
 	SDL_Color fg= {0xff,0xff,0xff};
 	SDL_Rect rect;
 	anim_t * bg_anim;
+	int l_TextWidth = 0;
+	int l_TextHeight = 0;
+	int l_BackgroundWidth = item->rect.w;
+	int l_BackgroundHeight = item->rect.h;
 
-	// Get top/left of text
-
-	TTF_SizeText(item->font, item->string, &rect.w, &rect.h);
-	if( rect.w < item->rect.w ) {
-		rect.w = item->rect.w;
+	TTF_SizeText(item->font, item->string, &l_TextWidth, &l_TextHeight);
+	if( l_BackgroundWidth < l_TextWidth ) {
+		l_BackgroundWidth = l_TextWidth;
 	}
-	if( rect.h < item->rect.h ) {
-		rect.h = item->rect.h;
+
+	if( l_BackgroundHeight < l_TextHeight ) {
+		l_BackgroundHeight = l_TextHeight;
 	}
 
-	// Get center of item
-	rect.x = item->rect.x + (item->rect.w/2);
-	rect.y = item->rect.y + (item->rect.h/2);
-
-	rect.x = rect.x-(rect.w/2);
-	rect.y = rect.y-(rect.h/2);
+	rect.x = item->rect.x;
+	rect.y = item->rect.y;
 
 	if( item->string_bg != 0 ) {
+		rect.w = l_BackgroundWidth;
+		rect.h = l_BackgroundHeight;
 		bg_anim = anim_create_color(render,rect.w,rect.h,item->string_bg);
 		sdl_blit_anim(render,bg_anim,&rect,item->angle,item->zoom_x,item->zoom_y,item->flip,0,item->overlay,0);
 		si_anim_free(bg_anim);
@@ -624,6 +625,8 @@ void sdl_print_item(SDL_Renderer * render,item_t * item)
 		SDL_FreeSurface(surf);
 	}
 
+	rect.w =  l_TextWidth;
+	rect.h =  l_TextHeight;
 	sdl_blit_tex(render,item->str_tex,&rect,item->angle,item->zoom_x,item->zoom_y,item->flip,item->overlay);
 }
 
