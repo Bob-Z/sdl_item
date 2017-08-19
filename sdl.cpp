@@ -755,7 +755,7 @@ void sdl_keyboard_manager(SDL_Event * event)
 		}
 		break;
 	case SDL_KEYDOWN:
-		/* If no keyboard_text ready, key are used for UI */
+		// If no keyboard_text ready, key are used for UI
 		if( keyboard_text_buf == nullptr ) {
 			key = key_callback;
 			if(key) {
@@ -769,7 +769,7 @@ void sdl_keyboard_manager(SDL_Event * event)
 			break;
 		}
 
-		/* Else keys are used to enter text */
+		// Else keys are used to enter text
 		if( event->key.keysym.sym == SDLK_RETURN ) {
 			if( keyboard_text_cb ) {
 				keyboard_text_cb(keyboard_text_buf);
@@ -786,13 +786,12 @@ void sdl_keyboard_manager(SDL_Event * event)
 
 		if( event->key.keysym.sym >= SDLK_SPACE &&
 				event->key.keysym.sym < SDLK_DELETE ) {
-
-			/* Uppercase */
+			// Uppercase
 			keystate = SDL_GetKeyboardState(nullptr);
 			if( (keystate[SDL_SCANCODE_RSHIFT] ||
 					keystate[SDL_SCANCODE_LSHIFT] ) &&
-					(event->key.keysym.sym >=SDL_SCANCODE_A &&
-					 event->key.keysym.sym <=SDL_SCANCODE_Z) ) {
+					(event->key.keysym.sym >=SDLK_a &&
+					 event->key.keysym.sym <=SDLK_z) ) {
 				event->key.keysym.sym = (SDL_Scancode)(event->key.keysym.sym-32);
 			}
 			keyboard_text_buf[keyboard_text_index]=event->key.keysym.sym;
