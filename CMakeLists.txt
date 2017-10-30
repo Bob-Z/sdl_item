@@ -34,7 +34,7 @@ add_library(
 	${PROJECT_NAME}
 	SHARED
 	anim.cpp
-	item.cpp
+	sdl_item.cpp
 	sdl.cpp
 )
 
