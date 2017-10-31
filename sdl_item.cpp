@@ -32,8 +32,8 @@ extern "C"
  ************************************************************************/
 item_t * item_list_add(item_t ** item_list)
 {
-	item_t * item;
-	item_t * last_item;
+	item_t * item = nullptr;
+	item_t * last_item = nullptr;
 
 	item = (item_t*) malloc(sizeof(item_t));
 	item_init(item);
@@ -102,6 +102,10 @@ static void item_free(item_t * item)
 	if (item->over_free)
 	{
 		item->over_free(item->over_arg);
+	}
+	if (item->string)
+	{
+		free(item->string);
 	}
 
 	free(item);
@@ -215,8 +219,8 @@ static void add_and_set_anim(anim_array_t * anim_array, anim_t * anim,
  ************************************************************************/
 void item_set_anim(item_t * item, anim_t * anim, int anim_index)
 {
-	int w;
-	int h;
+	int w = 0;
+	int h = 0;
 	int max_w = 0;
 	int max_h = 0;
 
@@ -456,7 +460,7 @@ void item_set_over(item_t * item, void (*over)(void * arg, int x, int y),
  ************************************************************************/
 void item_set_string(item_t * item, char * buf)
 {
-	item->string = buf;
+	item->string = strdup(buf);
 
 	if (item->str_tex)
 	{
@@ -518,4 +522,3 @@ void item_set_anim_start_tick(item_t * item, Uint32 tick)
 #ifdef __cplusplus
 }
 #endif
-

@@ -935,7 +935,7 @@ void sdl_keyboard_manager(SDL_Event * event)
 		if (event->key.keysym.sym >= SDLK_SPACE
 				&& event->key.keysym.sym < SDLK_DELETE)
 		{
-			// Uppercase
+			// Upper case
 			keystate = SDL_GetKeyboardState(nullptr);
 			if ((keystate[SDL_SCANCODE_RSHIFT] || keystate[SDL_SCANCODE_LSHIFT])
 					&& (event->key.keysym.sym >= SDLK_a
@@ -1182,4 +1182,3 @@ Uint32 sdl_get_global_time()
 #ifdef __cplusplus
 }
 #endif
-
