@@ -485,7 +485,7 @@ void item_set_string(item_t * item, const char * buf)
 
 /************************************************************************
  ************************************************************************/
-void item_set_buffer(item_t * item, char * buf,const size_t p_BufferSize)
+void item_set_buffer(item_t * item, char * buf, const size_t p_BufferSize)
 {
 	item->m_Buffer = buf;
 	item->m_BufferSize = p_BufferSize;

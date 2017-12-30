@@ -129,7 +129,7 @@ void item_set_wheel_down(item_t * item, void (*cb_wheel_down)(void * arg),
 void item_set_over(item_t * item, void (*over)(void * arg, int x, int y),
 		void * over_arg, void (*free_func)(void *ptr));
 void item_set_string(item_t * item, const char * buf);
-void item_set_buffer(item_t * item, char * buf,const size_t p_BufferSize);
+void item_set_buffer(item_t * item, char * buf, const size_t p_BufferSize);
 void item_set_string_bg(item_t * item, Uint32 color);
 void item_set_editable(item_t * item, int is_editable);
 void item_set_edit_cb(item_t * item, void (*cb_edit)(void * arg));
