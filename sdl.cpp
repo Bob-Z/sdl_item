@@ -30,8 +30,8 @@ extern "C"
 static int fullscreen = 0;
 
 static char *keyboard_text_buf = nullptr;
-static unsigned int keyboard_text_index = 0;
-//static unsigned int keyboard_text_index_max = 0;
+static unsigned int keyboard_text_index = 0U;
+static unsigned int keyboard_text_index_max = 0U;
 static void (*keyboard_text_cb)(void * arg) = nullptr;
 
 static int virtual_x = 0;
@@ -314,7 +314,8 @@ void sdl_mouse_manager(SDL_Renderer * render, SDL_Event * event,
 					sdl_keyboard_text_reset();
 					if (I->editable)
 					{
-						sdl_keyboard_text_init(I->string, I->edit_cb);
+						sdl_keyboard_text_init(I->m_Buffer, I->m_BufferSize,
+								I->edit_cb);
 					}
 
 					if (I->click_left && event->button.button == SDL_BUTTON_LEFT)
@@ -710,8 +711,18 @@ void sdl_print_item(SDL_Renderer * render, item_t * item)
 	int l_TextHeight = 0;
 	int l_BackgroundWidth = item->rect.w;
 	int l_BackgroundHeight = item->rect.h;
+	char * l_StringToDisplay = nullptr;
 
-	TTF_SizeText(item->font, item->string, &l_TextWidth, &l_TextHeight);
+	if (item->string != nullptr)
+	{
+		l_StringToDisplay = item->string;
+	}
+	if (item->m_Buffer != nullptr)
+	{
+		l_StringToDisplay = item->m_Buffer;
+	}
+
+	TTF_SizeText(item->font, l_StringToDisplay, &l_TextWidth, &l_TextHeight);
 	if (l_BackgroundWidth < l_TextWidth)
 	{
 		l_BackgroundWidth = l_TextWidth;
@@ -737,7 +748,7 @@ void sdl_print_item(SDL_Renderer * render, item_t * item)
 
 	if (item->str_tex == nullptr)
 	{
-		surf = TTF_RenderText_Blended(item->font, item->string, fg);
+		surf = TTF_RenderText_Blended(item->font, l_StringToDisplay, fg);
 		item->str_tex = SDL_CreateTextureFromSurface(render, surf);
 		SDL_FreeSurface(surf);
 	}
@@ -816,7 +827,8 @@ int sdl_blit_item(SDL_Renderer * render, item_t * item)
 		}
 	}
 
-	if (item->font != nullptr && item->string != nullptr)
+	if (item->font != nullptr
+			&& (item->string != nullptr || item->m_Buffer != nullptr))
 	{
 		sdl_print_item(render, item);
 	}
@@ -828,10 +840,10 @@ int sdl_blit_item(SDL_Renderer * render, item_t * item)
  ************************************************************************/
 void sdl_blit_item_list(SDL_Renderer * render, item_t * list)
 {
-	item_t * item;
+	item_t * item = nullptr;
 
 	item = list;
-	while (item)
+	while (item != nullptr)
 	{
 		sdl_blit_item(render, item);
 		item = item->next;
@@ -840,14 +852,16 @@ void sdl_blit_item_list(SDL_Renderer * render, item_t * list)
 
 /************************************************************************
  ************************************************************************/
-void sdl_keyboard_text_init(char * buf, void (*cb)(void*arg))
+void sdl_keyboard_text_init(char * buf, const size_t p_BufferSize,
+		void (*cb)(void*arg))
 {
 	if (buf == nullptr)
 	{
 		return;
 	}
 
-	keyboard_text_index = strlen(buf);
+	keyboard_text_index = 0U;
+	keyboard_text_index_max = p_BufferSize;
 	keyboard_text_buf = buf;
 	keyboard_text_cb = cb;
 }
@@ -856,7 +870,8 @@ void sdl_keyboard_text_init(char * buf, void (*cb)(void*arg))
  ************************************************************************/
 void sdl_keyboard_text_reset()
 {
-	keyboard_text_index = 0;
+	keyboard_text_index = 0U;
+	keyboard_text_index_max = 0U;
 	keyboard_text_buf = nullptr;
 	keyboard_text_cb = nullptr;
 }
@@ -872,8 +887,8 @@ char * sdl_keyboard_text_get_buf()
  ************************************************************************/
 void sdl_keyboard_manager(SDL_Event * event)
 {
-	const Uint8 *keystate;
-	keycb_t * key;
+	const Uint8 *keystate = nullptr;
+	keycb_t * key = nullptr;
 
 	switch (event->type)
 	{
@@ -945,14 +960,12 @@ void sdl_keyboard_manager(SDL_Event * event)
 						- 32);
 			}
 			keyboard_text_buf[keyboard_text_index] = event->key.keysym.sym;
-			/* TODO: check max buffer size */
-#if 0
-			if( keyboard_text_index < sizeof(keyboard_text_buf))
-			{
-				keyboard_text_index++;
-			}
-#endif
 			keyboard_text_index++;
+
+			if (keyboard_text_index >= keyboard_text_index_max)
+			{
+				keyboard_text_index--;
+			}
 			keyboard_text_buf[keyboard_text_index] = 0;
 		}
 		screen_compose();

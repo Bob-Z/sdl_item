@@ -174,6 +174,8 @@ void item_init(item_t * item)
 	item->over_arg = nullptr;
 	item->over_free = nullptr;
 	item->string = nullptr;
+	item->m_Buffer = nullptr;
+	item->m_BufferSize = 0U;
 	item->string_bg = 0; // Transparent black
 	item->font = nullptr;
 	item->str_tex = nullptr;
@@ -230,9 +232,21 @@ void item_set_anim(item_t * item, anim_t * anim, int anim_index)
 		max_w = anim->w;
 		max_h = anim->h;
 	}
-	if (item->string)
+
+	char * l_StringToDisplay = nullptr;
+
+	if (item->string != nullptr)
 	{
-		sdl_get_string_size(item->font, item->string, &w, &h);
+		l_StringToDisplay = item->string;
+	}
+	if (item->m_Buffer != nullptr)
+	{
+		l_StringToDisplay = item->m_Buffer;
+	}
+
+	if (l_StringToDisplay != nullptr)
+	{
+		sdl_get_string_size(item->font, l_StringToDisplay, &w, &h);
 		if (w > max_w)
 		{
 			max_w = w;
@@ -461,6 +475,20 @@ void item_set_over(item_t * item, void (*over)(void * arg, int x, int y),
 void item_set_string(item_t * item, const char * buf)
 {
 	item->string = strdup(buf);
+
+	if (item->str_tex)
+	{
+		SDL_DestroyTexture(item->str_tex);
+		item->str_tex = nullptr;
+	}
+}
+
+/************************************************************************
+ ************************************************************************/
+void item_set_buffer(item_t * item, char * buf,const size_t p_BufferSize)
+{
+	item->m_Buffer = buf;
+	item->m_BufferSize = p_BufferSize;
 
 	if (item->str_tex)
 	{

@@ -86,7 +86,7 @@ void sdl_get_string_size(TTF_Font * font, const char * string, int * w, int *h);
 void sdl_print_item(SDL_Renderer *, item_t * item);
 int sdl_blit_item(SDL_Renderer *, item_t * item);
 void sdl_blit_item_list(SDL_Renderer *, item_t * item_list);
-void sdl_keyboard_text_init(char * buf, void (*cb)(void*arg));
+void sdl_keyboard_text_init(char * buf, const size_t p_BufferSize, void (*cb)(void*arg));
 void sdl_keyboard_text_reset();
 char * sdl_keyboard_text_get_buf();
 void sdl_keyboard_manager(SDL_Event * event);

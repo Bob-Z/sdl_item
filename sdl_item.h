@@ -81,6 +81,8 @@ typedef struct item
 	void * over_arg;
 	void (*over_free)(void * arg); //if not NULL, used to free memory pointed by arf
 	char * string;		// string centered on item
+	char * m_Buffer;    // Keyboard input buffer
+	size_t m_BufferSize; // Buffer size
 	Uint32 string_bg;	// Background color RGBA
 	TTF_Font * font;
 	SDL_Texture * str_tex;
@@ -126,7 +128,8 @@ void item_set_wheel_down(item_t * item, void (*cb_wheel_down)(void * arg),
  i.e. 0,0 is the mouse pointer is in the upper-left corner of the item */
 void item_set_over(item_t * item, void (*over)(void * arg, int x, int y),
 		void * over_arg, void (*free_func)(void *ptr));
-void item_set_string(item_t * item, const char * string);
+void item_set_string(item_t * item, const char * buf);
+void item_set_buffer(item_t * item, char * buf,const size_t p_BufferSize);
 void item_set_string_bg(item_t * item, Uint32 color);
 void item_set_editable(item_t * item, int is_editable);
 void item_set_edit_cb(item_t * item, void (*cb_edit)(void * arg));
