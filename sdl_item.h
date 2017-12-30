@@ -126,7 +126,7 @@ void item_set_wheel_down(item_t * item, void (*cb_wheel_down)(void * arg),
  i.e. 0,0 is the mouse pointer is in the upper-left corner of the item */
 void item_set_over(item_t * item, void (*over)(void * arg, int x, int y),
 		void * over_arg, void (*free_func)(void *ptr));
-void item_set_string(item_t * item, char * string);
+void item_set_string(item_t * item, const char * string);
 void item_set_string_bg(item_t * item, Uint32 color);
 void item_set_editable(item_t * item, int is_editable);
 void item_set_edit_cb(item_t * item, void (*cb_edit)(void * arg));

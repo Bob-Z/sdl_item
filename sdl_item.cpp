@@ -458,7 +458,7 @@ void item_set_over(item_t * item, void (*over)(void * arg, int x, int y),
 
 /************************************************************************
  ************************************************************************/
-void item_set_string(item_t * item, char * buf)
+void item_set_string(item_t * item, const char * buf)
 {
 	item->string = strdup(buf);
 
