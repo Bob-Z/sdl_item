@@ -61,25 +61,25 @@ typedef struct item
 	int clicked;
 	void (*click_left)(void * arg); //callback on left click on this item
 	void * click_left_arg;
-	void (*click_left_free)(void * arg); //if not NULL, used to free memory pointed by arf
+	void (*click_left_free)(void * arg); //if not nullptr, used to free memory pointed by arf
 	void (*click_right)(void * arg); //callback on right click on this item
 	void * click_right_arg;
-	void (*click_right_free)(void * arg); //if not NULL, used to free memory pointed by arf
+	void (*click_right_free)(void * arg); //if not nullptr, used to free memory pointed by arf
 	void (*double_click_left)(void * arg); //callback on double left click on this item
 	void * double_click_left_arg;
-	void (*double_click_left_free)(void * arg); //if not NULL, used to free memory pointed by arf
+	void (*double_click_left_free)(void * arg); //if not nullptr, used to free memory pointed by arf
 	void (*double_click_right)(void * arg); //callback on double right click on this item
 	void * double_click_right_arg;
-	void (*double_click_right_free)(void * arg); //if not NULL, used to free memory pointed by arf
+	void (*double_click_right_free)(void * arg); //if not nullptr, used to free memory pointed by arf
 	void (*wheel_up)(void * arg); //callback on mouse wheel up
 	void * wheel_up_arg;
-	void (*wheel_up_free)(void * arg); //if not NULL, used to free memory pointed by arf
+	void (*wheel_up_free)(void * arg); //if not nullptr, used to free memory pointed by arf
 	void (*wheel_down)(void * arg); //callback on mouse wheel down
 	void * wheel_down_arg;
-	void (*wheel_down_free)(void * arg); //if not NULL, used to free memory pointed by arf
+	void (*wheel_down_free)(void * arg); //if not nullptr, used to free memory pointed by arf
 	void (*over)(void * arg, int x, int y); //callback on mouse over this item
 	void * over_arg;
-	void (*over_free)(void * arg); //if not NULL, used to free memory pointed by arf
+	void (*over_free)(void * arg); //if not nullptr, used to free memory pointed by arf
 	char * string;		// string centered on item
 	char * m_Buffer;    // Keyboard input buffer
 	size_t m_BufferSize; // Buffer size
