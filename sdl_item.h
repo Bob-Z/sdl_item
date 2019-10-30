@@ -54,7 +54,7 @@ typedef struct item
 	anim_array_t anim;		//default sprite
 	anim_array_t anim_over;	//is set to default_anim_over, when needed (i.e. mouse over this item)
 	anim_array_t default_anim_over;
-	anim_array_t anim_click;//is set to default_anim_click, when needed (i.e. click on this item)
+	anim_array_t anim_click;	//is set to default_anim_click, when needed (i.e. click on this item)
 	anim_array_t default_anim_click;
 	SiLayout layout;	// How to display array of anim (default is top-left)
 	int anim_loop;
@@ -112,22 +112,15 @@ void item_set_zoom_x(item_t * item, double a);
 void item_set_zoom_y(item_t * item, double a);
 void item_set_flip(item_t * item, int a);
 void item_set_overlay(item_t * item, int overlay);
-void item_set_click_left(item_t * item, void (*click_left)(void * arg),
-		void * click_left_arg, void (*free_func)(void *ptr));
-void item_set_click_right(item_t * item, void (*click_right)(void * arg),
-		void * click_right_arg, void (*free_func)(void *ptr));
-void item_set_double_click_left(item_t * item, void (*click_left)(void * arg),
-		void * click_left_arg, void (*free_func)(void *ptr));
-void item_set_double_click_right(item_t * item, void (*click_right)(void * arg),
-		void * click_right_arg, void (*free_func)(void *ptr));
-void item_set_wheel_up(item_t * item, void (*cb_wheel_up)(void * arg),
-		void * wheel_up_arg, void (*free_func)(void *ptr));
-void item_set_wheel_down(item_t * item, void (*cb_wheel_down)(void * arg),
-		void * wheel_down_arg, void (*free_func)(void *ptr));
+void item_set_click_left(item_t * item, void (*click_left)(void * arg), void * click_left_arg, void (*free_func)(void *ptr));
+void item_set_click_right(item_t * item, void (*click_right)(void * arg), void * click_right_arg, void (*free_func)(void *ptr));
+void item_set_double_click_left(item_t * item, void (*click_left)(void * arg), void * click_left_arg, void (*free_func)(void *ptr));
+void item_set_double_click_right(item_t * item, void (*click_right)(void * arg), void * click_right_arg, void (*free_func)(void *ptr));
+void item_set_wheel_up(item_t * item, void (*cb_wheel_up)(void * arg), void * wheel_up_arg, void (*free_func)(void *ptr));
+void item_set_wheel_down(item_t * item, void (*cb_wheel_down)(void * arg), void * wheel_down_arg, void (*free_func)(void *ptr));
 /* x,y is the mouse pointer position relative to the item itself.
  i.e. 0,0 is the mouse pointer is in the upper-left corner of the item */
-void item_set_over(item_t * item, void (*over)(void * arg, int x, int y),
-		void * over_arg, void (*free_func)(void *ptr));
+void item_set_over(item_t * item, void (*over)(void * arg, int x, int y), void * over_arg, void (*free_func)(void *ptr));
 void item_set_string(item_t * item, const char * buf);
 void item_set_buffer(item_t * item, char * buf, const size_t p_BufferSize);
 void item_set_string_bg(item_t * item, Uint32 color);
