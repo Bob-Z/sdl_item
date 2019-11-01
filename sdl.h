@@ -17,13 +17,9 @@
  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
 #include "sdl_item.h"
 #include <SDL2/SDL.h>
+#include <string>
 
 #define SDL_OPAQUE 0xff
 #define SDL_TRANSPARENT 0x00
@@ -66,7 +62,7 @@ typedef struct mousecb
 	struct mousecb * next;
 } mousecb_t;
 
-void sdl_init(const char * title, int vsync);
+void sdl_init(const std::string & title, int vsync);
 void sdl_cleanup(void);
 SDL_Renderer * sdl_get_renderer();
 
@@ -111,7 +107,3 @@ anim_t * sdl_get_minimal_anim();
 void sdl_set_background_color(int R, int G, int B, int A);
 void sdl_get_output_size(int * width, int * height);
 void sdl_clear();
-
-#ifdef __cplusplus
-}
-#endif

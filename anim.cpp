@@ -17,20 +17,7 @@
  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
 #include "sdl.h"
-#include <libavcodec/avcodec.h>
-#include <libavformat/avformat.h>
-#include <libswscale/swscale.h>
-#include <libavutil/imgutils.h>
-
-#include <gif_lib.h>
-#include <png.h>
-#include <zip.h>
 
 #define GIF_GCE			(0xf9)
 
@@ -38,6 +25,19 @@ extern "C"
 
 #define ZIP_TIMING_FILE		"timing"
 #define ZIP_TMP_FILE		"/tmp/si_tmp"
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+#include <gif_lib.h>
+#include <libavcodec/avcodec.h>
+#include <libavformat/avformat.h>
+#include <libavutil/imgutils.h>
+#include <libswscale/swscale.h>
+#include <png.h>
+#include <zip.h>
 
 /************************************************************************
  return nullptr if error
@@ -683,7 +683,7 @@ static anim_t * libav_load(const char * filename)
 	anim->w = pCodecCtx->width;
 	anim->h = pCodecCtx->height;
 
-	// Read frames
+// Read frames
 	i = 0;
 	while (av_read_frame(pFormatCtx, &packet) >= 0)
 	{

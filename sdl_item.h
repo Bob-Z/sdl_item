@@ -20,11 +20,6 @@
 #ifndef SIITEM_H
 #define SIITEM_H
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
 #include "anim.h"
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL.h>
@@ -131,9 +126,5 @@ void item_set_layout(item_t * item, SiLayout layout);
 void item_set_anim_loop(item_t * item, int loop);
 void item_set_font(item_t * item, TTF_Font * font);
 void item_set_anim_start_tick(item_t * item, Uint32 tick);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif

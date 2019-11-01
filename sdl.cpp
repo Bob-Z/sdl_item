@@ -17,11 +17,6 @@
  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
 #include "const.h"
 #include "sdl.h"
 #include <assert.h>
@@ -89,7 +84,7 @@ void sdl_cleanup()
 
 /************************************************************************
  ************************************************************************/
-void sdl_init(const char * title, int vsync)
+void sdl_init(const std::string & title, int vsync)
 {
 	if (SDL_Init(SDL_INIT_EVERYTHING) < 0)
 	{
@@ -103,7 +98,7 @@ void sdl_init(const char * title, int vsync)
 
 	atexit(sdl_cleanup);
 
-	window = SDL_CreateWindow(title,
+	window = SDL_CreateWindow(title.c_str(),
 	SDL_WINDOWPOS_UNDEFINED,
 	SDL_WINDOWPOS_UNDEFINED,
 	DEFAULT_SCREEN_W, DEFAULT_SCREEN_H, SDL_WINDOW_RESIZABLE);
@@ -1189,6 +1184,3 @@ void sdl_clear()
 	SDL_RenderClear(renderer);
 }
 
-#ifdef __cplusplus
-}
-#endif

@@ -20,11 +20,6 @@
 #ifndef ANIM_H
 #define ANIM_H
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
 #include <SDL2/SDL.h>
 
 typedef struct
@@ -36,6 +31,11 @@ typedef struct
 	Uint32 * delay; //delay between each frame in millisecond
 	Uint32 total_duration;
 } anim_t;
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 
 anim_t * anim_load(const char * filename);
 anim_t * anim_create_color(Uint32 width, Uint32 height, Uint32 color);

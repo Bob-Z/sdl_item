@@ -17,11 +17,6 @@
  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
 #include "const.h"
 #include "sdl_item.h"
 #include "sdl.h"
@@ -197,15 +192,13 @@ void item_set_pos(item_t * item, int x, int y)
 
 /************************************************************************
  ************************************************************************/
-static void add_and_set_anim(anim_array_t * anim_array, anim_t * anim,
-		int anim_index)
+static void add_and_set_anim(anim_array_t * anim_array, anim_t * anim, int anim_index)
 {
 	int i;
 
 	if (anim_array->num <= anim_index)
 	{
-		anim_array->list = (anim_t **) realloc(anim_array->list,
-				(anim_index + 1) * sizeof(anim_t*));
+		anim_array->list = (anim_t **) realloc(anim_array->list, (anim_index + 1) * sizeof(anim_t*));
 
 		for (i = anim_array->num; i <= anim_index; i++)
 		{
@@ -400,8 +393,7 @@ void item_set_anim_click_array(item_t * item, anim_t ** anim_array)
 
 /************************************************************************
  ************************************************************************/
-void item_set_click_left(item_t * item, void (*click_left)(void * arg),
-		void * click_left_arg, void (*free_func)(void *ptr))
+void item_set_click_left(item_t * item, void (*click_left)(void * arg), void * click_left_arg, void (*free_func)(void *ptr))
 {
 	item->click_left = click_left;
 	item->click_left_arg = click_left_arg;
@@ -410,8 +402,7 @@ void item_set_click_left(item_t * item, void (*click_left)(void * arg),
 
 /************************************************************************
  ************************************************************************/
-void item_set_click_right(item_t * item, void (*click_right)(void * arg),
-		void * click_right_arg, void (*free_func)(void *ptr))
+void item_set_click_right(item_t * item, void (*click_right)(void * arg), void * click_right_arg, void (*free_func)(void *ptr))
 {
 	item->click_right = click_right;
 	item->click_right_arg = click_right_arg;
@@ -420,9 +411,7 @@ void item_set_click_right(item_t * item, void (*click_right)(void * arg),
 
 /************************************************************************
  ************************************************************************/
-void item_set_double_click_left(item_t * item,
-		void (*double_click_left)(void * arg), void * double_click_left_arg,
-		void (*free_func)(void *ptr))
+void item_set_double_click_left(item_t * item, void (*double_click_left)(void * arg), void * double_click_left_arg, void (*free_func)(void *ptr))
 {
 	item->double_click_left = double_click_left;
 	item->double_click_left_arg = double_click_left_arg;
@@ -431,9 +420,7 @@ void item_set_double_click_left(item_t * item,
 
 /************************************************************************
  ************************************************************************/
-void item_set_double_click_right(item_t * item,
-		void (*double_click_right)(void * arg), void * double_click_right_arg,
-		void (*free_func)(void *ptr))
+void item_set_double_click_right(item_t * item, void (*double_click_right)(void * arg), void * double_click_right_arg, void (*free_func)(void *ptr))
 {
 	item->double_click_right = double_click_right;
 	item->double_click_right_arg = double_click_right_arg;
@@ -442,8 +429,7 @@ void item_set_double_click_right(item_t * item,
 
 /************************************************************************
  ************************************************************************/
-void item_set_wheel_up(item_t * item, void (*wheel_up)(void * arg),
-		void * wheel_up_arg, void (*free_func)(void *ptr))
+void item_set_wheel_up(item_t * item, void (*wheel_up)(void * arg), void * wheel_up_arg, void (*free_func)(void *ptr))
 {
 	item->wheel_up = wheel_up;
 	item->wheel_up_arg = wheel_up_arg;
@@ -452,8 +438,7 @@ void item_set_wheel_up(item_t * item, void (*wheel_up)(void * arg),
 
 /************************************************************************
  ************************************************************************/
-void item_set_wheel_down(item_t * item, void (*wheel_down)(void * arg),
-		void * wheel_down_arg, void (*free_func)(void *ptr))
+void item_set_wheel_down(item_t * item, void (*wheel_down)(void * arg), void * wheel_down_arg, void (*free_func)(void *ptr))
 {
 	item->wheel_down = wheel_down;
 	item->wheel_down_arg = wheel_down_arg;
@@ -462,8 +447,7 @@ void item_set_wheel_down(item_t * item, void (*wheel_down)(void * arg),
 
 /************************************************************************
  ************************************************************************/
-void item_set_over(item_t * item, void (*over)(void * arg, int x, int y),
-		void * over_arg, void (*free_func)(void *ptr))
+void item_set_over(item_t * item, void (*over)(void * arg, int x, int y), void * over_arg, void (*free_func)(void *ptr))
 {
 	item->over = over;
 	item->over_arg = over_arg;
@@ -546,7 +530,3 @@ void item_set_anim_start_tick(item_t * item, Uint32 tick)
 {
 	item->anim_start_tick = tick;
 }
-
-#ifdef __cplusplus
-}
-#endif
