@@ -37,8 +37,8 @@ typedef struct
 	Uint32 total_duration;
 } anim_t;
 
-anim_t * anim_load(SDL_Renderer * render, const char * filename);
-anim_t * anim_create_color(SDL_Renderer * render, Uint32 width, Uint32 height, Uint32 color);
+anim_t * anim_load(const char * filename);
+anim_t * anim_create_color(Uint32 width, Uint32 height, Uint32 color);
 void si_anim_free(anim_t * anim);
 
 #ifdef __cplusplus

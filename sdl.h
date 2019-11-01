@@ -66,24 +66,25 @@ typedef struct mousecb
 	struct mousecb * next;
 } mousecb_t;
 
-void sdl_init(const char * title, SDL_Renderer ** render, SDL_Window ** window, int vsync);
+void sdl_init(const char * title, int vsync);
 void sdl_cleanup(void);
+SDL_Renderer * sdl_get_renderer();
+
 void sdl_set_pixel(SDL_Surface *surface, int x, int y, Uint32 R, Uint32 G, Uint32 B, Uint32 A);
 Uint32 sdl_get_pixel(SDL_Surface *surface, int x, int y);
 
 // Return true if a mouse event has been detected
-bool sdl_mouse_manager(SDL_Renderer *, SDL_Event * event, item_t * item_list);
+bool sdl_mouse_manager(SDL_Event * event, item_t * item_list);
 
-void sdl_mouse_position_manager(SDL_Renderer * render, item_t * item_list);
-int sdl_screen_manager(SDL_Window * window, SDL_Renderer * render, SDL_Event * event);
+void sdl_mouse_position_manager(item_t * item_list);
+int sdl_screen_manager(SDL_Event * event);
 void sdl_loop_manager();
-void sdl_blit_tex(SDL_Renderer *, SDL_Texture * tex, SDL_Rect * rect, double angle, double zoom_x, double zoom_y, int flip, int overlay);
-int sdl_blit_anim(SDL_Renderer * render, anim_t * anim, SDL_Rect * rect, double angle, double zoom_x, double zoom_y, int flip, int loop, int overlay,
-		Uint32 anim_start_tick);
+void sdl_blit_tex(SDL_Texture * tex, SDL_Rect * rect, double angle, double zoom_x, double zoom_y, int flip, int overlay);
+int sdl_blit_anim(anim_t * anim, SDL_Rect * rect, double angle, double zoom_x, double zoom_y, int flip, int loop, int overlay, Uint32 anim_start_tick);
 void sdl_get_string_size(TTF_Font * font, const char * string, int * w, int *h);
-void sdl_print_item(SDL_Renderer *, item_t * item);
-int sdl_blit_item(SDL_Renderer *, item_t * item);
-void sdl_blit_item_list(SDL_Renderer *, item_t * item_list);
+void sdl_print_item(item_t * item);
+int sdl_blit_item(item_t * item);
+void sdl_blit_item_list(item_t * item_list);
 void sdl_keyboard_text_init(char * buf, const size_t p_BufferSize, void (*cb)(void*arg));
 void sdl_keyboard_text_reset();
 char * sdl_keyboard_text_get_buf();
@@ -91,7 +92,7 @@ char * sdl_keyboard_text_get_buf();
 // Return true is a key event has been detected
 bool sdl_keyboard_manager(SDL_Event * event);
 
-void sdl_blit_to_screen(SDL_Renderer *);
+void sdl_blit_to_screen();
 void sdl_set_virtual_x(int x);
 void sdl_set_virtual_y(int y);
 void sdl_set_virtual_z(double z);
@@ -106,8 +107,11 @@ void sdl_free_keycb();
 void sdl_add_mousecb(Uint32 event_type, void (*cb)(Uint32, Uint32));
 void sdl_free_mousecb();
 Uint32 sdl_get_global_time();
+anim_t * sdl_get_minimal_anim();
+void sdl_set_background_color(int R, int G, int B, int A);
+void sdl_get_output_size(int * width, int * height);
+void sdl_clear();
 
 #ifdef __cplusplus
 }
 #endif
-

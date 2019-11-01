@@ -45,7 +45,7 @@ extern "C"
  http://wwwcdf.pd.infn.it/libgif/gif89.txt
  http://wwwcdf.pd.infn.it/libgif/gif_lib.html
  ************************************************************************/
-static anim_t * giflib_load(SDL_Renderer * render, const char * filename)
+static anim_t * giflib_load(const char * filename)
 {
 	GifFileType * gif = nullptr;
 	int i = 0;
@@ -98,8 +98,7 @@ static anim_t * giflib_load(SDL_Renderer * render, const char * filename)
 	memset(anim, 0, sizeof(anim_t));
 
 	anim->num_frame = gif->ImageCount;
-	anim->tex = (SDL_Texture **) malloc(
-			sizeof(SDL_Texture *) * anim->num_frame);
+	anim->tex = (SDL_Texture **) malloc(sizeof(SDL_Texture *) * anim->num_frame);
 	anim->w = gif->SWidth;
 	anim->h = gif->SHeight;
 	anim->delay = (Uint32*) malloc(sizeof(Uint32) * anim->num_frame);
@@ -108,10 +107,8 @@ static anim_t * giflib_load(SDL_Renderer * render, const char * filename)
 	render_height = gif->SHeight;
 	//bg_color = gif->SBackGroundColor;
 
-	surf = SDL_CreateRGBSurface(0, render_width, render_height, 32, 0xff000000,
-			0x00ff0000, 0x0000ff00, 0x000000ff);
-	prev_surf = SDL_CreateRGBSurface(0, render_width, render_height, 32,
-			0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
+	surf = SDL_CreateRGBSurface(0, render_width, render_height, 32, 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
+	prev_surf = SDL_CreateRGBSurface(0, render_width, render_height, 32, 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
 
 	global_pal = gif->SColorMap;
 	pal = global_pal;
@@ -137,31 +134,24 @@ static anim_t * giflib_load(SDL_Renderer * render, const char * filename)
 		{
 			if (gif->SavedImages[i].ExtensionBlocks[j].Function == GIF_GCE)
 			{
-				transparent = gif->SavedImages[i].ExtensionBlocks[j].Bytes[0]
-						& 0x01;
-				disposal =
-						(gif->SavedImages[i].ExtensionBlocks[j].Bytes[0] & 28)
-								>> 2;
-				delay = (gif->SavedImages[i].ExtensionBlocks[j].Bytes[1]
-						+ gif->SavedImages[i].ExtensionBlocks[j].Bytes[2] * 256)
-						* 10;
+				transparent = gif->SavedImages[i].ExtensionBlocks[j].Bytes[0] & 0x01;
+				disposal = (gif->SavedImages[i].ExtensionBlocks[j].Bytes[0] & 28) >> 2;
+				delay = (gif->SavedImages[i].ExtensionBlocks[j].Bytes[1] + gif->SavedImages[i].ExtensionBlocks[j].Bytes[2] * 256) * 10;
 				if (delay == 0)
 				{
 					delay = DEFAULT_DELAY;
 				}
 				if (transparent)
 				{
-					transparent_color =
-							gif->SavedImages[i].ExtensionBlocks[j].Bytes[3];
+					transparent_color = gif->SavedImages[i].ExtensionBlocks[j].Bytes[3];
 				}
 			}
 		}
 
-		/* Save the current render if needed */
+		// Save the current render if needed
 		if (disposal == DISPOSE_PREVIOUS)
 		{
-			memcpy(prev_surf->pixels, surf->pixels,
-					render_height * render_width * 4);
+			memcpy(prev_surf->pixels, surf->pixels, render_height * render_width * 4);
 		}
 
 		/* Fill surface buffer with raster bytes */
@@ -171,23 +161,17 @@ static anim_t * giflib_load(SDL_Renderer * render, const char * filename)
 			{
 				for (x = 0; x < frame_width; x++)
 				{
-					pix_index = ((x + frame_left)
-							+ ((y + frame_top) * render_width)) * 4;
-					col =
-							gif->SavedImages[i].RasterBits[(x)
-									+ (y) * frame_width];
+					pix_index = ((x + frame_left) + ((y + frame_top) * render_width)) * 4;
+					col = gif->SavedImages[i].RasterBits[(x) + (y) * frame_width];
 					if (col == transparent_color && transparent)
 					{
-						/* Transparent color means do not touch the render */
+						// Transparent color means do not touch the render
 					}
 					else
 					{
-						((char*) surf->pixels)[pix_index + 3] =
-								pal->Colors[col].Red;
-						((char*) surf->pixels)[pix_index + 2] =
-								pal->Colors[col].Green;
-						((char*) surf->pixels)[pix_index + 1] =
-								pal->Colors[col].Blue;
+						((char*) surf->pixels)[pix_index + 3] = pal->Colors[col].Red;
+						((char*) surf->pixels)[pix_index + 2] = pal->Colors[col].Green;
+						((char*) surf->pixels)[pix_index + 1] = pal->Colors[col].Blue;
 						((char*) surf->pixels)[pix_index + 0] = 0xFF;
 					}
 				}
@@ -195,13 +179,13 @@ static anim_t * giflib_load(SDL_Renderer * render, const char * filename)
 		}
 
 		anim->delay[i] = delay;
-		anim->tex[i] = SDL_CreateTextureFromSurface(render, surf);
+		anim->tex[i] = SDL_CreateTextureFromSurface(sdl_get_renderer(), surf);
 
 		/* Prepare next rendering depending of disposal */
 		allow_draw = 1;
 		switch (disposal)
 		{
-		/* Do not touch render for next frame */
+		// Do not touch render for next frame
 		case DISPOSE_DO_NOT:
 			allow_draw = 0;
 			break;
@@ -211,8 +195,7 @@ static anim_t * giflib_load(SDL_Renderer * render, const char * filename)
 			{
 				for (x = 0; x < frame_width; x++)
 				{
-					pix_index = ((x + frame_left)
-							+ ((y + frame_top) * render_width)) * 4;
+					pix_index = ((x + frame_left) + ((y + frame_top) * render_width)) * 4;
 					((char*) surf->pixels)[pix_index + 3] = 0;
 					((char*) surf->pixels)[pix_index + 2] = 0;
 					((char*) surf->pixels)[pix_index + 1] = 0;
@@ -221,9 +204,8 @@ static anim_t * giflib_load(SDL_Renderer * render, const char * filename)
 			}
 			break;
 		case DISPOSE_PREVIOUS:
-			/* Restore previous render in frame*/
-			memcpy(surf->pixels, prev_surf->pixels,
-					render_height * render_width * 4);
+			// Restore previous render in frame
+			memcpy(surf->pixels, prev_surf->pixels, render_height * render_width * 4);
 			break;
 		default:
 			break;
@@ -240,8 +222,7 @@ static anim_t * giflib_load(SDL_Renderer * render, const char * filename)
 /************************************************************************
  return nullptr if error
  ************************************************************************/
-static SDL_Texture * libpng_load_texture(SDL_Renderer * render,
-		const char * filename, int * width_out, int * height_out)
+static SDL_Texture * libpng_load_texture(const char * filename, int * width_out, int * height_out)
 {
 	FILE *fp = nullptr;
 	png_structp png_ptr = nullptr;
@@ -275,8 +256,7 @@ static SDL_Texture * libpng_load_texture(SDL_Renderer * render,
 	}
 
 	// create a png read struct
-	png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr,
-			nullptr);
+	png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
 	if (png_ptr == nullptr)
 	{
 		fclose(fp);
@@ -347,8 +327,7 @@ static SDL_Texture * libpng_load_texture(SDL_Renderer * render,
 		png_set_filler(png_ptr, 0xff, PNG_FILLER_AFTER);
 	}
 
-	if (color_type == PNG_COLOR_TYPE_GRAY
-			|| color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
+	if (color_type == PNG_COLOR_TYPE_GRAY || color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
 	{
 		png_set_gray_to_rgb(png_ptr);
 	}
@@ -357,20 +336,17 @@ static SDL_Texture * libpng_load_texture(SDL_Renderer * render,
 	png_read_update_info(png_ptr, info_ptr);
 
 	// retrieve updated information
-	png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type,
-			nullptr, nullptr, nullptr);
+	png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, nullptr, nullptr, nullptr);
 
 	//wlog(LOGDEBUG,"size: %dx%d bit_depth: %d, type: %d",width,height,bit_depth,color_type);
 	// allocate the memory to hold the image using the fields of png_info.
-	surf = SDL_CreateRGBSurface(0, width, height, 32, 0x000000ff, 0x0000ff00,
-			0x00ff0000, 0xff000000);
+	surf = SDL_CreateRGBSurface(0, width, height, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
 	memset(surf->pixels, 0, width * height * sizeof(Uint32));
 	row_pointers = (png_bytep *) malloc(sizeof(png_bytep) * height);
 
 	for (i = 0; i < height; i++)
 	{
-		row_pointers[height - i - 1] = (png_bytep) (surf->pixels)
-				+ ((height - (i + 1)) * width * sizeof(Uint32));
+		row_pointers[height - i - 1] = (png_bytep) (surf->pixels) + ((height - (i + 1)) * width * sizeof(Uint32));
 	}
 
 	// the easiest way to read the image
@@ -387,7 +363,7 @@ static SDL_Texture * libpng_load_texture(SDL_Renderer * render,
 	// close the file
 	fclose(fp);
 
-	tex = SDL_CreateTextureFromSurface(render, surf);
+	tex = SDL_CreateTextureFromSurface(sdl_get_renderer(), surf);
 	SDL_FreeSurface(surf);
 
 	*width_out = width;
@@ -399,14 +375,14 @@ static SDL_Texture * libpng_load_texture(SDL_Renderer * render,
 /************************************************************************
  return nullptr if error
  ************************************************************************/
-static anim_t * libpng_load(SDL_Renderer * render, const char * filename)
+static anim_t * libpng_load(const char * filename)
 {
 	anim_t * anim = nullptr;
 	SDL_Texture * tex;
 	int width;
 	int height;
 
-	tex = libpng_load_texture(render, filename, &width, &height);
+	tex = libpng_load_texture(filename, &width, &height);
 	if (tex == nullptr)
 	{
 		return nullptr;
@@ -416,8 +392,7 @@ static anim_t * libpng_load(SDL_Renderer * render, const char * filename)
 	memset(anim, 0, sizeof(anim_t));
 
 	anim->num_frame = 1;
-	anim->tex = (SDL_Texture **) malloc(
-			sizeof(SDL_Texture *) * anim->num_frame);
+	anim->tex = (SDL_Texture **) malloc(sizeof(SDL_Texture *) * anim->num_frame);
 	anim->delay = (Uint32*) malloc(sizeof(Uint32) * anim->num_frame);
 	anim->delay[0] = 0;
 	anim->tex[0] = tex;
@@ -468,8 +443,7 @@ static int extract_zip(struct zip *fd_zip, int index)
 	}
 
 	data = (char*) malloc((size_t) (file_stat.size));
-	if (zip_fread(file_zip, data, (size_t) (file_stat.size))
-			!= (int64_t) file_stat.size)
+	if (zip_fread(file_zip, data, (size_t) (file_stat.size)) != (int64_t) file_stat.size)
 	{
 		free(data);
 		zip_fclose(file_zip);
@@ -484,8 +458,7 @@ static int extract_zip(struct zip *fd_zip, int index)
 		return -1;
 	}
 
-	if (fwrite(data, sizeof(char), (size_t) file_stat.size, file_dest)
-			!= file_stat.size)
+	if (fwrite(data, sizeof(char), (size_t) file_stat.size, file_dest) != file_stat.size)
 	{
 		fclose(file_dest);
 		free(data);
@@ -503,7 +476,7 @@ static int extract_zip(struct zip *fd_zip, int index)
 /************************************************************************
  return nullptr if error
  ************************************************************************/
-static anim_t * libzip_load(SDL_Renderer * render, const char * filename)
+static anim_t * libzip_load(const char * filename)
 {
 	anim_t * anim = nullptr;
 	struct zip *fd_zip = nullptr;
@@ -579,8 +552,7 @@ static anim_t * libzip_load(SDL_Renderer * render, const char * filename)
 		}
 
 		/* PNG file */
-		anim->tex[anim->num_frame] = libpng_load_texture(render, ZIP_TMP_FILE,
-				&anim->w, &anim->h);
+		anim->tex[anim->num_frame] = libpng_load_texture(ZIP_TMP_FILE, &anim->w, &anim->h);
 		if (anim->tex[anim->num_frame] == nullptr)
 		{
 #if 0
@@ -606,7 +578,7 @@ static anim_t * libzip_load(SDL_Renderer * render, const char * filename)
 /************************************************************************
  return nullptr if error
  ************************************************************************/
-static anim_t * libav_load(SDL_Renderer * render, const char * filename)
+static anim_t * libav_load(const char * filename)
 {
 	anim_t * anim = nullptr;
 	anim_t * ret = nullptr;
@@ -646,8 +618,7 @@ static anim_t * libav_load(SDL_Renderer * render, const char * filename)
 		{
 			videoStream = i;
 			// total stream duration (in nanosecond) / number of image in the stream / 1000 (to get milliseconds
-			delay = pFormatCtx->duration / pFormatCtx->streams[i]->duration
-					/ 1000;
+			delay = pFormatCtx->duration / pFormatCtx->streams[i]->duration / 1000;
 			// If the above doesn't work try with frame_rate :
 			//delay = pFormatCtx->streams[i]->r_frame_rate;
 
@@ -701,9 +672,8 @@ static anim_t * libav_load(SDL_Renderer * render, const char * filename)
 	pFrameRGBA->width = pCodecCtx->width;
 	av_frame_get_buffer(pFrameRGBA, 16);
 
-	pSwsCtx = sws_getContext(pCodecCtx->width, pCodecCtx->height,
-			pCodecCtx->pix_fmt, pCodecCtx->width, pCodecCtx->height,
-			AV_PIX_FMT_RGBA, SWS_BILINEAR, nullptr, nullptr, nullptr);
+	pSwsCtx = sws_getContext(pCodecCtx->width, pCodecCtx->height, pCodecCtx->pix_fmt, pCodecCtx->width, pCodecCtx->height, AV_PIX_FMT_RGBA, SWS_BILINEAR,
+			nullptr, nullptr, nullptr);
 
 	if (pSwsCtx == nullptr)
 	{
@@ -726,26 +696,20 @@ static anim_t * libav_load(SDL_Renderer * render, const char * filename)
 				if (avcodec_receive_frame(pCodecCtx, pDecodedFrame) == 0)
 				{
 					// Convert the image from its native format to RGBA
-					sws_scale(pSwsCtx,
-							(const uint8_t * const *) pDecodedFrame->data,
-							pDecodedFrame->linesize, 0, pCodecCtx->height,
-							pFrameRGBA->data, pFrameRGBA->linesize);
+					sws_scale(pSwsCtx, (const uint8_t * const *) pDecodedFrame->data, pDecodedFrame->linesize, 0, pCodecCtx->height, pFrameRGBA->data,
+							pFrameRGBA->linesize);
 
-					anim->delay = (Uint32*) realloc(anim->delay,
-							(i + 1) * sizeof(Uint32));
+					anim->delay = (Uint32*) realloc(anim->delay, (i + 1) * sizeof(Uint32));
 					anim->delay[i] = delay;
-					anim->tex = (SDL_Texture**) realloc(anim->tex,
-							(i + 1) * sizeof(SDL_Texture*));
-					anim->tex[i] = SDL_CreateTexture(render,
-							SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STATIC,
-							pCodecCtx->width, pCodecCtx->height);
+					anim->tex = (SDL_Texture**) realloc(anim->tex, (i + 1) * sizeof(SDL_Texture*));
+					anim->tex[i] = SDL_CreateTexture(sdl_get_renderer(), SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STATIC, pCodecCtx->width,
+							pCodecCtx->height);
 					if (anim->tex[i] == nullptr)
 					{
 						//SDL_CreateTexture error
 					}
 					// Copy decoded bits to render texture
-					if (SDL_UpdateTexture(anim->tex[i], nullptr,
-							pFrameRGBA->data[0], pFrameRGBA->linesize[0]) < 0)
+					if (SDL_UpdateTexture(anim->tex[i], nullptr, pFrameRGBA->data[0], pFrameRGBA->linesize[0]) < 0)
 					{
 						//SDL_UpdateTexture error
 					}
@@ -797,7 +761,7 @@ static anim_t * libav_load(SDL_Renderer * render, const char * filename)
 
 /************************************************************************
  ************************************************************************/
-anim_t * anim_load(SDL_Renderer * render, const char * filename)
+anim_t * anim_load(const char * filename)
 {
 	anim_t * ret;
 
@@ -806,16 +770,16 @@ anim_t * anim_load(SDL_Renderer * render, const char * filename)
 		return nullptr;
 	}
 
-	ret = giflib_load(render, filename);
+	ret = giflib_load(filename);
 	if (ret == nullptr)
 	{
-		ret = libpng_load(render, filename);
+		ret = libpng_load(filename);
 		if (ret == nullptr)
 		{
-			ret = libzip_load(render, filename);
+			ret = libzip_load(filename);
 			if (ret == nullptr)
 			{
-				ret = libav_load(render, filename);
+				ret = libav_load(filename);
 			}
 		}
 	}
@@ -836,8 +800,7 @@ anim_t * anim_load(SDL_Renderer * render, const char * filename)
 /************************************************************************
  color is RGBA
  ************************************************************************/
-anim_t * anim_create_color(SDL_Renderer * render, Uint32 width, Uint32 height,
-		Uint32 color)
+anim_t * anim_create_color(Uint32 width, Uint32 height, Uint32 color)
 {
 	anim_t * anim;
 	SDL_Surface* surf;
@@ -848,15 +811,13 @@ anim_t * anim_create_color(SDL_Renderer * render, Uint32 width, Uint32 height,
 	memset(anim, 0, sizeof(anim_t));
 
 	anim->num_frame = 1;
-	anim->tex = (SDL_Texture **) malloc(
-			sizeof(SDL_Texture *) * anim->num_frame);
+	anim->tex = (SDL_Texture **) malloc(sizeof(SDL_Texture *) * anim->num_frame);
 	anim->w = width;
 	anim->h = height;
 	anim->delay = (Uint32*) malloc(sizeof(Uint32) * anim->num_frame);
 	anim->delay[0] = 0;
 
-	surf = SDL_CreateRGBSurface(0, width, height, 32, 0xff000000, 0x00ff0000,
-			0x0000ff00, 0x000000ff);
+	surf = SDL_CreateRGBSurface(0, width, height, 32, 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
 
 	to_fill = (Uint32*) (surf->pixels);
 	for (i = 0; i < width * height; i++)
@@ -864,7 +825,7 @@ anim_t * anim_create_color(SDL_Renderer * render, Uint32 width, Uint32 height,
 		to_fill[i] = color;
 	}
 
-	anim->tex[0] = SDL_CreateTextureFromSurface(render, surf);
+	anim->tex[0] = SDL_CreateTextureFromSurface(sdl_get_renderer(), surf);
 	SDL_FreeSurface(surf);
 
 	return anim;
@@ -892,4 +853,3 @@ void si_anim_free(anim_t * anim)
 #ifdef __cplusplus
 }
 #endif
-

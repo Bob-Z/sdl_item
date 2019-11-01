@@ -52,6 +52,15 @@ static Uint32 global_time;
 static keycb_t * key_callback = nullptr;
 static mousecb_t * mouse_callback = nullptr;
 
+static SDL_Window * window = nullptr;
+static SDL_Renderer * renderer = nullptr;
+
+/*****************************************************************************/
+SDL_Renderer * sdl_get_renderer()
+{
+	return renderer;
+}
+
 /************************************************************************
  ************************************************************************/
 //You must SDL_LockSurface(surface); then SDL_UnlockSurface(surface); before calling this function
@@ -80,7 +89,7 @@ void sdl_cleanup()
 
 /************************************************************************
  ************************************************************************/
-void sdl_init(const char * title, SDL_Renderer ** render, SDL_Window ** window, int vsync)
+void sdl_init(const char * title, int vsync)
 {
 	if (SDL_Init(SDL_INIT_EVERYTHING) < 0)
 	{
@@ -94,22 +103,22 @@ void sdl_init(const char * title, SDL_Renderer ** render, SDL_Window ** window, 
 
 	atexit(sdl_cleanup);
 
-	*window = SDL_CreateWindow(title,
+	window = SDL_CreateWindow(title,
 	SDL_WINDOWPOS_UNDEFINED,
 	SDL_WINDOWPOS_UNDEFINED,
 	DEFAULT_SCREEN_W, DEFAULT_SCREEN_H, SDL_WINDOW_RESIZABLE);
-	if (*window == nullptr)
+	if (window == nullptr)
 	{
 		exit(EXIT_FAILURE);
 	}
 
-	*render = SDL_CreateRenderer(*window, -1, vsync ? SDL_RENDERER_PRESENTVSYNC : 0);
-	if (*render == nullptr)
+	renderer = SDL_CreateRenderer(window, -1, vsync ? SDL_RENDERER_PRESENTVSYNC : 0);
+	if (renderer == nullptr)
 	{
 		exit(EXIT_FAILURE);
 	}
 
-	SDL_RenderSetLogicalSize(*render, DEFAULT_SCREEN_W, DEFAULT_SCREEN_H);
+	SDL_RenderSetLogicalSize(renderer, DEFAULT_SCREEN_W, DEFAULT_SCREEN_H);
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
 }
 
@@ -125,7 +134,7 @@ static void get_virtual(SDL_Renderer * p_pRender, int & p_rVx, int & p_rVy, int 
 
 /************************************************************************
  ************************************************************************/
-void sdl_mouse_position_manager(SDL_Renderer * render, item_t * item_list)
+void sdl_mouse_position_manager(item_t * item_list)
 {
 	item_t * I = nullptr;
 	int mx = 0;
@@ -158,7 +167,7 @@ void sdl_mouse_position_manager(SDL_Renderer * render, item_t * item_list)
 		}
 		else
 		{
-			get_virtual(render, vx, vy, l_Width, l_Height);
+			get_virtual(renderer, vx, vy, l_Width, l_Height);
 			mx = mouse_x - (vx * current_vz);
 			my = mouse_y - (vy * current_vz);
 			zoomed_x = I->rect.x * current_vz;
@@ -190,7 +199,7 @@ void sdl_mouse_position_manager(SDL_Renderer * render, item_t * item_list)
 
 /************************************************************************
  ************************************************************************/
-bool sdl_mouse_manager(SDL_Renderer * render, SDL_Event * event, item_t * item_list)
+bool sdl_mouse_manager(SDL_Event * event, item_t * item_list)
 {
 	int mx = 0;
 	int my = 0;
@@ -240,7 +249,7 @@ bool sdl_mouse_manager(SDL_Renderer * render, SDL_Event * event, item_t * item_l
 		mouse_y = event->motion.y;
 	}
 
-	get_virtual(render, vx, vy, l_Width, l_Height);
+	get_virtual(renderer, vx, vy, l_Width, l_Height);
 
 	// First test overlay (UI) before background
 	while (overlay_first != -1)
@@ -428,7 +437,7 @@ bool sdl_mouse_manager(SDL_Renderer * render, SDL_Event * event, item_t * item_l
  Take care of system's windowing event
  return 1 if caller need to redraw it's screen
  ************************************************************************/
-int sdl_screen_manager(SDL_Window * window, SDL_Renderer * render, SDL_Event * event)
+int sdl_screen_manager(SDL_Event * event)
 {
 	const Uint8 *keystate = nullptr;
 
@@ -438,7 +447,7 @@ int sdl_screen_manager(SDL_Window * window, SDL_Renderer * render, SDL_Event * e
 		switch (event->window.event)
 		{
 		case SDL_WINDOWEVENT_RESIZED:
-			SDL_RenderSetLogicalSize(render, event->window.data1, event->window.data2);
+			SDL_RenderSetLogicalSize(renderer, event->window.data1, event->window.data2);
 			return 1;
 		}
 		break;
@@ -517,7 +526,7 @@ void sdl_loop_manager()
 /************************************************************************
  flip is one of SDL_FLIP_NONE, SDL_FLIP_HORIZONTAL, SDL_FLIP_VERTICAL
  ************************************************************************/
-void sdl_blit_tex(SDL_Renderer * render, SDL_Texture * tex, SDL_Rect * rect, double angle, double zoom_x, double zoom_y, int flip, int overlay)
+void sdl_blit_tex(SDL_Texture * tex, SDL_Rect * rect, double angle, double zoom_x, double zoom_y, int flip, int overlay)
 {
 	SDL_Rect r =
 	{ 0, 0, 0, 0 };
@@ -531,7 +540,7 @@ void sdl_blit_tex(SDL_Renderer * render, SDL_Texture * tex, SDL_Rect * rect, dou
 		return;
 	}
 
-	get_virtual(render, vx, vy, l_Width, l_Height);
+	get_virtual(renderer, vx, vy, l_Width, l_Height);
 
 	if (overlay == 1)
 	{
@@ -568,7 +577,7 @@ void sdl_blit_tex(SDL_Renderer * render, SDL_Texture * tex, SDL_Rect * rect, dou
 
 	if (tex != nullptr)
 	{
-		if (SDL_RenderCopyEx(render, tex, nullptr, &r, angle, nullptr, (SDL_RendererFlip) flip) < 0)
+		if (SDL_RenderCopyEx(renderer, tex, nullptr, &r, angle, nullptr, (SDL_RendererFlip) flip) < 0)
 		{
 			//Error
 		}
@@ -628,8 +637,7 @@ int get_current_frame(anim_t * anim, int loop, Uint32 anim_start_tick)
  return 0 if blit OK
  return -1 if blit NOK
  *******************************/
-int sdl_blit_anim(SDL_Renderer * render, anim_t * anim, SDL_Rect * rect, double angle, double zoom_x, double zoom_y, int flip, int loop, int overlay,
-		Uint32 anim_start_tick)
+int sdl_blit_anim(anim_t * anim, SDL_Rect * rect, double angle, double zoom_x, double zoom_y, int flip, int loop, int overlay, Uint32 anim_start_tick)
 {
 	if (anim == nullptr)
 	{
@@ -643,7 +651,7 @@ int sdl_blit_anim(SDL_Renderer * render, anim_t * anim, SDL_Rect * rect, double 
 
 	int current_frame = get_current_frame(anim, loop, anim_start_tick);
 
-	sdl_blit_tex(render, anim->tex[current_frame], rect, angle, zoom_x, zoom_y, flip, overlay);
+	sdl_blit_tex(anim->tex[current_frame], rect, angle, zoom_x, zoom_y, flip, overlay);
 
 	return 0;
 }
@@ -662,7 +670,7 @@ void sdl_get_string_size(TTF_Font * font, const char * string, int * w, int *h)
 
 /************************************************************************
  ************************************************************************/
-void sdl_print_item(SDL_Renderer * render, item_t * item)
+void sdl_print_item(item_t * item)
 {
 	SDL_Surface * surf = nullptr;
 	SDL_Color fg =
@@ -703,26 +711,26 @@ void sdl_print_item(SDL_Renderer * render, item_t * item)
 	{
 		rect.w = l_BackgroundWidth;
 		rect.h = l_BackgroundHeight;
-		bg_anim = anim_create_color(render, rect.w, rect.h, item->string_bg);
-		sdl_blit_anim(render, bg_anim, &rect, item->angle, item->zoom_x, item->zoom_y, item->flip, 0, item->overlay, 0);
+		bg_anim = anim_create_color(rect.w, rect.h, item->string_bg);
+		sdl_blit_anim(bg_anim, &rect, item->angle, item->zoom_x, item->zoom_y, item->flip, 0, item->overlay, 0);
 		si_anim_free(bg_anim);
 	}
 
 	if (item->str_tex == nullptr)
 	{
 		surf = TTF_RenderText_Blended(item->font, l_StringToDisplay, fg);
-		item->str_tex = SDL_CreateTextureFromSurface(render, surf);
+		item->str_tex = SDL_CreateTextureFromSurface(renderer, surf);
 		SDL_FreeSurface(surf);
 	}
 
 	rect.w = l_TextWidth;
 	rect.h = l_TextHeight;
-	sdl_blit_tex(render, item->str_tex, &rect, item->angle, item->zoom_x, item->zoom_y, item->flip, item->overlay);
+	sdl_blit_tex(item->str_tex, &rect, item->angle, item->zoom_x, item->zoom_y, item->flip, item->overlay);
 }
 
 /************************************************************************
  ************************************************************************/
-int sdl_blit_item(SDL_Renderer * render, item_t * item)
+int sdl_blit_item(item_t * item)
 {
 	SDL_Rect rect =
 	{ 0, 0, 0, 0 };
@@ -781,14 +789,14 @@ int sdl_blit_item(SDL_Renderer * render, item_t * item)
 			}
 			rect.w = anim_array->list[i]->w;
 			rect.h = anim_array->list[i]->h;
-			sdl_blit_anim(render, anim_array->list[i], &rect, item->angle, item->zoom_x, item->zoom_y, item->flip, item->anim_loop, item->overlay,
+			sdl_blit_anim(anim_array->list[i], &rect, item->angle, item->zoom_x, item->zoom_y, item->flip, item->anim_loop, item->overlay,
 					item->anim_start_tick);
 		}
 	}
 
 	if (item->font != nullptr && (item->string != nullptr || item->m_Buffer != nullptr))
 	{
-		sdl_print_item(render, item);
+		sdl_print_item(item);
 	}
 
 	return 0;
@@ -796,14 +804,14 @@ int sdl_blit_item(SDL_Renderer * render, item_t * item)
 
 /************************************************************************
  ************************************************************************/
-void sdl_blit_item_list(SDL_Renderer * render, item_t * list)
+void sdl_blit_item_list(item_t * list)
 {
 	item_t * item = nullptr;
 
 	item = list;
 	while (item != nullptr)
 	{
-		sdl_blit_item(render, item);
+		sdl_blit_item(item);
 		item = item->next;
 	}
 }
@@ -931,9 +939,9 @@ bool sdl_keyboard_manager(SDL_Event * event)
 
 /************************************************************************
  ************************************************************************/
-void sdl_blit_to_screen(SDL_Renderer * render)
+void sdl_blit_to_screen()
 {
-	SDL_RenderPresent(render);
+	SDL_RenderPresent(renderer);
 }
 
 /************************************************************************
@@ -1143,6 +1151,42 @@ void sdl_free_mousecb()
 Uint32 sdl_get_global_time()
 {
 	return global_time;
+}
+
+/*****************************************************************************/
+anim_t * sdl_get_minimal_anim()
+{
+	anim_t * def_anim = (anim_t*) malloc(sizeof(anim_t));
+
+	def_anim->num_frame = 1;
+	def_anim->tex = (SDL_Texture**) malloc(sizeof(SDL_Texture*));
+	def_anim->tex[0] = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STATIC, 1, 1);
+	def_anim->w = 1;
+	def_anim->h = 1;
+	def_anim->delay = (Uint32*) malloc(sizeof(Uint32));
+
+	def_anim->delay[0] = 0;
+	def_anim->total_duration = 0;
+
+	return def_anim;
+}
+
+/*****************************************************************************/
+void sdl_set_background_color(int R, int G, int B, int A)
+{
+	SDL_SetRenderDrawColor(renderer, R, G, B, A);
+}
+
+/*****************************************************************************/
+void sdl_get_output_size(int * width, int * height)
+{
+	SDL_GetRendererOutputSize(renderer, width, height);
+}
+
+/*****************************************************************************/
+void sdl_clear()
+{
+	SDL_RenderClear(renderer);
 }
 
 #ifdef __cplusplus
