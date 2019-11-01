@@ -52,8 +52,6 @@ static Uint32 global_time;
 static keycb_t * key_callback = nullptr;
 static mousecb_t * mouse_callback = nullptr;
 
-static void (*screen_compose)(void) = nullptr;
-
 /************************************************************************
  ************************************************************************/
 //You must SDL_LockSurface(surface); then SDL_UnlockSurface(surface); before calling this function
@@ -82,7 +80,7 @@ void sdl_cleanup()
 
 /************************************************************************
  ************************************************************************/
-void sdl_init(const char * title, SDL_Renderer ** render, SDL_Window ** window, void (*screen_compose_cb)(void), int vsync)
+void sdl_init(const char * title, SDL_Renderer ** render, SDL_Window ** window, int vsync)
 {
 	if (SDL_Init(SDL_INIT_EVERYTHING) < 0)
 	{
@@ -113,8 +111,6 @@ void sdl_init(const char * title, SDL_Renderer ** render, SDL_Window ** window, 
 
 	SDL_RenderSetLogicalSize(*render, DEFAULT_SCREEN_W, DEFAULT_SCREEN_H);
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
-
-	screen_compose = screen_compose_cb;
 }
 
 /************************************************************************
@@ -194,7 +190,7 @@ void sdl_mouse_position_manager(SDL_Renderer * render, item_t * item_list)
 
 /************************************************************************
  ************************************************************************/
-void sdl_mouse_manager(SDL_Renderer * render, SDL_Event * event, item_t * item_list)
+bool sdl_mouse_manager(SDL_Renderer * render, SDL_Event * event, item_t * item_list)
 {
 	int mx = 0;
 	int my = 0;
@@ -228,14 +224,14 @@ void sdl_mouse_manager(SDL_Renderer * render, SDL_Event * event, item_t * item_l
 		}
 	}
 
-	if (!mouse_in)
+	if (mouse_in == 0)
 	{
-		return;
+		return false;;
 	}
 
 	if (item_list == nullptr)
 	{
-		return;
+		return false;
 	}
 
 	if (event->type == SDL_MOUSEMOTION)
@@ -372,8 +368,7 @@ void sdl_mouse_manager(SDL_Renderer * render, SDL_Event * event, item_t * item_l
 
 	if (action_done == TRUE)
 	{
-		screen_compose();
-		return;
+		return true;
 	}
 
 	while (mousecb)
@@ -425,6 +420,8 @@ void sdl_mouse_manager(SDL_Renderer * render, SDL_Event * event, item_t * item_l
 		}
 		mousecb = mousecb->next;
 	}
+
+	return false;
 }
 
 /************************************************************************
@@ -845,7 +842,7 @@ char * sdl_keyboard_text_get_buf()
 
 /************************************************************************
  ************************************************************************/
-void sdl_keyboard_manager(SDL_Event * event)
+bool sdl_keyboard_manager(SDL_Event * event)
 {
 	const Uint8 *keystate = nullptr;
 	keycb_t * key = nullptr;
@@ -923,11 +920,13 @@ void sdl_keyboard_manager(SDL_Event * event)
 			}
 			keyboard_text_buf[keyboard_text_index] = 0;
 		}
-		screen_compose();
+		return true;
 		break;
 	default:
 		break;
 	}
+
+	return false;
 }
 
 /************************************************************************

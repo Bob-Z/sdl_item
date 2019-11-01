@@ -66,31 +66,31 @@ typedef struct mousecb
 	struct mousecb * next;
 } mousecb_t;
 
-void sdl_init(const char * title, SDL_Renderer ** render, SDL_Window ** window,
-		void (*screen_compose_cb)(void), int vsync);
+void sdl_init(const char * title, SDL_Renderer ** render, SDL_Window ** window, int vsync);
 void sdl_cleanup(void);
-void sdl_set_pixel(SDL_Surface *surface, int x, int y, Uint32 R, Uint32 G,
-		Uint32 B, Uint32 A);
+void sdl_set_pixel(SDL_Surface *surface, int x, int y, Uint32 R, Uint32 G, Uint32 B, Uint32 A);
 Uint32 sdl_get_pixel(SDL_Surface *surface, int x, int y);
-void sdl_mouse_manager(SDL_Renderer *, SDL_Event * event, item_t * item_list);
+
+// Return true if a mouse event has been detected
+bool sdl_mouse_manager(SDL_Renderer *, SDL_Event * event, item_t * item_list);
+
 void sdl_mouse_position_manager(SDL_Renderer * render, item_t * item_list);
-int sdl_screen_manager(SDL_Window * window, SDL_Renderer * render,
-		SDL_Event * event);
+int sdl_screen_manager(SDL_Window * window, SDL_Renderer * render, SDL_Event * event);
 void sdl_loop_manager();
-void sdl_blit_tex(SDL_Renderer *, SDL_Texture * tex, SDL_Rect * rect,
-		double angle, double zoom_x, double zoom_y, int flip, int overlay);
-int sdl_blit_anim(SDL_Renderer * render, anim_t * anim, SDL_Rect * rect,
-		double angle, double zoom_x, double zoom_y, int flip, int loop,
-		int overlay, Uint32 anim_start_tick);
+void sdl_blit_tex(SDL_Renderer *, SDL_Texture * tex, SDL_Rect * rect, double angle, double zoom_x, double zoom_y, int flip, int overlay);
+int sdl_blit_anim(SDL_Renderer * render, anim_t * anim, SDL_Rect * rect, double angle, double zoom_x, double zoom_y, int flip, int loop, int overlay,
+		Uint32 anim_start_tick);
 void sdl_get_string_size(TTF_Font * font, const char * string, int * w, int *h);
 void sdl_print_item(SDL_Renderer *, item_t * item);
 int sdl_blit_item(SDL_Renderer *, item_t * item);
 void sdl_blit_item_list(SDL_Renderer *, item_t * item_list);
-void sdl_keyboard_text_init(char * buf, const size_t p_BufferSize,
-		void (*cb)(void*arg));
+void sdl_keyboard_text_init(char * buf, const size_t p_BufferSize, void (*cb)(void*arg));
 void sdl_keyboard_text_reset();
 char * sdl_keyboard_text_get_buf();
-void sdl_keyboard_manager(SDL_Event * event);
+
+// Return true is a key event has been detected
+bool sdl_keyboard_manager(SDL_Event * event);
+
 void sdl_blit_to_screen(SDL_Renderer *);
 void sdl_set_virtual_x(int x);
 void sdl_set_virtual_y(int y);
@@ -101,8 +101,7 @@ double sdl_get_virtual_z();
 void sdl_force_virtual_x(int x);
 void sdl_force_virtual_y(int y);
 void sdl_force_virtual_z(double z);
-void sdl_add_keycb(SDL_Scancode code, void (*cb)(void*), void (*cb_up)(void*),
-		void * arg);
+void sdl_add_keycb(SDL_Scancode code, void (*cb)(void*), void (*cb_up)(void*), void * arg);
 void sdl_free_keycb();
 void sdl_add_mousecb(Uint32 event_type, void (*cb)(Uint32, Uint32));
 void sdl_free_mousecb();
