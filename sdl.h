@@ -1,6 +1,6 @@
 /*
  sdl_item is a graphical library based on SDL.
- Copyright (C) 2013-2019 carabobz@gmail.com
+ Copyright (C) 2013-2020 carabobz@gmail.com
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
