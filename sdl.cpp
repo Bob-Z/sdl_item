@@ -84,7 +84,7 @@ void sdl_cleanup()
 
 /************************************************************************
  ************************************************************************/
-void sdl_init(const std::string & title, int vsync)
+void sdl_init(const std::string & title, const bool vsync)
 {
 	if (SDL_Init(SDL_INIT_EVERYTHING) < 0)
 	{
@@ -107,7 +107,13 @@ void sdl_init(const std::string & title, int vsync)
 		exit(EXIT_FAILURE);
 	}
 
-	renderer = SDL_CreateRenderer(window, -1, vsync ? SDL_RENDERER_PRESENTVSYNC : 0);
+	Uint32 flags = SDL_RENDERER_ACCELERATED;
+	if (vsync == true)
+	{
+		flags |= SDL_RENDERER_PRESENTVSYNC;
+	}
+
+	renderer = SDL_CreateRenderer(window, -1, flags);
 	if (renderer == nullptr)
 	{
 		exit(EXIT_FAILURE);

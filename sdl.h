@@ -62,7 +62,7 @@ typedef struct mousecb
 	struct mousecb * next;
 } mousecb_t;
 
-void sdl_init(const std::string & title, int vsync);
+void sdl_init(const std::string & title, const bool vsync);
 void sdl_cleanup(void);
 SDL_Renderer * sdl_get_renderer();
 
