@@ -880,7 +880,7 @@ bool sdl_keyboard_manager(SDL_Event * event)
 		if (keyboard_text_buf == nullptr)
 		{
 			key = key_callback;
-			if (key)
+			if ((key != nullptr) && (event->key.repeat != 1))
 			{
 				do
 				{
