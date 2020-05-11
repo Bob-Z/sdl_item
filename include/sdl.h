@@ -17,9 +17,13 @@
  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-#include "sdl_item.h"
+#include "Anim.h"
+#include "reader.h"
+#include "SdlItem.h"
+#include <functional>
 #include <SDL2/SDL.h>
 #include <string>
+#include <vector>
 
 #define SDL_OPAQUE 0xff
 #define SDL_TRANSPARENT 0x00
@@ -29,9 +33,6 @@
 #define BMASK 0x000000ff
 #define AMASK 0xff000000
 
-#define DEFAULT_SCREEN_W 1024
-#define DEFAULT_SCREEN_H 768
-
 #define FRAME_DELAY 20
 
 #define VIRTUAL_ANIM_DURATION 150
@@ -40,14 +41,12 @@
 //#define PAL_TO_RGB(x) x.r<<2,x.g<<2,x.b<<2,SDL_OPAQUE
 #define PAL_TO_RGB(x) x.r,x.g,x.b,SDL_OPAQUE
 
-typedef struct keycb
+struct KeyCb
 {
 	SDL_Scancode code;
-	void (*cb)(void*);
-	void (*cb_up)(void*);
-	void * arg;
-	struct keycb * next;
-} keycb_t;
+	std::function<void()> downCallBack;
+	std::function<void()> upCallBack;
+};
 
 #define MOUSE_MOTION		0
 #define MOUSE_BUTTON_UP		1
@@ -55,12 +54,11 @@ typedef struct keycb
 #define MOUSE_WHEEL_UP		3
 #define MOUSE_WHEEL_DOWN	4
 
-typedef struct mousecb
+struct MouseEvent
 {
-	Uint32 event_type;
-	void (*cb)(Uint32 arg1, Uint32 arg2);
-	struct mousecb * next;
-} mousecb_t;
+	Uint32 eventType;
+	std::function<void()> callBack;
+};
 
 void sdl_init(const std::string & title, const bool vsync);
 void sdl_cleanup(void);
@@ -70,20 +68,21 @@ void sdl_set_pixel(SDL_Surface *surface, int x, int y, Uint32 R, Uint32 G, Uint3
 Uint32 sdl_get_pixel(SDL_Surface *surface, int x, int y);
 
 // Return true if a mouse event has been detected
-bool sdl_mouse_manager(SDL_Event * event, item_t * item_list);
+bool sdl_mouse_manager(SDL_Event * event, std::vector<SdlItem*> & itemArray);
 
-void sdl_mouse_position_manager(item_t * item_list);
+void sdl_mouse_position_manager(std::vector<SdlItem *> & itemArray);
 int sdl_screen_manager(SDL_Event * event);
 void sdl_loop_manager();
-void sdl_blit_tex(SDL_Texture * tex, SDL_Rect * rect, double angle, double zoom_x, double zoom_y, int flip, int overlay);
-int sdl_blit_anim(anim_t * anim, SDL_Rect * rect, double angle, double zoom_x, double zoom_y, int flip, int loop, int overlay, Uint32 anim_start_tick);
-void sdl_get_string_size(TTF_Font * font, const char * string, int * w, int *h);
-void sdl_print_item(item_t * item);
-int sdl_blit_item(item_t * item);
-void sdl_blit_item_list(item_t * item_list);
-void sdl_keyboard_text_init(char * buf, const size_t p_BufferSize, void (*cb)(void*arg));
-void sdl_keyboard_text_reset();
-char * sdl_keyboard_text_get_buf();
+void sdl_blit_tex(SDL_Texture * tex, SDL_Rect * rect, double angle, double zoomX, double zoomY, int flip, int overlay);
+int sdl_blit_anim(const Anim & anim, SDL_Rect * rect, const double angle, const double zoomX, const double zoomY, const bool isFlip, const bool isLoop,
+		const bool isOverlay, const Uint32 animStartTick);
+void sdl_get_string_size(TTF_Font * font, const std::string & text, int * w, int *h);
+void sdl_print_item(SdlItem & item);
+int sdl_blit_item(SdlItem & item);
+void sdl_blit_item_list(std::vector<SdlItem> & itemArray);
+void sdl_keyboard_text_init(std::string * buf, const std::function<void(std::string)>& editCb);
+void sdl_init_screen();
+const std::string & sdl_keyboard_text_get_buf();
 
 // Return true is a key event has been detected
 bool sdl_keyboard_manager(SDL_Event * event);
@@ -98,12 +97,13 @@ double sdl_get_virtual_z();
 void sdl_force_virtual_x(int x);
 void sdl_force_virtual_y(int y);
 void sdl_force_virtual_z(double z);
-void sdl_add_keycb(SDL_Scancode code, void (*cb)(void*), void (*cb_up)(void*), void * arg);
-void sdl_free_keycb();
-void sdl_add_mousecb(Uint32 event_type, void (*cb)(Uint32, Uint32));
+void sdl_add_down_key_cb(const SDL_Scancode code, const std::function<void()> & downCb);
+void sdl_add_up_key_cb(const SDL_Scancode code, const std::function<void()> & upCb);
+void sdl_clean_key_cb();
+void sdl_add_mousecb(Uint32 event_type, std::function<void()> callBack);
 void sdl_free_mousecb();
 Uint32 sdl_get_global_time();
-anim_t * sdl_get_minimal_anim();
+Anim * sdl_get_minimal_anim();
 void sdl_set_background_color(int R, int G, int B, int A);
 void sdl_get_output_size(int * width, int * height);
 void sdl_clear();

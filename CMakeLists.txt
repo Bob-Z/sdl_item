@@ -30,12 +30,22 @@ include_directories(
         ${LIBZIP_INCLUDE_DIRS}
 )
 
+include_directories(.)
+include_directories(include)
+include_directories(media)
+
 add_library(
 	${PROJECT_NAME}
 	SHARED
-	anim.cpp
-	sdl_item.cpp
+	Anim.cpp
 	sdl.cpp
+	SdlItem.cpp
+	Texture.cpp
+	media/reader.cpp
+	media/si_gif.cpp
+	media/si_libav.cpp
+	media/si_png.cpp
+	media/si_zip.cpp
 )
 
 target_link_libraries (${PROJECT_NAME}

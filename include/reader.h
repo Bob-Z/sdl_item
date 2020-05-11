@@ -1,6 +1,6 @@
 /*
- sdl_item is a graphical library based on SDL.
- Copyright (C) 2013-2020 carabobz@gmail.com
+ World of Gnome is a 2D multiplayer role playing game.
+ Copyright (C) 2020 carabobz@gmail.com
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -17,33 +17,15 @@
  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-#ifndef ANIM_H
-#define ANIM_H
+#ifndef MEDIA_READER_H
+#define MEDIA_READER_H
 
-#include <SDL2/SDL.h>
+#include <SDL.h>
+#include <string>
 
-typedef struct
-{
-	int num_frame;
-	SDL_Texture ** tex;
-	int w; // width
-	int h; // height
-	Uint32 * delay; //delay between each frame in millisecond
-	Uint32 total_duration;
-} anim_t;
+class Anim;
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
+Anim * anim_load(const std::string & filePath);
+Anim * anim_create_color(int width, int height, Uint32 color);
 
-anim_t * anim_load(const char * filename);
-anim_t * anim_create_color(Uint32 width, Uint32 height, Uint32 color);
-void si_anim_free(anim_t * anim);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif
-
+#endif // MEDIA_READER_H
