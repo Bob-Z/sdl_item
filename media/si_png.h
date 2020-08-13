@@ -22,10 +22,10 @@
 
 #include <string>
 
-class Anim;
+class SiAnim;
 struct SDL_Texture;
 
 SDL_Texture * libpng_load_texture(const std::string & filePath, int * width_out, int * height_out);
-Anim * libpng_load(const std::string & filePath);
+SiAnim * libpng_load(const std::string & filePath);
 
 #endif // MEDIA_PNG_H

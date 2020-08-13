@@ -53,13 +53,13 @@ void SdlItem::setShape(const int width, const int height)
 }
 
 /*****************************************************************************/
-const std::vector<Anim*>& SdlItem::getAnim() const
+const std::vector<SiAnim*>& SdlItem::getAnim() const
 {
 	return m_animArray;
 }
 
 /*****************************************************************************/
-void SdlItem::setAnim(const std::vector<Anim*>& animArray)
+void SdlItem::setAnim(const std::vector<SiAnim*>& animArray)
 {
 	m_animArray = animArray;
 
@@ -78,9 +78,9 @@ void SdlItem::setAnim(const std::vector<Anim*>& animArray)
 }
 
 /*****************************************************************************/
-void SdlItem::setAnim(Anim *anim)
+void SdlItem::setAnim(SiAnim *anim)
 {
-	std::vector<Anim*> animArray;
+	std::vector<SiAnim*> animArray;
 	animArray.push_back(anim);
 
 	m_animArray = animArray;
@@ -89,7 +89,7 @@ void SdlItem::setAnim(Anim *anim)
 }
 
 /*****************************************************************************/
-void SdlItem::pushAnim(Anim * const anim)
+void SdlItem::pushAnim(SiAnim * const anim)
 {
 	int maxWidth = 0;
 	int maxHeight = 0;
@@ -131,13 +131,13 @@ void SdlItem::clearAnim()
 }
 
 /*****************************************************************************/
-const std::vector<Anim*>& SdlItem::getAnimClick() const
+const std::vector<SiAnim*>& SdlItem::getAnimClick() const
 {
 	return m_animClick;
 }
 
 /*****************************************************************************/
-void SdlItem::setAnimClick(const std::vector<Anim*>& animClick)
+void SdlItem::setAnimClick(const std::vector<SiAnim*>& animClick)
 {
 	m_animClick = animClick;
 }
@@ -149,21 +149,21 @@ void SdlItem::clearAnimClick()
 }
 
 /*****************************************************************************/
-const std::vector<Anim*>& SdlItem::getAnimOver() const
+const std::vector<SiAnim*>& SdlItem::getAnimOver() const
 {
 	return m_animOver;
 }
 
 /*****************************************************************************/
-void SdlItem::setAnimOver(const std::vector<Anim*>& animOver)
+void SdlItem::setAnimOver(const std::vector<SiAnim*>& animOver)
 {
 	m_animOver = animOver;
 }
 
 /*****************************************************************************/
-void SdlItem::setAnimOver(Anim *animOver)
+void SdlItem::setAnimOver(SiAnim *animOver)
 {
-	std::vector<Anim*> animArray;
+	std::vector<SiAnim*> animArray;
 	animArray.push_back(animOver);
 
 	m_animOver = animArray;
@@ -176,25 +176,25 @@ void SdlItem::clearAnimOver()
 }
 
 /*****************************************************************************/
-const std::vector<Anim*>& SdlItem::getDefaultAnimClick() const
+const std::vector<SiAnim*>& SdlItem::getDefaultAnimClick() const
 {
 	return m_defaultAnimClick;
 }
 
 /*****************************************************************************/
-void SdlItem::setDefaultAnimClick(const std::vector<Anim*>& defaultAnimClick)
+void SdlItem::setDefaultAnimClick(const std::vector<SiAnim*>& defaultAnimClick)
 {
 	m_defaultAnimClick = defaultAnimClick;
 }
 
 /*****************************************************************************/
-const std::vector<Anim*>& SdlItem::getDefaultAnimOver() const
+const std::vector<SiAnim*>& SdlItem::getDefaultAnimOver() const
 {
 	return m_defaultAnimOver;
 }
 
 /*****************************************************************************/
-void SdlItem::setDefaultAnimOver(const std::vector<Anim*>& defaultAnimOver)
+void SdlItem::setDefaultAnimOver(const std::vector<SiAnim*>& defaultAnimOver)
 {
 	m_defaultAnimOver = defaultAnimOver;
 }

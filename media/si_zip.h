@@ -22,8 +22,8 @@
 
 #include <string>
 
-class Anim;
+class SiAnim;
 
-Anim * libzip_load(const std::string & filePath);
+SiAnim * libzip_load(const std::string & filePath);
 
 #endif // MEDIA_ZIP_H

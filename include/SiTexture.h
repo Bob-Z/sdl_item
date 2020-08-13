@@ -17,13 +17,21 @@
  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-#ifndef MEDIA_GIF_H
-#define MEDIA_GIF_H
+#ifndef SDL_ITEM_TEXTURE_H_
+#define SDL_ITEM_TEXTURE_H_
 
-#include <string>
+struct SDL_Texture;
 
-class SiAnim;
+class SiTexture
+{
+public:
+	SiTexture(SDL_Texture * texture);
+	virtual ~SiTexture();
 
-SiAnim * giflib_load(const std::string & filePath);
+	SDL_Texture* getTexture();
 
-#endif // MEDIA_GIF_H
+private:
+	SDL_Texture * m_texture;
+};
+
+#endif /* SDL_ITEM_TEXTURE_H_ */

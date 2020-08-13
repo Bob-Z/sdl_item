@@ -17,13 +17,26 @@
  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-#ifndef MEDIA_GIF_H
-#define MEDIA_GIF_H
+#include <SDL.h>
+#include <SiTexture.h>
 
-#include <string>
+/*****************************************************************************/
+SiTexture::SiTexture(SDL_Texture * texture) :
+		m_texture(texture)
+{
+}
 
-class SiAnim;
+/*****************************************************************************/
+SiTexture::~SiTexture()
+{
+	if (m_texture != nullptr)
+	{
+		SDL_DestroyTexture(m_texture);
+	}
+}
 
-SiAnim * giflib_load(const std::string & filePath);
-
-#endif // MEDIA_GIF_H
+/*****************************************************************************/
+SDL_Texture* SiTexture::getTexture()
+{
+	return m_texture;
+}

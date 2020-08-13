@@ -17,8 +17,8 @@
  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-#include "Anim.h"
 #include "sdl.h"
+#include "SiAnim.h"
 #include <SDL2/SDL.h>
 #include <string>
 
@@ -43,7 +43,7 @@ static constexpr int DEFAULT_DELAY_MS = 40;
  http://wwwcdf.pd.infn.it/libgif/gif89.txt
  http://wwwcdf.pd.infn.it/libgif/gif_lib.html
  ************************************************************************/
-Anim * giflib_load(const std::string & filePath)
+SiAnim * giflib_load(const std::string & filePath)
 {
 	GifFileType * gif = nullptr;
 	int i = 0;
@@ -60,7 +60,7 @@ Anim * giflib_load(const std::string & filePath)
 	int y = 0;
 	int col = 0;
 	int pix_index = 0;
-	Anim * anim = nullptr;
+	SiAnim * anim = nullptr;
 	int render_width;
 	int render_height;
 	int frame_left = 0;
@@ -92,7 +92,7 @@ Anim * giflib_load(const std::string & filePath)
 		return nullptr;
 	}
 
-	anim = new Anim;
+	anim = new SiAnim;
 
 	anim->setWidth(gif->SWidth);
 	anim->setHeight(gif->SHeight);

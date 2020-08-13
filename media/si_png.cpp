@@ -17,8 +17,8 @@
  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-#include "Anim.h"
 #include "sdl.h"
+#include "SiAnim.h"
 #include "stdio.h"
 #include <string>
 
@@ -185,7 +185,7 @@ SDL_Texture * libpng_load_texture(const std::string & filePath, int * width_out,
 }
 
 /*****************************************************************************/
-Anim * libpng_load(const std::string & filePath)
+SiAnim * libpng_load(const std::string & filePath)
 {
 	int width = 0;
 	int height = 0;
@@ -196,7 +196,7 @@ Anim * libpng_load(const std::string & filePath)
 		return nullptr;
 	}
 
-	Anim * anim = new Anim;
+	SiAnim * anim = new SiAnim;
 
 	anim->pushDelay(0U);
 	anim->pushTexture(tex);

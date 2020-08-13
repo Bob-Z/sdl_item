@@ -17,18 +17,18 @@
  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-#include "Anim.h"
-#include "const.h"
 #include "reader.h"
 #include "sdl.h"
 #include "SdlItem.h"
+#include "SiAnim.h"
+#include "SiKeyCallback.h"
+#include "SiMouseEvent.h"
 #include <assert.h>
 #include <functional>
+#include <iostream>
 #include <math.h>
 #include <string>
 #include <vector>
-
-#include <iostream>
 
 static int fullscreen = 0;
 
@@ -50,8 +50,8 @@ static int mouseY = 0;
 static bool isAppHasFocus = false;
 static Uint32 globalTick;
 
-static std::vector<struct KeyCb> keyCbArray;
-static std::vector<struct MouseEvent> globalMouseEventArray;
+static std::vector<struct SiKeyCallback> keyCbArray;
+static std::vector<struct SiMouseEvent> globalMouseEventArray;
 
 static SDL_Window * window = nullptr;
 static SDL_Renderer * renderer = nullptr;
@@ -367,40 +367,40 @@ bool sdl_mouse_manager(SDL_Event * event, std::vector<SdlItem *> & itemArray)
 		switch (event->type)
 		{
 		case SDL_MOUSEMOTION:
-			if (mouseEvent.eventType != MOUSE_MOTION)
+			if (mouseEvent.getEventType() != MOUSE_MOTION)
 			{
 				continue;
 			}
-			mouseEvent.callBack();
+			mouseEvent.getCallBack()();
 			break;
 		case SDL_MOUSEBUTTONDOWN:
-			if (mouseEvent.eventType != MOUSE_BUTTON_DOWN)
+			if (mouseEvent.getEventType() != MOUSE_BUTTON_DOWN)
 			{
 				continue;
 			}
-			mouseEvent.callBack();
+			mouseEvent.getCallBack()();
 			break;
 		case SDL_MOUSEBUTTONUP:
-			if (mouseEvent.eventType != MOUSE_BUTTON_UP)
+			if (mouseEvent.getEventType() != MOUSE_BUTTON_UP)
 			{
 				continue;
 			}
-			mouseEvent.callBack();
+			mouseEvent.getCallBack()();
 			break;
 		case SDL_MOUSEWHEEL:
-			if ((mouseEvent.eventType != MOUSE_WHEEL_UP) && (mouseEvent.eventType != MOUSE_WHEEL_DOWN))
+			if ((mouseEvent.getEventType() != MOUSE_WHEEL_UP) && (mouseEvent.getEventType() != MOUSE_WHEEL_DOWN))
 			{
 				continue;
 			}
 			if (event->wheel.timestamp != timeStamp)
 			{
-				if ((event->wheel.y > 0) && (mouseEvent.eventType == MOUSE_WHEEL_UP))
+				if ((event->wheel.y > 0) && (mouseEvent.getEventType() == MOUSE_WHEEL_UP))
 				{
-					mouseEvent.callBack();
+					mouseEvent.getCallBack()();
 				}
-				if ((event->wheel.y < 0) && (mouseEvent.eventType == MOUSE_WHEEL_DOWN))
+				if ((event->wheel.y < 0) && (mouseEvent.getEventType() == MOUSE_WHEEL_DOWN))
 				{
-					mouseEvent.callBack();
+					mouseEvent.getCallBack()();
 				}
 			}
 			break;
@@ -561,7 +561,7 @@ void sdl_blit_tex(SDL_Texture * tex, SDL_Rect * rect, double angle, double zoom_
 }
 
 /*****************************************************************************/
-static int get_current_frame(const Anim & anim, const bool isLoop, const Uint32 startTick)
+static int get_current_frame(const SiAnim & anim, const bool isLoop, const Uint32 startTick)
 {
 	if (anim.getTotalDuration() != 0U)
 	{
@@ -609,7 +609,7 @@ static int get_current_frame(const Anim & anim, const bool isLoop, const Uint32 
  return 0 if blit OK
  return -1 if blit NOK
  *****************************************************************************/
-int sdl_blit_anim(const Anim & anim, SDL_Rect * rect, const double angle, const double zoomX, const double zoomY, const bool isFlip, const bool isLoop,
+int sdl_blit_anim(const SiAnim & anim, SDL_Rect * rect, const double angle, const double zoomX, const double zoomY, const bool isFlip, const bool isLoop,
 		const bool isOverlay, const Uint32 animStartTick)
 {
 	if (anim.getTextureArray().size() == 0)
@@ -675,7 +675,7 @@ void sdl_print_item(SdlItem & item)
 	{
 		rect.w = backgroundWidth;
 		rect.h = backgroundHeight;
-		Anim * bgAnim = anim_create_color(rect.w, rect.h, item.getBackGroudColor());
+		SiAnim * bgAnim = anim_create_color(rect.w, rect.h, item.getBackGroudColor());
 		sdl_blit_anim(*bgAnim, &rect, item.getAngle(), item.getZoomX(), item.getZoomY(), item.getFlip(), false, item.isOverlay(), 0);
 		delete bgAnim;
 	}
@@ -696,7 +696,7 @@ void sdl_print_item(SdlItem & item)
 }
 
 /*****************************************************************************/
-static void sdl_blit_anim_array(const SdlItem & item, const std::vector<Anim *> & animArray)
+static void sdl_blit_anim_array(const SdlItem & item, const std::vector<SiAnim *> & animArray)
 {
 	int max_width = 0;
 	int max_height = 0;
@@ -776,11 +776,11 @@ bool sdl_keyboard_manager(SDL_Event * event)
 		{
 			for (auto && key : keyCbArray)
 			{
-				if (event->key.keysym.scancode == key.code)
+				if (event->key.keysym.scancode == key.getCode())
 				{
-					if (bool(key.upCallBack) == true)
+					if (bool(key.getUpCallBack()) == true)
 					{
-						key.upCallBack();
+						key.getUpCallBack()();
 					}
 				}
 			}
@@ -793,11 +793,11 @@ bool sdl_keyboard_manager(SDL_Event * event)
 			{
 				for (auto && key : keyCbArray)
 				{
-					if (event->key.keysym.scancode == key.code)
+					if (event->key.keysym.scancode == key.getCode())
 					{
-						if (bool(key.downCallBack) == true)
+						if (bool(key.getDownCallBack()) == true)
 						{
-							key.downCallBack();
+							key.getDownCallBack()();
 						}
 					}
 				}
@@ -924,10 +924,10 @@ void sdl_force_virtual_z(double z)
 /*****************************************************************************/
 void sdl_add_down_key_cb(const SDL_Scancode code, const std::function<void()> & downCb)
 {
-	struct KeyCb key;
+	struct SiKeyCallback key;
 
-	key.code = code;
-	key.downCallBack = downCb;
+	key.setCode(code);
+	key.setDownCallBack(downCb);
 
 	keyCbArray.push_back(key);
 }
@@ -935,10 +935,10 @@ void sdl_add_down_key_cb(const SDL_Scancode code, const std::function<void()> & 
 /*****************************************************************************/
 void sdl_add_up_key_cb(const SDL_Scancode code, const std::function<void()> & upCb)
 {
-	struct KeyCb key;
+	struct SiKeyCallback key;
 
-	key.code = code;
-	key.upCallBack = upCb;
+	key.setCode(code);
+	key.setUpCallBack(upCb);
 
 	keyCbArray.push_back(key);
 }
@@ -952,9 +952,9 @@ void sdl_clean_key_cb()
 /*****************************************************************************/
 void sdl_add_mousecb(Uint32 eventType, std::function<void()> callBack)
 {
-	MouseEvent mouseEvent;
-	mouseEvent.eventType = eventType;
-	mouseEvent.callBack = callBack;
+	SiMouseEvent mouseEvent;
+	mouseEvent.setEventType(eventType);
+	mouseEvent.setCallBack(callBack);
 
 	globalMouseEventArray.push_back(mouseEvent);
 }
@@ -972,9 +972,9 @@ Uint32 sdl_get_global_time()
 }
 
 /*****************************************************************************/
-Anim * sdl_get_minimal_anim()
+SiAnim * sdl_get_minimal_anim()
 {
-	Anim * def_anim = new Anim;
+	SiAnim * def_anim = new SiAnim;
 
 	def_anim->pushTexture(SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STATIC, 1, 1));
 	def_anim->setWidth(1);

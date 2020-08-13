@@ -1,6 +1,6 @@
 /*
  World of Gnome is a 2D multiplayer role playing game.
- Copyright (C) 2020 carabobz@gmail.com
+ Copyright (C) 2019 carabobz@gmail.com
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -17,21 +17,31 @@
  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-#ifndef SDL_ITEM_TEXTURE_H_
-#define SDL_ITEM_TEXTURE_H_
+#ifndef SDL_ITEM_INCLUDE_SIKEYCALLBACK_H_
+#define SDL_ITEM_INCLUDE_SIKEYCALLBACK_H_
 
-struct SDL_Texture;
+#include <SDL2/SDL.h>
+#include <functional>
 
-class Texture
+class SiKeyCallback
 {
 public:
-	Texture(SDL_Texture * texture);
-	virtual ~Texture();
+	SiKeyCallback();
+	virtual ~SiKeyCallback();
 
-	SDL_Texture* getTexture();
+	SDL_Scancode getCode() const;
+	void setCode(SDL_Scancode code);
+
+	const std::function<void()>& getDownCallBack() const;
+	void setDownCallBack(const std::function<void()>& downCallBack);
+
+	const std::function<void()>& getUpCallBack() const;
+	void setUpCallBack(const std::function<void()>& upCallBack);
 
 private:
-	SDL_Texture * m_texture;
+	SDL_Scancode code;
+	std::function<void()> downCallBack;
+	std::function<void()> upCallBack;
 };
 
-#endif /* SDL_ITEM_TEXTURE_H_ */
+#endif /* SDL_ITEM_INCLUDE_SIKEYCALLBACK_H_ */

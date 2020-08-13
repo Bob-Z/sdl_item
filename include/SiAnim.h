@@ -20,16 +20,16 @@
 #ifndef SDL_ITEM_ANIM_H_
 #define SDL_ITEM_ANIM_H_
 
-#include "Texture.h"
 #include <memory>
 #include <SDL.h>
+#include <SiTexture.h>
 #include <vector>
 
-class Anim
+class SiAnim
 {
 public:
-	Anim();
-	virtual ~Anim();
+	SiAnim();
+	virtual ~SiAnim();
 
 	int getHeight() const;
 	void setHeight(int height);
@@ -37,9 +37,9 @@ public:
 	int getWidth() const;
 	void setWidth(int width);
 
-	const std::vector<std::shared_ptr<Texture>>& getTextureArray() const;
+	const std::vector<std::shared_ptr<SiTexture>>& getTextureArray() const;
 	void pushTexture(SDL_Texture*);
-	std::shared_ptr<Texture> getTexture(const int index) const;
+	std::shared_ptr<SiTexture> getTexture(const int index) const;
 
 	Uint32 getTotalDuration() const;
 	void setTotalDuration(Uint32 totalDuration);
@@ -51,7 +51,7 @@ public:
 	void pushDelay(const Uint32 delay);
 
 private:
-	std::vector<std::shared_ptr<Texture>> m_textureArray;
+	std::vector<std::shared_ptr<SiTexture>> m_textureArray;
 	int m_width;
 	int m_height;
 	std::vector<Uint32> m_delayArray; //delay between each frame in millisecond

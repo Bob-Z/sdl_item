@@ -17,18 +17,18 @@
  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-#include "Anim.h"
 #include "sdl.h"
 #include "si_gif.h"
 #include "si_libav.h"
 #include "si_png.h"
 #include "si_zip.h"
+#include "SiAnim.h"
 #include <string>
 
 /*****************************************************************************/
-Anim * anim_load(const std::string & filePath)
+SiAnim * anim_load(const std::string & filePath)
 {
-	Anim * ret;
+	SiAnim * ret;
 
 	ret = giflib_load(filePath);
 	if (ret == nullptr)
@@ -62,9 +62,9 @@ Anim * anim_load(const std::string & filePath)
 /******************************************************************************
  color is RGBA
  *****************************************************************************/
-Anim * anim_create_color(int width, int height, Uint32 color)
+SiAnim * anim_create_color(int width, int height, Uint32 color)
 {
-	Anim * anim = new Anim;
+	SiAnim * anim = new SiAnim;
 
 	anim->setWidth(width);
 	anim->setHeight(height);

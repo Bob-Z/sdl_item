@@ -37,10 +37,12 @@ include_directories(media)
 add_library(
 	${PROJECT_NAME}
 	SHARED
-	Anim.cpp
+	SiAnim.cpp
 	sdl.cpp
 	SdlItem.cpp
-	Texture.cpp
+	SiKeyCallback.cpp
+	SiMouseEvent.cpp
+	SiTexture.cpp
 	media/reader.cpp
 	media/si_gif.cpp
 	media/si_libav.cpp

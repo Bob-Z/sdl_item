@@ -20,7 +20,6 @@
 #ifndef SDL_ITEM_SDLITEM_H_
 #define SDL_ITEM_SDLITEM_H_
 
-#include "Anim.h"
 #include <functional>
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL.h>
@@ -41,26 +40,26 @@ public:
 	void setPos(const int x, const int y);
 	void setShape(const int width, const int height);
 
-	const std::vector<Anim*>& getAnim() const;
-	void setAnim(const std::vector<Anim*>& animArray);
-	void setAnim(Anim *anim);
-	void pushAnim(Anim * const anim);
+	const std::vector<SiAnim*>& getAnim() const;
+	void setAnim(const std::vector<SiAnim*>& animArray);
+	void setAnim(SiAnim *anim);
+	void pushAnim(SiAnim * const anim);
 	void clearAnim();
 
-	const std::vector<Anim*>& getAnimClick() const;
-	void setAnimClick(const std::vector<Anim*>& animClick);
+	const std::vector<SiAnim*>& getAnimClick() const;
+	void setAnimClick(const std::vector<SiAnim*>& animClick);
 	void clearAnimClick();
 
-	const std::vector<Anim*>& getAnimOver() const;
-	void setAnimOver(const std::vector<Anim*>& animOver);
-	void setAnimOver(Anim *animOver);
+	const std::vector<SiAnim*>& getAnimOver() const;
+	void setAnimOver(const std::vector<SiAnim*>& animOver);
+	void setAnimOver(SiAnim *animOver);
 	void clearAnimOver();
 
-	const std::vector<Anim*>& getDefaultAnimClick() const;
-	void setDefaultAnimClick(const std::vector<Anim*>& defaultAnimClick);
+	const std::vector<SiAnim*>& getDefaultAnimClick() const;
+	void setDefaultAnimClick(const std::vector<SiAnim*>& defaultAnimClick);
 
-	const std::vector<Anim*>& getDefaultAnimOver() const;
-	void setDefaultAnimOver(const std::vector<Anim*>& defaultAnimOver);
+	const std::vector<SiAnim*>& getDefaultAnimOver() const;
+	void setDefaultAnimOver(const std::vector<SiAnim*>& defaultAnimOver);
 
 	Layout getLayout() const;
 	void setLayout(Layout layout);
@@ -157,11 +156,12 @@ private:
 	int m_user1;	// User defined
 	int m_user2;	// User defined
 	bool m_overlay;
-	std::vector<Anim*> m_animArray;		//default sprite
-	std::vector<Anim*> m_animOver;	//is set to default_anim_over, when needed (i.e. mouse over this item)
-	std::vector<Anim*> m_defaultAnimOver;
-	std::vector<Anim*> m_animClick;	//is set to default_anim_click, when needed (i.e. click on this item)
-	std::vector<Anim*> m_defaultAnimClick;
+	std::vector<SiAnim*> m_animArray;         //default sprite
+	std::vector<SiAnim*> m_animOver;  //is set to default_anim_over, when needed (i.e. mouse over this item)
+	std::vector<SiAnim*> m_defaultAnimOver;
+	std::vector<SiAnim*> m_animClick; //is set to default_anim_click, when needed (i.e. click on this item)
+	std::vector<SiAnim*> m_defaultAnimClick;
+
 	Layout m_layout;	// How to display array of anim (default is top-left)
 	bool m_animLoop;
 	bool m_clicked;

@@ -17,8 +17,8 @@
  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-#include "Anim.h"
 #include "sdl.h"
+#include "SiAnim.h"
 #include <string>
 
 #ifdef __cplusplus
@@ -36,11 +36,11 @@ extern "C"
 #endif
 
 /*****************************************************************************/
-Anim * libav_load(const std::string & filePath)
+SiAnim * libav_load(const std::string & filePath)
 {
-	Anim * ret = nullptr;
+	SiAnim * ret = nullptr;
 	unsigned int i = 0;
-	Anim * anim = new Anim;
+	SiAnim * anim = new SiAnim;
 	struct SwsContext * swsCtx;
 	int videoStream = -1;
 	int delay = 0;

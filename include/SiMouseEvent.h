@@ -1,6 +1,6 @@
 /*
  World of Gnome is a 2D multiplayer role playing game.
- Copyright (C) 2020 carabobz@gmail.com
+ Copyright (C) 2019 carabobz@gmail.com
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -17,13 +17,27 @@
  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-#ifndef MEDIA_GIF_H
-#define MEDIA_GIF_H
+#ifndef SDL_ITEM_INCLUDE_SIMOUSEEVENT_H_
+#define SDL_ITEM_INCLUDE_SIMOUSEEVENT_H_
 
-#include <string>
+#include <functional>
+#include <SDL2/SDL.h>
 
-class SiAnim;
+class SiMouseEvent
+{
+public:
+	SiMouseEvent();
+	virtual ~SiMouseEvent();
 
-SiAnim * giflib_load(const std::string & filePath);
+	std::function<void()> getCallBack() const;
+	void setCallBack(std::function<void()> callBack);
 
-#endif // MEDIA_GIF_H
+	Uint32 getEventType() const;
+	void setEventType(const Uint32 eventType);
+
+private:
+	Uint32 eventType;
+	std::function<void()> callBack;
+};
+
+#endif /* SDL_ITEM_INCLUDE_SIMOUSEEVENT_H_ */

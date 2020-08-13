@@ -17,8 +17,8 @@
  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-#include "Anim.h"
 #include "si_png.h"
+#include "SiAnim.h"
 #include "stdio.h"
 #include <algorithm>
 #include <string>
@@ -98,7 +98,7 @@ static int extract_zip(struct zip *fdZip, int index)
 }
 
 /*****************************************************************************/
-Anim * libzip_load(const std::string & filePath)
+SiAnim * libzip_load(const std::string & filePath)
 {
 	int err = 0;
 	struct zip * fdZip = zip_open(filePath.c_str(), ZIP_CHECKCONS, &err);
@@ -128,7 +128,7 @@ Anim * libzip_load(const std::string & filePath)
 	// Remove timing file
 	int animQty = fileQty - 1;
 
-	Anim * anim = new Anim;
+	SiAnim * anim = new SiAnim;
 
 	for (int i = 0; i < animQty; i++)
 	{

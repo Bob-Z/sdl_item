@@ -22,8 +22,8 @@
 
 #include <string>
 
-class Anim;
+class SiAnim;
 
-Anim * libav_load(const std::string & filePath);
+SiAnim * libav_load(const std::string & filePath);
 
 #endif // MEDIA_LIBAV_H

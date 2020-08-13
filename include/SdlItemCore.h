@@ -17,26 +17,13 @@
  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-#include "Texture.h"
-#include <SDL.h>
+#ifndef SDL_ITEM_SDLITEMCORE_H_
+#define SDL_ITEM_SDLITEMCORE_H_
 
-/*****************************************************************************/
-Texture::Texture(SDL_Texture * texture) :
-		m_texture(texture)
-{
-}
+#include "sdl.h"
+#include "SdlItem.h"
+#include "SiAnim.h"
+#include "SiKeyCallback.h"
+#include "SiMouseEvent.h"
 
-/*****************************************************************************/
-Texture::~Texture()
-{
-	if (m_texture != nullptr)
-	{
-		SDL_DestroyTexture(m_texture);
-	}
-}
-
-/*****************************************************************************/
-SDL_Texture* Texture::getTexture()
-{
-	return m_texture;
-}
+#endif

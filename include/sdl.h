@@ -17,11 +17,11 @@
  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-#include "Anim.h"
 #include "reader.h"
 #include "SdlItem.h"
 #include <functional>
 #include <SDL2/SDL.h>
+#include <SiAnim.h>
 #include <string>
 #include <vector>
 
@@ -41,24 +41,11 @@
 //#define PAL_TO_RGB(x) x.r<<2,x.g<<2,x.b<<2,SDL_OPAQUE
 #define PAL_TO_RGB(x) x.r,x.g,x.b,SDL_OPAQUE
 
-struct KeyCb
-{
-	SDL_Scancode code;
-	std::function<void()> downCallBack;
-	std::function<void()> upCallBack;
-};
-
 #define MOUSE_MOTION		0
 #define MOUSE_BUTTON_UP		1
 #define MOUSE_BUTTON_DOWN	2
 #define MOUSE_WHEEL_UP		3
 #define MOUSE_WHEEL_DOWN	4
-
-struct MouseEvent
-{
-	Uint32 eventType;
-	std::function<void()> callBack;
-};
 
 void sdl_init(const std::string & title, const bool vsync);
 void sdl_cleanup(void);
@@ -74,7 +61,7 @@ void sdl_mouse_position_manager(std::vector<SdlItem *> & itemArray);
 int sdl_screen_manager(SDL_Event * event);
 void sdl_loop_manager();
 void sdl_blit_tex(SDL_Texture * tex, SDL_Rect * rect, double angle, double zoomX, double zoomY, int flip, int overlay);
-int sdl_blit_anim(const Anim & anim, SDL_Rect * rect, const double angle, const double zoomX, const double zoomY, const bool isFlip, const bool isLoop,
+int sdl_blit_anim(const SiAnim & anim, SDL_Rect * rect, const double angle, const double zoomX, const double zoomY, const bool isFlip, const bool isLoop,
 		const bool isOverlay, const Uint32 animStartTick);
 void sdl_get_string_size(TTF_Font * font, const std::string & text, int * w, int *h);
 void sdl_print_item(SdlItem & item);
@@ -103,7 +90,7 @@ void sdl_clean_key_cb();
 void sdl_add_mousecb(Uint32 event_type, std::function<void()> callBack);
 void sdl_free_mousecb();
 Uint32 sdl_get_global_time();
-Anim * sdl_get_minimal_anim();
+SiAnim * sdl_get_minimal_anim();
 void sdl_set_background_color(int R, int G, int B, int A);
 void sdl_get_output_size(int * width, int * height);
 void sdl_clear();

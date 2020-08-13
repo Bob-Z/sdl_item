@@ -23,9 +23,9 @@
 #include <SDL.h>
 #include <string>
 
-class Anim;
+class SiAnim;
 
-Anim * anim_load(const std::string & filePath);
-Anim * anim_create_color(int width, int height, Uint32 color);
+SiAnim * anim_load(const std::string & filePath);
+SiAnim * anim_create_color(int width, int height, Uint32 color);
 
 #endif // MEDIA_READER_H
