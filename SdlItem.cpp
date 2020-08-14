@@ -25,7 +25,7 @@ SdlItem::SdlItem() :
 		m_rect(
 		{ -1, -1, 0, 0 }), m_animStartTick(0U), m_flip(SDL_FLIP_NONE), m_angle(0.0), m_zoomX(1.0), m_zoomY(1.0), m_user1(0), m_user2(0), m_overlay(false), m_animArray(), m_animOver(), m_defaultAnimOver(), m_animClick(), m_defaultAnimClick(), m_layout(
 				Layout::TOP_LEFT), m_animLoop(true), m_clicked(false), m_clickLeftCb(), m_clickRightCb(), m_doubleClickLeftCb(), m_doubleClickRightCb(), m_wheelUpCb(), m_wheelDownCb(), m_overCb(), m_text(), m_backGroudColor(
-				0U), m_font(nullptr), m_textTexture(nullptr), m_editable(false), m_editCb(), m_userPtr(nullptr), m_user1Ptr(nullptr)
+				0U), m_font(nullptr), m_textTexture(nullptr), m_editable(false), m_editCb(), m_userPtr(nullptr), m_userString()
 {
 }
 
@@ -34,7 +34,7 @@ SdlItem::~SdlItem()
 {
 	if (m_textTexture != nullptr)
 	{
-		SDL_DestroyTexture(m_textTexture);
+		SDL_DestroyTexture (m_textTexture);
 	}
 }
 
@@ -512,15 +512,15 @@ void SdlItem::setUser2(int user2)
 }
 
 /*****************************************************************************/
-const void* SdlItem::getUser1Ptr() const
+const std::string SdlItem::getUserString() const
 {
-	return m_user1Ptr;
+	return m_userString;
 }
 
 /*****************************************************************************/
-void SdlItem::setUser1Ptr(const void* user1Ptr)
+void SdlItem::setUserString(const std::string & userString)
 {
-	m_user1Ptr = user1Ptr;
+	m_userString = userString;
 }
 
 /*****************************************************************************/

@@ -137,8 +137,8 @@ public:
 	int getUser2() const;
 	void setUser2(int user2);
 
-	const void* getUser1Ptr() const;
-	void setUser1Ptr(const void* user1Ptr);
+	const std::string getUserString() const;
+	void setUserString(const std::string & userString);
 
 	const void* getUserPtr() const;
 	void setUserPtr(const void* userPtr);
@@ -180,7 +180,7 @@ private:
 	std::function<void(std::string)> m_editCb;
 
 	const void * m_userPtr;
-	const void * m_user1Ptr;
+	std::string m_userString;
 };
 
 #endif /* SDL_ITEM_SDLITEM_H_ */
