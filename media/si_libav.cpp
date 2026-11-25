@@ -44,13 +44,10 @@ SiAnim * libav_load(const std::string & filePath)
 	struct SwsContext * swsCtx;
 	int videoStream = -1;
 	int delay = 0;
-	AVCodec *codec = nullptr;
+	const AVCodec *codec = nullptr;
 	AVFrame *decodedFrame = nullptr;
 	AVFrame *frameRgba = nullptr;
 	AVCodecContext *codexCtx = nullptr;
-
-	// Register all formats and codecs
-	av_register_all();
 
 	// Open video file
 	AVFormatContext *formatCtx = nullptr;
@@ -67,7 +64,7 @@ SiAnim * libav_load(const std::string & filePath)
 	// Find the first video stream
 	for (unsigned int i = 0; i < formatCtx->nb_streams; i++)
 	{
-		if (formatCtx->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO)
+		if (formatCtx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO)
 		{
 			videoStream = i;
 			// total stream duration (in nanosecond) / number of image in the stream / 1000 (to get milliseconds
@@ -83,12 +80,21 @@ SiAnim * libav_load(const std::string & filePath)
 		goto error;
 	}
 
-	// Get a pointer to the codec context for the video stream
-	codexCtx = formatCtx->streams[videoStream]->codec;
-
 	// Find the decoder for the video stream
-	codec = avcodec_find_decoder(codexCtx->codec_id);
+	codec = avcodec_find_decoder(formatCtx->streams[videoStream]->codecpar->codec_id);
 	if (codec == nullptr)
+	{
+		goto error;
+	}
+
+	// Get a codec context for the video stream
+	codexCtx = avcodec_alloc_context3(codec);
+	if (codexCtx == nullptr)
+	{
+		goto error;
+	}
+
+	if (avcodec_parameters_to_context(codexCtx, formatCtx->streams[videoStream]->codecpar) < 0)
 	{
 		goto error;
 	}
@@ -99,20 +105,11 @@ SiAnim * libav_load(const std::string & filePath)
 		goto error;
 	}
 
-	// Allocate video frame
-#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(55,28,1)
+	// Allocate video frames
 	decodedFrame = av_frame_alloc();
 	frameRgba = av_frame_alloc();
-#else
-	decodedFrame = avcodec_alloc_frame();
-	frameRgba = avcodec_alloc_frame();
-#endif
 
-	if (decodedFrame == nullptr)
-	{
-		goto error;
-	}
-	if (frameRgba == nullptr)
+	if (decodedFrame == nullptr || frameRgba == nullptr)
 	{
 		goto error;
 	}
@@ -177,17 +174,17 @@ SiAnim * libav_load(const std::string & filePath)
 
 	if (frameRgba)
 	{
-		av_free(frameRgba);
+		av_frame_free(&frameRgba);
 	}
 
 	if (decodedFrame)
 	{
-		av_free(decodedFrame);
+		av_frame_free(&decodedFrame);
 	}
 
 	if (codexCtx)
 	{
-		avcodec_close(codexCtx);
+		avcodec_free_context(&codexCtx);
 	}
 
 	if (formatCtx)
