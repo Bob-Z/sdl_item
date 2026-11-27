@@ -84,8 +84,6 @@ SDL_Texture * libpng_load_texture(const std::string & filePath, int * width_out,
 		return nullptr;
 	}
 
-	//wlog(LOGDEBUG,"Using libpng to decode %s",filename);
-
 	// set error handling
 	if (setjmp(png_jmpbuf(png_ptr)))
 	{
@@ -150,7 +148,6 @@ SDL_Texture * libpng_load_texture(const std::string & filePath, int * width_out,
 	// retrieve updated information
 	png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, nullptr, nullptr, nullptr);
 
-	//wlog(LOGDEBUG,"size: %dx%d bit_depth: %d, type: %d",width,height,bit_depth,color_type);
 	// allocate the memory to hold the image using the fields of png_info.
 	surf = SDL_CreateRGBSurface(0, width, height, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
 	memset(surf->pixels, 0, width * height * sizeof(Uint32));
