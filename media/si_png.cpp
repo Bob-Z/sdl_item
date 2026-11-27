@@ -21,6 +21,7 @@
 #include "SiAnim.h"
 #include "stdio.h"
 #include <string>
+#include <vector>
 
 #ifdef __cplusplus
 extern "C"
@@ -40,7 +41,6 @@ SDL_Texture * libpng_load_texture(const std::string & filePath, int * width_out,
 	png_structp png_ptr = nullptr;
 	png_infop info_ptr = nullptr;
 	SDL_Surface* surf = nullptr;
-	png_bytep *row_pointers = nullptr;
 	png_uint_32 width = 0U;
 	png_uint_32 height = 0U;
 	int bit_depth = 0;
@@ -154,7 +154,7 @@ SDL_Texture * libpng_load_texture(const std::string & filePath, int * width_out,
 	// allocate the memory to hold the image using the fields of png_info.
 	surf = SDL_CreateRGBSurface(0, width, height, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
 	memset(surf->pixels, 0, width * height * sizeof(Uint32));
-	row_pointers = (png_bytep *) malloc(sizeof(png_bytep) * height);
+	std::vector<png_bytep> row_pointers(height);
 
 	for (i = 0; i < height; i++)
 	{
@@ -162,9 +162,7 @@ SDL_Texture * libpng_load_texture(const std::string & filePath, int * width_out,
 	}
 
 	// the easiest way to read the image
-	png_read_image(png_ptr, row_pointers);
-
-	free(row_pointers);
+	png_read_image(png_ptr, row_pointers.data());
 
 	// read the rest of the file, getting any additional chunks in info_ptr
 	png_read_end(png_ptr, info_ptr);
