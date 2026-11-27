@@ -21,6 +21,7 @@
 #include "SiAnim.h"
 #include "stdio.h"
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -55,7 +56,6 @@ static int extract_zip(struct zip *fdZip, int index)
 {
 	struct zip_stat fileStat;
 	struct zip_file *fileZip = nullptr;
-	char * data;
 	FILE *file_dest;
 
 	zip_stat_index(fdZip, index, 0, &fileStat);
@@ -66,10 +66,9 @@ static int extract_zip(struct zip *fdZip, int index)
 		return -1;
 	}
 
-	data = (char*) malloc((size_t) (fileStat.size));
-	if (zip_fread(fileZip, data, (size_t) (fileStat.size)) != (int64_t) fileStat.size)
+	auto data = std::make_unique<char[]>((size_t) fileStat.size);
+	if (zip_fread(fileZip, data.get(), (size_t) (fileStat.size)) != (int64_t) fileStat.size)
 	{
-		free(data);
 		zip_fclose(fileZip);
 		return -1;
 	}
@@ -77,21 +76,18 @@ static int extract_zip(struct zip *fdZip, int index)
 	file_dest = fopen(ZIP_TMP_FILE.c_str(), "wb");
 	if (file_dest == nullptr)
 	{
-		free(data);
 		zip_fclose(fileZip);
 		return -1;
 	}
 
-	if (fwrite(data, sizeof(char), (size_t) fileStat.size, file_dest) != fileStat.size)
+	if (fwrite(data.get(), sizeof(char), (size_t) fileStat.size, file_dest) != fileStat.size)
 	{
 		fclose(file_dest);
-		free(data);
 		zip_fclose(fileZip);
 		return -1;
 	}
 
 	fclose(file_dest);
-	free(data);
 	zip_fclose(fileZip);
 
 	return 0;
