@@ -143,7 +143,7 @@ static void get_virtual(SDL_Renderer * renderer, int & virtual_x_px, int & virtu
 }
 
 /*****************************************************************************/
-void sdl_mouse_position_manager(std::vector<SdlItem *> & itemArray)
+void sdl_mouse_position_manager(ItemArray & itemArray)
 {
 	/*
 	 if (isAppHasFocus == false)
@@ -202,7 +202,7 @@ void sdl_mouse_position_manager(std::vector<SdlItem *> & itemArray)
 }
 
 /*****************************************************************************/
-bool sdl_mouse_manager_with_overlay(SDL_Event * event, std::vector<SdlItem *> & itemArray, bool isOverlay, Uint32 & timeStamp)
+bool sdl_mouse_manager_with_overlay(SDL_Event * event, ItemArray & itemArray, bool isOverlay, Uint32 & timeStamp)
 {
 	int mx = 0;
 	int my = 0;
@@ -273,7 +273,7 @@ bool sdl_mouse_manager_with_overlay(SDL_Event * event, std::vector<SdlItem *> & 
 
 				if (item->isEditable() == true)
 				{
-					focusedItem = item;
+					focusedItem = item.get();
 				}
 
 				if ((bool(item->getClickLeftCb()) == true) && (event->button.button == SDL_BUTTON_LEFT))
@@ -327,7 +327,7 @@ bool sdl_mouse_manager_with_overlay(SDL_Event * event, std::vector<SdlItem *> & 
 }
 
 /*****************************************************************************/
-bool sdl_mouse_manager(SDL_Event * event, std::vector<SdlItem *> & itemArray)
+bool sdl_mouse_manager(SDL_Event * event, ItemArray & itemArray)
 {
 	static Uint32 timeStamp = 0;
 

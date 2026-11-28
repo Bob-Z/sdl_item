@@ -20,10 +20,15 @@
 #include "reader.h"
 #include "SdlItem.h"
 #include <functional>
+#include <memory>
 #include <SDL2/SDL.h>
 #include <SiAnim.h>
 #include <string>
 #include <vector>
+
+// The client's display list owns its items. Non-owning raw pointers are still
+// available through SdlItem* (e.g. focusedItem, userPtr).
+using ItemArray = std::vector<std::unique_ptr<SdlItem>>;
 
 #define SDL_OPAQUE 0xff
 #define SDL_TRANSPARENT 0x00
@@ -55,9 +60,9 @@ void sdl_set_pixel(SDL_Surface *surface, int x, int y, Uint32 R, Uint32 G, Uint3
 Uint32 sdl_get_pixel(SDL_Surface *surface, int x, int y);
 
 // Return true if a mouse event has been detected
-bool sdl_mouse_manager(SDL_Event * event, std::vector<SdlItem*> & itemArray);
+bool sdl_mouse_manager(SDL_Event * event, ItemArray & itemArray);
 
-void sdl_mouse_position_manager(std::vector<SdlItem *> & itemArray);
+void sdl_mouse_position_manager(ItemArray & itemArray);
 int sdl_screen_manager(SDL_Event * event);
 void sdl_loop_manager();
 void sdl_blit_tex(SDL_Texture * tex, SDL_Rect * rect, double angle, double zoomX, double zoomY, int flip, int overlay);
