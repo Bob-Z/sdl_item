@@ -26,9 +26,6 @@
 class SiMouseEvent
 {
 public:
-	SiMouseEvent();
-	virtual ~SiMouseEvent();
-
 	std::function<void()> getCallBack() const;
 	void setCallBack(std::function<void()> callBack);
 

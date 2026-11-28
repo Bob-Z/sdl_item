@@ -19,17 +19,6 @@
 
 #include "SiMouseEvent.h"
 
-SiMouseEvent::SiMouseEvent()
-{
-	// TODO Auto-generated constructor stub
-
-}
-
-SiMouseEvent::~SiMouseEvent()
-{
-	// TODO Auto-generated destructor stub
-}
-
 std::function<void()> SiMouseEvent::getCallBack() const
 {
 	return callBack;
