@@ -26,9 +26,6 @@
 class SiKeyCallback
 {
 public:
-	SiKeyCallback();
-	virtual ~SiKeyCallback();
-
 	SDL_Scancode getCode() const;
 	void setCode(SDL_Scancode code);
 

@@ -19,17 +19,6 @@
 
 #include <SiKeyCallback.h>
 
-SiKeyCallback::SiKeyCallback()
-{
-	// TODO Auto-generated constructor stub
-
-}
-
-SiKeyCallback::~SiKeyCallback()
-{
-	// TODO Auto-generated destructor stub
-}
-
 SDL_Scancode SiKeyCallback::getCode() const
 {
 	return code;
