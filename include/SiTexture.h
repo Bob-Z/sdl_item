@@ -25,7 +25,7 @@ struct SDL_Texture;
 class SiTexture
 {
 public:
-	SiTexture(SDL_Texture * texture);
+	explicit SiTexture(SDL_Texture * texture);
 	virtual ~SiTexture();
 
 	SDL_Texture* getTexture();

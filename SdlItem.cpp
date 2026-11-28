@@ -448,7 +448,7 @@ void SdlItem::addToText(const std::string& text)
 /*****************************************************************************/
 void SdlItem::removeFromText(const int quantity)
 {
-	m_text = m_text.substr(0, m_text.size() - quantity);
+	m_text.resize(m_text.size() - quantity);
 }
 
 /*****************************************************************************/
