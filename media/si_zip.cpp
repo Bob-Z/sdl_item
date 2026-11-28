@@ -94,7 +94,7 @@ static int extract_zip(struct zip *fdZip, int index)
 }
 
 /*****************************************************************************/
-SiAnim * libzip_load(const std::string & filePath)
+std::unique_ptr<SiAnim> libzip_load(const std::string & filePath)
 {
 	int err = 0;
 	struct zip * fdZip = zip_open(filePath.c_str(), ZIP_CHECKCONS, &err);
@@ -124,7 +124,7 @@ SiAnim * libzip_load(const std::string & filePath)
 	// Remove timing file
 	int animQty = fileQty - 1;
 
-	SiAnim * anim = new SiAnim;
+	auto anim = std::make_unique<SiAnim>();
 
 	for (int i = 0; i < animQty; i++)
 	{

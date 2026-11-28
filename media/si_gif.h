@@ -20,10 +20,11 @@
 #ifndef MEDIA_GIF_H
 #define MEDIA_GIF_H
 
+#include <memory>
 #include <string>
 
 class SiAnim;
 
-SiAnim * giflib_load(const std::string & filePath);
+std::unique_ptr<SiAnim> giflib_load(const std::string & filePath);
 
 #endif // MEDIA_GIF_H

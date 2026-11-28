@@ -20,6 +20,7 @@
 #include "sdl.h"
 #include "SiAnim.h"
 #include "stdio.h"
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -180,7 +181,7 @@ SDL_Texture * libpng_load_texture(const std::string & filePath, int * width_out,
 }
 
 /*****************************************************************************/
-SiAnim * libpng_load(const std::string & filePath)
+std::unique_ptr<SiAnim> libpng_load(const std::string & filePath)
 {
 	int width = 0;
 	int height = 0;
@@ -191,7 +192,7 @@ SiAnim * libpng_load(const std::string & filePath)
 		return nullptr;
 	}
 
-	SiAnim * anim = new SiAnim;
+	auto anim = std::make_unique<SiAnim>();
 
 	anim->pushDelay(0U);
 	anim->pushTexture(tex);

@@ -20,6 +20,7 @@
 #include "sdl.h"
 #include "SiAnim.h"
 #include <SDL2/SDL.h>
+#include <memory>
 #include <string>
 
 #ifdef __cplusplus
@@ -43,7 +44,7 @@ static constexpr int DEFAULT_DELAY_MS = 40;
  http://wwwcdf.pd.infn.it/libgif/gif89.txt
  http://wwwcdf.pd.infn.it/libgif/gif_lib.html
  ************************************************************************/
-SiAnim * giflib_load(const std::string & filePath)
+std::unique_ptr<SiAnim> giflib_load(const std::string & filePath)
 {
 	GifFileType * gif = nullptr;
 	int i = 0;
@@ -60,7 +61,7 @@ SiAnim * giflib_load(const std::string & filePath)
 	int y = 0;
 	int col = 0;
 	int pix_index = 0;
-	SiAnim * anim = nullptr;
+	std::unique_ptr<SiAnim> anim;
 	int render_width;
 	int render_height;
 	int frame_left = 0;
@@ -92,7 +93,7 @@ SiAnim * giflib_load(const std::string & filePath)
 		return nullptr;
 	}
 
-	anim = new SiAnim;
+	anim = std::make_unique<SiAnim>();
 
 	anim->setWidth(gif->SWidth);
 	anim->setHeight(gif->SHeight);

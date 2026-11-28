@@ -19,6 +19,7 @@
 
 #include "sdl.h"
 #include "SiAnim.h"
+#include <memory>
 #include <string>
 
 #ifdef __cplusplus
@@ -36,11 +37,11 @@ extern "C"
 #endif
 
 /*****************************************************************************/
-SiAnim * libav_load(const std::string & filePath)
+std::unique_ptr<SiAnim> libav_load(const std::string & filePath)
 {
-	SiAnim * ret = nullptr;
+	bool loaded = false;
 	unsigned int i = 0;
-	SiAnim * anim = new SiAnim;
+	auto anim = std::make_unique<SiAnim>();
 	struct SwsContext * swsCtx;
 	int videoStream = -1;
 	int delay = 0;
@@ -163,14 +164,9 @@ SiAnim * libav_load(const std::string & filePath)
 		av_packet_unref(&packet);
 	}
 
-	ret = anim;
+	loaded = true;
 
 	error:
-
-	if (ret == nullptr)
-	{
-		delete anim;
-	}
 
 	if (frameRgba)
 	{
@@ -192,5 +188,5 @@ SiAnim * libav_load(const std::string & filePath)
 		avformat_close_input(&formatCtx);
 	}
 
-	return ret;
+	return loaded ? std::move(anim) : nullptr;
 }

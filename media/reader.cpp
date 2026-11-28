@@ -23,12 +23,13 @@
 #include "si_png.h"
 #include "si_zip.h"
 #include "SiAnim.h"
+#include <memory>
 #include <string>
 
 /*****************************************************************************/
-SiAnim * anim_load(const std::string & filePath)
+std::unique_ptr<SiAnim> anim_load(const std::string & filePath)
 {
-	SiAnim * ret;
+	std::unique_ptr<SiAnim> ret;
 
 	ret = giflib_load(filePath);
 	if (ret == nullptr)
@@ -62,9 +63,9 @@ SiAnim * anim_load(const std::string & filePath)
 /******************************************************************************
  color is RGBA
  *****************************************************************************/
-SiAnim * anim_create_color(int width, int height, Uint32 color)
+std::unique_ptr<SiAnim> anim_create_color(int width, int height, Uint32 color)
 {
-	SiAnim * anim = new SiAnim;
+	auto anim = std::make_unique<SiAnim>();
 
 	anim->setWidth(width);
 	anim->setHeight(height);

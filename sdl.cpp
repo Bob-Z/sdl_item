@@ -27,6 +27,7 @@
 #include <functional>
 #include <iostream>
 #include <math.h>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -675,9 +676,8 @@ void sdl_print_item(SdlItem & item)
 	{
 		rect.w = backgroundWidth;
 		rect.h = backgroundHeight;
-		SiAnim * bgAnim = anim_create_color(rect.w, rect.h, item.getBackGroudColor());
+		auto bgAnim = anim_create_color(rect.w, rect.h, item.getBackGroudColor());
 		sdl_blit_anim(*bgAnim, &rect, item.getAngle(), item.getZoomX(), item.getZoomY(), item.getFlip(), false, item.isOverlay(), 0);
-		delete bgAnim;
 	}
 
 	if (item.getTextTexture() == nullptr)
@@ -972,9 +972,9 @@ Uint32 sdl_get_global_time()
 }
 
 /*****************************************************************************/
-SiAnim * sdl_get_minimal_anim()
+std::unique_ptr<SiAnim> sdl_get_minimal_anim()
 {
-	SiAnim * def_anim = new SiAnim;
+	auto def_anim = std::make_unique<SiAnim>();
 
 	def_anim->pushTexture(SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STATIC, 1, 1));
 	def_anim->setWidth(1);

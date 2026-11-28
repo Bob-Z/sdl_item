@@ -21,11 +21,12 @@
 #define MEDIA_READER_H
 
 #include <SDL.h>
+#include <memory>
 #include <string>
 
 class SiAnim;
 
-SiAnim * anim_load(const std::string & filePath);
-SiAnim * anim_create_color(int width, int height, Uint32 color);
+std::unique_ptr<SiAnim> anim_load(const std::string & filePath);
+std::unique_ptr<SiAnim> anim_create_color(int width, int height, Uint32 color);
 
 #endif // MEDIA_READER_H

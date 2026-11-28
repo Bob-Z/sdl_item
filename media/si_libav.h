@@ -20,10 +20,11 @@
 #ifndef MEDIA_LIBAV_H
 #define MEDIA_LIBAV_H
 
+#include <memory>
 #include <string>
 
 class SiAnim;
 
-SiAnim * libav_load(const std::string & filePath);
+std::unique_ptr<SiAnim> libav_load(const std::string & filePath);
 
 #endif // MEDIA_LIBAV_H

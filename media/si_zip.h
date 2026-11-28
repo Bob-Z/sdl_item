@@ -20,10 +20,11 @@
 #ifndef MEDIA_ZIP_H
 #define MEDIA_ZIP_H
 
+#include <memory>
 #include <string>
 
 class SiAnim;
 
-SiAnim * libzip_load(const std::string & filePath);
+std::unique_ptr<SiAnim> libzip_load(const std::string & filePath);
 
 #endif // MEDIA_ZIP_H

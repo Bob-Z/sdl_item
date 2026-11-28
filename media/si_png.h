@@ -20,12 +20,13 @@
 #ifndef MEDIA_PNG_H
 #define MEDIA_PNG_H
 
+#include <memory>
 #include <string>
 
 class SiAnim;
 struct SDL_Texture;
 
 SDL_Texture * libpng_load_texture(const std::string & filePath, int * width_out, int * height_out);
-SiAnim * libpng_load(const std::string & filePath);
+std::unique_ptr<SiAnim> libpng_load(const std::string & filePath);
 
 #endif // MEDIA_PNG_H

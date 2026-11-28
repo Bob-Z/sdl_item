@@ -95,7 +95,7 @@ void sdl_clean_key_cb();
 void sdl_add_mousecb(Uint32 event_type, std::function<void()> callBack);
 void sdl_free_mousecb();
 Uint32 sdl_get_global_time();
-SiAnim * sdl_get_minimal_anim();
+std::unique_ptr<SiAnim> sdl_get_minimal_anim();
 void sdl_set_background_color(int R, int G, int B, int A);
 void sdl_get_output_size(int * width, int * height);
 void sdl_clear();
